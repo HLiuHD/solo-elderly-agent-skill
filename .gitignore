@@ -1,0 +1,13 @@
+# API keys (never upload)
+demo/.env
+
+# Generated files
+demo/nutrition_report.html
+demo/demo_output.json
+
+# PowerPoint temp files
+~$*.pptx
+
+# OS files
+Thumbs.db
+.DS_Store

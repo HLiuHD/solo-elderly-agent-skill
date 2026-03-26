@@ -1,0 +1,33 @@
+{
+  "sedentary_isolation": {
+    "patient_id": "P-001",
+    "recent_complaints": [
+      "I feel tired all the time",
+      "I did not go out this week",
+      "I do not have much appetite"
+    ],
+    "diagnoses": ["hypertension", "hyperlipidemia"],
+    "diet_restrictions": ["low_sodium_diet"],
+    "preferences": ["difficulty_cooking"],
+    "medication_taken_last_3_days": false,
+    "sleep_hours_last_night": 4.5
+  },
+  "positive_day": {
+    "patient_id": "P-001",
+    "recent_complaints": ["I slept okay and feel better"],
+    "diagnoses": ["hypertension", "type_2_diabetes"],
+    "diet_restrictions": ["low_sugar", "low_sodium_diet"],
+    "preferences": ["likes_short_walks"],
+    "medication_taken_last_3_days": true,
+    "sleep_hours_last_night": 7.0
+  },
+  "emergency_chest_pain": {
+    "patient_id": "P-001",
+    "recent_complaints": ["I feel chest tightness", "I am dizzy"],
+    "diagnoses": ["hypertension"],
+    "diet_restrictions": ["low_sodium_diet"],
+    "preferences": [],
+    "medication_taken_last_3_days": false,
+    "sleep_hours_last_night": 3.0
+  }
+}

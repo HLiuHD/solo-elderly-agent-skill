@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nutritional Guidance — {{PATIENT_ID}}</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: #f0f4f8;
+    color: #1a202c;
+    line-height: 1.6;
+  }
+  .header {
+    background: linear-gradient(135deg, #2b6cb0, #4299e1);
+    color: white;
+    padding: 32px 24px;
+    text-align: center;
+  }
+  .header h1 { font-size: 1.8rem; font-weight: 600; }
+  .header p { opacity: 0.9; margin-top: 6px; font-size: 0.95rem; }
+  .container { max-width: 800px; margin: -24px auto 40px; padding: 0 16px; }
+  .card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    margin-top: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+  }
+  .card h2 {
+    font-size: 1.15rem;
+    color: #2b6cb0;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card h2 .icon { font-size: 1.3rem; }
+  .tag-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .tag {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    font-weight: 500;
+  }
+  .tag-diagnosis { background: #fed7d7; color: #9b2c2c; }
+  .tag-restriction { background: #fefcbf; color: #975a16; }
+  .tag-preference { background: #c6f6d5; color: #276749; }
+  .advice-list { list-style: none; padding: 0; }
+  .advice-item {
+    padding: 16px;
+    border-left: 4px solid #4299e1;
+    background: #ebf8ff;
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 12px;
+  }
+  .advice-item.warn {
+    border-left-color: #ed8936;
+    background: #fffaf0;
+  }
+  .advice-item.good {
+    border-left-color: #48bb78;
+    background: #f0fff4;
+  }
+  .advice-item h3 { font-size: 0.95rem; color: #2d3748; margin-bottom: 4px; }
+  .advice-item p { font-size: 0.9rem; color: #4a5568; }
+  .meal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 600px) { .meal-grid { grid-template-columns: 1fr; } }
+  .meal-card {
+    background: #f7fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .meal-card h3 { font-size: 0.9rem; color: #2b6cb0; margin-bottom: 6px; }
+  .meal-card ul { padding-left: 18px; font-size: 0.85rem; color: #4a5568; }
+  .meal-card ul li { margin-bottom: 3px; }
+  .footer {
+    text-align: center;
+    padding: 20px;
+    font-size: 0.8rem;
+    color: #a0aec0;
+  }
+  .guardrail {
+    background: #fff5f5;
+    border: 1px solid #feb2b2;
+    border-radius: 8px;
+    padding: 14px;
+    margin-top: 12px;
+    font-size: 0.85rem;
+    color: #742a2a;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Personalized Nutritional Guidance</h1>
+  <p>Patient {{PATIENT_ID}} &mdash; Generated {{TIMESTAMP}}</p>
+</div>
+
+<div class="container">
+
+  <!-- Patient Profile -->
+  <div class="card">
+    <h2><span class="icon">&#128100;</span> Patient Profile</h2>
+    <div class="tag-row">
+      {{DIAGNOSIS_TAGS}}
+    </div>
+    <div class="tag-row">
+      {{RESTRICTION_TAGS}}
+    </div>
+    <div class="tag-row">
+      {{PREFERENCE_TAGS}}
+    </div>
+    <p style="font-size:0.88rem; color:#718096; margin-top:8px;">
+      Recent complaints: {{COMPLAINTS}}
+    </p>
+  </div>
+
+  <!-- Condition-Based Advice -->
+  <div class="card">
+    <h2><span class="icon">&#127813;</span> Advice Based on Your Conditions</h2>
+    <ul class="advice-list">
+      {{ADVICE_ITEMS}}
+    </ul>
+  </div>
+
+  <!-- Suggested Meals -->
+  <div class="card">
+    <h2><span class="icon">&#127858;</span> Simple Meal Ideas</h2>
+    <div class="meal-grid">
+      {{MEAL_CARDS}}
+    </div>
+  </div>
+
+  <!-- Safety Guardrail -->
+  <div class="card">
+    <h2><span class="icon">&#9888;</span> Important Reminder</h2>
+    <div class="guardrail">
+      {{GUARDRAIL_TEXT}}
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  Solo Elderly Health Agent &mdash; Nutritional Guidance Module &mdash; For demo purposes only
+</div>
+
+</body>
+</html>

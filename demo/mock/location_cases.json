@@ -1,0 +1,44 @@
+{
+  "beijing_home": {
+    "lat": 39.908823,
+    "lon": 116.39747,
+    "city": "Beijing",
+    "context": "At Home",
+    "days_since_left_home": 4,
+    "average_daily_steps": 850,
+    "geofence_breach": false,
+    "weather": {
+      "condition": "Clear",
+      "temp_f": 68,
+      "description": "Sunny, light breeze"
+    }
+  },
+  "beijing_active": {
+    "lat": 39.914889,
+    "lon": 116.403873,
+    "city": "Beijing",
+    "context": "Neighborhood",
+    "days_since_left_home": 0,
+    "average_daily_steps": 4200,
+    "geofence_breach": false,
+    "weather": {
+      "condition": "Overcast",
+      "temp_f": 58,
+      "description": "Cloudy but dry, mild"
+    }
+  },
+  "beijing_emergency": {
+    "lat": 39.905963,
+    "lon": 116.391248,
+    "city": "Beijing",
+    "context": "Outdoor",
+    "days_since_left_home": 1,
+    "average_daily_steps": 1200,
+    "geofence_breach": true,
+    "weather": {
+      "condition": "Rain",
+      "temp_f": 42,
+      "description": "Cold rain, icy patches"
+    }
+  }
+}
