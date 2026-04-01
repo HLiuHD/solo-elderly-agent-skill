@@ -153,6 +153,226 @@ def extract_json(text: str):
         return None
 
 # ---------------------------------------------------------------------------
+# Backend API client  (https://beibei.bjknrt.com/api — see openapi.md)
+# ---------------------------------------------------------------------------
+
+BACKEND_BASE = os.getenv("BACKEND_API_BASE", "https://beibei.bjknrt.com/api")
+BACKEND_TOKEN = os.getenv("BACKEND_TOKEN", "med")
+
+
+def _backend_post(endpoint: str, payload: dict | None = None) -> dict | None:
+    url = f"{BACKEND_BASE}{endpoint}"
+    body = json.dumps(payload or {}).encode("utf-8")
+    req = urllib.request.Request(
+        url, data=body, method="POST",
+        headers={"Content-Type": "application/json", "Token": BACKEND_TOKEN},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+        if data.get("success"):
+            return data.get("data")
+        print(f"[Backend API] {endpoint} → {data.get('message', 'unknown error')}")
+        return None
+    except Exception as e:
+        print(f"[Backend API error] {endpoint} → {e}")
+        return None
+
+
+def _backend_get(endpoint: str) -> dict | None:
+    url = f"{BACKEND_BASE}{endpoint}"
+    req = urllib.request.Request(
+        url, method="POST",
+        headers={"Content-Type": "application/json", "Token": BACKEND_TOKEN},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+        if data.get("success"):
+            return data.get("data")
+        return None
+    except Exception as e:
+        print(f"[Backend API error] {endpoint} → {e}")
+        return None
+
+
+def fetch_user_list() -> list:
+    return _backend_get("/openapi/user/list") or []
+
+
+def fetch_latest_health(user_id: str, data_type: str) -> dict | None:
+    return _backend_post("/openapi/user/health-latest", {"id": user_id, "type": data_type})
+
+
+def fetch_health_history(user_id: str, data_type: str, start: str, end: str) -> list:
+    return _backend_post("/openapi/user/health", {
+        "id": user_id, "type": data_type, "startAt": start, "endAt": end,
+    }) or []
+
+
+def fetch_chat_history(user_id: str, start: str, end: str) -> list:
+    return _backend_post("/openapi/user/message/history", {
+        "id": user_id, "startAt": start, "endAt": end,
+    }) or []
+
+
+def build_live_skill_input(user_id: str) -> dict:
+    """Fetch real data from the backend API and assemble a skill_input dict."""
+    from datetime import timedelta
+
+    now = datetime.now(UTC)
+    now_iso = now.strftime("%Y-%m-%dT%H:%M:%S+08:00")
+    week_ago = (now - timedelta(days=7)).strftime("%Y-%m-%dT00:00:00+08:00")
+
+    print(f"[Live] Fetching data for user {user_id} …")
+
+    # --- latest health vitals ---
+    bp = fetch_latest_health(user_id, "BLOOD_PRESSURE")
+    hr = fetch_latest_health(user_id, "HEART_RATE")
+    bo = fetch_latest_health(user_id, "BLOOD_OXYGEN")
+    bg = fetch_latest_health(user_id, "BLOOD_GLUCOSE")
+    steps = fetch_latest_health(user_id, "STEPS")
+    loc = fetch_latest_health(user_id, "LOCATION")
+
+    latest_health = {}
+    if bp:
+        latest_health["blood_pressure"] = f"{bp.get('sbp', '--')}/{bp.get('dbp', '--')}"
+    if hr:
+        latest_health["heart_rate"] = hr.get("value")
+    if bo:
+        val = bo.get("value", 0)
+        latest_health["blood_oxygen"] = round(val * 100) if val <= 1 else val
+    if bg:
+        latest_health["blood_glucose"] = bg.get("value")
+    if steps:
+        latest_health["steps"] = int(steps.get("value", 0))
+
+    # --- location ---
+    location_data = {"current": {}, "records": []}
+    if loc:
+        location_data["current"] = {
+            "lat": loc.get("latitude", 0),
+            "lon": loc.get("longitude", 0),
+            "record_at": loc.get("recordAt", now_iso),
+        }
+    loc_history = fetch_health_history(user_id, "LOCATION", week_ago, now_iso)
+    if loc_history:
+        location_data["records"] = [
+            {
+                "latitude": r.get("latitude"),
+                "longitude": r.get("longitude"),
+                "recordAt": r.get("recordAt"),
+                "source": r.get("source", "APP"),
+                "type": r.get("type", "gps"),
+            }
+            for r in loc_history
+        ]
+        if not location_data["current"].get("lat"):
+            latest = loc_history[-1]
+            location_data["current"] = {
+                "lat": latest.get("latitude", 0),
+                "lon": latest.get("longitude", 0),
+                "record_at": latest.get("recordAt", now_iso),
+            }
+
+    # --- chat history (last 7 days) ---
+    chats = fetch_chat_history(user_id, week_ago, now_iso)
+    latest_user_msg = ""
+    dialog_parts = []
+    for msg in reversed(chats or []):
+        role = msg.get("role", "")
+        content = msg.get("content", "")
+        if role == "USER" and not latest_user_msg:
+            latest_user_msg = content
+        if len(dialog_parts) < 10:
+            prefix = "患者" if role == "USER" else "AI"
+            dialog_parts.append(f"{prefix}: {content[:80]}")
+    dialog_summary = " | ".join(reversed(dialog_parts)) if dialog_parts else ""
+
+    # --- steps history for signal analysis ---
+    steps_history = fetch_health_history(user_id, "STEPS", week_ago, now_iso)
+    total_steps = sum(int(s.get("value", 0)) for s in steps_history) if steps_history else 0
+    avg_steps = total_steps // max(len(steps_history), 1) if steps_history else 0
+
+    anomalies = []
+    if latest_health.get("heart_rate") and (latest_health["heart_rate"] > 100 or latest_health["heart_rate"] < 50):
+        anomalies.append("心率异常")
+    if latest_health.get("blood_glucose") and latest_health["blood_glucose"] > 10:
+        anomalies.append("血糖偏高")
+    if latest_health.get("steps") is not None and latest_health["steps"] < 500:
+        anomalies.append("活动量偏低")
+    if bp and (bp.get("sbp", 0) > 160 or bp.get("dbp", 0) > 100):
+        anomalies.append("血压偏高")
+
+    summary_parts = []
+    if latest_health.get("heart_rate"):
+        summary_parts.append(f"心率{latest_health['heart_rate']}bpm")
+    if latest_health.get("blood_pressure"):
+        summary_parts.append(f"血压{latest_health['blood_pressure']}mmHg")
+    if latest_health.get("steps") is not None:
+        summary_parts.append(f"今日步数{latest_health['steps']}步")
+    summary_text = "，".join(summary_parts) + ("。" if summary_parts else "数据获取中。")
+
+    skill_input = {
+        "meta": {
+            "user_id": user_id,
+            "session_id": f"live_{now.strftime('%Y%m%d_%H%M%S')}",
+            "intent": "medical_dialog",
+            "lang": "zh",
+            "current_time": now_iso,
+        },
+        "memory": {
+            "patient_long_term_profile": "患者信息从后端API获取，请根据健康数据进行分析。",
+            "recent_health_dynamics": f"近7天平均步数{avg_steps}步。" + ("活动量偏低。" if avg_steps < 3000 else "活动量正常。"),
+        },
+        "signals": {
+            "start_ts": week_ago,
+            "end_ts": now_iso,
+            "summary_text": summary_text,
+            "anomalies": anomalies if anomalies else ["暂无明确异常"],
+        },
+        "location": location_data,
+        "adherence_analysis": {"statuses": [], "preferences": [], "interventions": [], "suggestions": []},
+        "outlier_analysis": {"symptoms": [], "triage": None, "patient_suggestions": [], "doctor_suggestions": []},
+        "latest_health": latest_health,
+        "latest_user_message": latest_user_msg,
+        "recent_dialog_summary": dialog_summary,
+    }
+
+    return skill_input
+
+
+def run_live(user_id: str, offline_only: bool = False):
+    """Fetch live data from the backend API and run the skill pipeline."""
+    skill_input = build_live_skill_input(user_id)
+
+    live_input_file = ROOT / "live_input.json"
+    live_input_file.write_text(json.dumps(skill_input, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"[Live] Saved fetched input to: {live_input_file}")
+
+    system_prompt = _load_skill_system_prompt()
+    user_prompt = json.dumps(skill_input, ensure_ascii=False, indent=2)
+
+    result = None
+    if not offline_only:
+        raw = call_llm(system_prompt, user_prompt)
+        result = extract_json(raw)
+
+    if result is None:
+        print("[Using offline fallback for live input]")
+        result = _skill_offline_fallback(skill_input)
+
+    full_output = {"skill_input": skill_input, "skill_output": result}
+    print(json.dumps(full_output, ensure_ascii=False, indent=2))
+
+    output_file = ROOT / "demo_output.json"
+    output_file.write_text(json.dumps(full_output, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"\nSaved to: {output_file}")
+
+    generate_patient_page(skill_input, result)
+
+
+# ---------------------------------------------------------------------------
 # Risk detection (used by legacy mock demo mode)
 # ---------------------------------------------------------------------------
 
@@ -1241,6 +1461,92 @@ def generate_patient_page(skill_input: dict, result: dict):
     else:
         ai_map_msg = "这是您附近的医院和公园，有需要时可以参考。"
 
+    # --- recommendations ---
+    recs = result.get("recommendations", [])
+    recs_html = ""
+    rec_icons = ["💊", "🚶", "🫀", "🩸", "🧈", "🥗", "🧘", "💤"]
+    for i, r in enumerate(recs):
+        icon = rec_icons[i % len(rec_icons)]
+        recs_html += (
+            f'<div class="flex items-start gap-3 bg-emerald-50 rounded-lg p-3 border border-emerald-100">'
+            f'<span class="text-base mt-0.5">{icon}</span>'
+            f'<div class="text-sm text-slate-700 leading-relaxed">{r}</div>'
+            f'</div>'
+        )
+    if not recs_html:
+        recs_html = '<div class="text-sm text-slate-400">暂无具体建议</div>'
+
+    # --- risk tags ---
+    risk_tags = result.get("risk_tags", [])
+    risk_tag_colors = {
+        "心率": "bg-rose-50 text-rose-700 border-rose-200",
+        "血压": "bg-rose-50 text-rose-700 border-rose-200",
+        "血糖": "bg-amber-50 text-amber-700 border-amber-200",
+        "活动": "bg-sky-50 text-sky-700 border-sky-200",
+        "偏低": "bg-amber-50 text-amber-700 border-amber-200",
+        "偏高": "bg-rose-50 text-rose-700 border-rose-200",
+        "异常": "bg-orange-50 text-orange-700 border-orange-200",
+    }
+    risk_tags_parts = []
+    for tag in risk_tags:
+        cls = "bg-slate-50 text-slate-600 border-slate-200"
+        for kw, c in risk_tag_colors.items():
+            if kw in tag:
+                cls = c
+                break
+        risk_tags_parts.append(
+            f'<span class="inline-block px-3 py-1 rounded-full text-xs font-medium border {cls}">{tag}</span>'
+        )
+    risk_tags_html = "".join(risk_tags_parts) if risk_tags_parts else (
+        '<span class="inline-block px-3 py-1 rounded-full text-xs font-medium border bg-emerald-50 text-emerald-700 border-emerald-200">暂无风险</span>'
+    )
+
+    # --- reasoning ---
+    reasoning = result.get("reasoning", "")
+    reasoning_html = ""
+    if reasoning:
+        reasoning_html = (
+            '<div class="mt-4 pt-3 border-t border-slate-100">'
+            '<div class="text-[11px] text-slate-400 uppercase tracking-wide font-medium mb-1.5">评估依据</div>'
+            f'<div class="text-xs text-slate-600 bg-slate-50 rounded-lg p-3 leading-relaxed">{reasoning}</div>'
+            '</div>'
+        )
+
+    # --- adherence ---
+    adherence = skill_input.get("adherence_analysis", {})
+    adh_statuses = adherence.get("statuses", [])
+    adh_suggestions = adherence.get("suggestions", [])
+    adh_preferences = adherence.get("preferences", [])
+    adherence_html = ""
+    if adh_statuses or adh_suggestions or adh_preferences:
+        adh_inner = (
+            '<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">'
+            '<div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">'
+            '<span class="text-lg">💊</span>'
+            '<h2 class="text-sm font-bold text-slate-800">用药与依从性</h2>'
+            '</div>'
+        )
+        if adh_statuses:
+            adh_inner += '<div class="flex flex-wrap gap-2 mb-3">'
+            for s in adh_statuses:
+                adh_inner += f'<span class="inline-block px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">{s}</span>'
+            adh_inner += '</div>'
+        if adh_preferences:
+            adh_inner += '<div class="flex flex-wrap gap-2 mb-3">'
+            for p in adh_preferences:
+                adh_inner += f'<span class="inline-block px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-600 border border-blue-200">{p}</span>'
+            adh_inner += '</div>'
+        if adh_suggestions:
+            for s in adh_suggestions:
+                adh_inner += (
+                    f'<div class="flex items-start gap-3 bg-indigo-50 rounded-lg p-3 border border-indigo-100 mb-2">'
+                    f'<span class="text-base mt-0.5">📋</span>'
+                    f'<div class="text-sm text-slate-700 leading-relaxed">{s}</div>'
+                    f'</div>'
+                )
+        adh_inner += '</div>'
+        adherence_html = adh_inner
+
     # --- condition badges ---
     cond_colors = {
         "高血压": "bg-rose-500",
@@ -1300,21 +1606,25 @@ def generate_patient_page(skill_input: dict, result: dict):
 
     now = datetime.now(UTC).strftime("%Y年%m月%d日 %H:%M")
     replacements = {
-        "{{PATIENT_NAME}}":     patient_name,
-        "{{CURRENT_TIME}}":     now,
-        "{{STATUS_TW_CLASS}}":  s_class,
-        "{{STATUS_ICON}}":      s_icon,
-        "{{STATUS_TEXT}}":      s_text,
+        "{{PATIENT_NAME}}":       patient_name,
+        "{{CURRENT_TIME}}":       now,
+        "{{STATUS_TW_CLASS}}":    s_class,
+        "{{STATUS_ICON}}":        s_icon,
+        "{{STATUS_TEXT}}":        s_text,
         "{{AI_PATIENT_MESSAGE}}": ai_msg,
-        "{{VITALS_HTML}}":      vitals_html,
-        "{{AI_MAP_MESSAGE}}":   ai_map_msg,
-        "{{PATIENT_LAT}}":      str(patient_lat) if patient_lat else "0",
-        "{{PATIENT_LON}}":      str(patient_lon) if patient_lon else "0",
-        "{{CONDITION_BADGES}}": cond_badges,
-        "{{DIET_TABLE_ROWS}}":  table_rows,
-        "{{MEAL_DATA_JSON}}":   meal_json,
-        "{{TIPS_HTML}}":        tips_html,
-        "{{GUARDRAIL_TEXT}}":   guardrail,
+        "{{VITALS_HTML}}":        vitals_html,
+        "{{RISK_TAGS_HTML}}":     risk_tags_html,
+        "{{RECOMMENDATIONS_HTML}}": recs_html,
+        "{{REASONING_HTML}}":     reasoning_html,
+        "{{ADHERENCE_HTML}}":     adherence_html,
+        "{{AI_MAP_MESSAGE}}":     ai_map_msg,
+        "{{PATIENT_LAT}}":        str(patient_lat) if patient_lat else "0",
+        "{{PATIENT_LON}}":        str(patient_lon) if patient_lon else "0",
+        "{{CONDITION_BADGES}}":   cond_badges,
+        "{{DIET_TABLE_ROWS}}":    table_rows,
+        "{{MEAL_DATA_JSON}}":     meal_json,
+        "{{TIPS_HTML}}":          tips_html,
+        "{{GUARDRAIL_TEXT}}":     guardrail,
     }
 
     html = template
@@ -1378,6 +1688,14 @@ def main():
     sp_skill.add_argument("input_file", help="Path to skill input JSON file")
     sp_skill.add_argument("--offline-only", action="store_true", help="Skip LLM, use deterministic fallback")
 
+    # --- live mode (real backend API) ---
+    sp_live = sub.add_parser("live", help="Fetch real data from backend API and run skill")
+    sp_live.add_argument("user_id", help="User ID from the backend (use 'list' to see all users)")
+    sp_live.add_argument("--offline-only", action="store_true", help="Skip LLM, use deterministic fallback")
+
+    # --- list users ---
+    sub.add_parser("users", help="List all users from the backend API")
+
     # --- legacy demo mode ---
     sp_demo = sub.add_parser("demo", help="Run legacy mock demo (memory_cases + location_cases)")
     sp_demo.add_argument("--memory-case", default="sedentary_isolation")
@@ -1392,13 +1710,28 @@ def main():
 
     if args.command == "skill":
         run_skill(args.input_file, offline_only=args.offline_only)
+    elif args.command == "live":
+        run_live(args.user_id, offline_only=args.offline_only)
+    elif args.command == "users":
+        users = fetch_user_list()
+        if not users:
+            print("No users found or API unreachable.")
+        else:
+            print(f"\n{'ID':<30} {'Name':<15} {'Phone':<15} {'Created'}")
+            print("-" * 80)
+            for u in users:
+                print(f"{u.get('id', '?'):<30} {u.get('name') or '-':<15} {u.get('phone') or '-':<15} {(u.get('createAt') or '')[:10]}")
+            print(f"\nTotal: {len(users)} users")
+            print("To run with a user: python demo_runner.py live <user_id>")
     elif args.command == "demo":
         run_demo(args.memory_case, args.location_case, args.user_input, offline_only=args.offline_only)
     else:
         parser.print_help()
         print("\nQuick start:")
-        print("  python demo_runner.py skill mock/skill_input_sample.json")
-        print("  python demo_runner.py demo --offline-only")
+        print("  python demo_runner.py users                              # list all users")
+        print("  python demo_runner.py live <user_id>                     # real data from API")
+        print("  python demo_runner.py skill mock/skill_input_sample.json # mock data")
+        print("  python demo_runner.py demo --offline-only                # legacy demo")
 
 
 if __name__ == "__main__":

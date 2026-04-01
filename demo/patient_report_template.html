@@ -49,7 +49,27 @@
   <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">{{VITALS_HTML}}</div>
 </div>
 
-<!-- ===== SECTION 2: NEARBY MAP ===== -->
+<!-- ===== SECTION 2: AI RECOMMENDATIONS ===== -->
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+  <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+    <span class="text-lg">🩺</span>
+    <h2 class="text-sm font-bold text-slate-800">健康建议</h2>
+  </div>
+  <!-- risk tags -->
+  <div class="mb-4">
+    <div class="text-[11px] text-slate-400 uppercase tracking-wide font-medium mb-2">风险提示</div>
+    <div class="flex flex-wrap gap-2">{{RISK_TAGS_HTML}}</div>
+  </div>
+  <!-- recommendations -->
+  <div class="space-y-2">{{RECOMMENDATIONS_HTML}}</div>
+  <!-- reasoning (collapsible) -->
+  {{REASONING_HTML}}
+</div>
+
+<!-- ===== SECTION 2.5: ADHERENCE ===== -->
+{{ADHERENCE_HTML}}
+
+<!-- ===== SECTION 3: NEARBY MAP ===== -->
 <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
   <div class="p-5 pb-3">
     <div class="flex items-center gap-2 mb-3 pb-3 border-b border-slate-100">
