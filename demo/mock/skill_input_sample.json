@@ -1,0 +1,59 @@
+{
+  "meta": {
+    "user_id": "example_user_001",
+    "session_id": "session_20260330_001",
+    "intent": "medical_dialog",
+    "lang": "zh",
+    "current_time": "2026-03-30T09:30:00+08:00"
+  },
+  "memory": {
+    "patient_long_term_profile": "患者，76岁，男性。既往有高血压、2型糖尿病、高脂血症。长期服药（氨氯地平、二甲双胍、阿托伐他汀），长期生命体征基线相对稳定。",
+    "recent_health_dynamics": "近2周内总体依从性尚可，但活动量下降。近期多次提到按时服药、饮食较清淡，无明确急性恶化证据。"
+  },
+  "signals": {
+    "start_ts": "2026-03-23T10:08:03+08:00",
+    "end_ts": "2026-03-23T11:08:03+08:00",
+    "summary_text": "近1小时信号显示：心率轻度波动，步数偏低，未见明确高危急性异常。",
+    "anomalies": [
+      "心率轻度波动",
+      "活动量偏低"
+    ]
+  },
+  "location": {
+    "current": {
+      "lat": 39.9042,
+      "lon": 116.4074,
+      "record_at": "2026-03-30T09:20:00+08:00"
+    },
+    "records": [
+      {
+        "latitude": 39.9042,
+        "longitude": 116.4074,
+        "recordAt": "2026-03-30T09:20:00+08:00",
+        "source": "APP",
+        "type": "gps"
+      }
+    ]
+  },
+  "adherence_analysis": {
+    "statuses": ["按时服药"],
+    "preferences": ["偏好清淡饮食"],
+    "interventions": [],
+    "suggestions": ["建议增加户外活动"]
+  },
+  "outlier_analysis": {
+    "symptoms": [],
+    "triage": null,
+    "patient_suggestions": [],
+    "doctor_suggestions": []
+  },
+  "latest_health": {
+    "blood_pressure": "138/82",
+    "heart_rate": 78,
+    "blood_oxygen": 97,
+    "blood_glucose": 7.2,
+    "steps": 1200
+  },
+  "latest_user_message": "我最近几天都没怎么出门，感觉有点累。",
+  "recent_dialog_summary": "患者近日反映活动量减少、略感疲倦，但未提及急性症状。"
+}

@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 健康助手</title>
+    <script type="text/javascript" src="https://api.map.baidu.com/api?v=3.0&ak=6zXfgKZZiCdrL3MZBH7DGpjemq5IRxRC"></script>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0; padding: 0;
+            background: #f0f4f8;
+            color: #333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* AI 消息卡片 */
+        .ai-card {
+            margin: 14px 14px 0;
+            background: #fff;
+            border-radius: 16px;
+            padding: 16px 18px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+            display: flex;
+            gap: 12px;
+            align-items: flex-start;
+            flex-shrink: 0;
+        }
+        .ai-avatar {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #43a047, #66bb6a);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2em;
+            flex-shrink: 0;
+        }
+        .ai-bubble {
+            background: #f1f8f1;
+            border-radius: 0 12px 12px 12px;
+            padding: 10px 14px;
+            font-size: 0.9em;
+            line-height: 1.6;
+            color: #444;
+            flex: 1;
+            transition: opacity 0.3s;
+        }
+        .ai-name { font-size: 0.75em; color: #888; margin-bottom: 4px; }
+
+        /* 地图容器 */
+        .map-wrap {
+            margin: 12px 14px 0;
+            border-radius: 16px;
+            overflow: hidden;
+            height: 30vh;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            flex-shrink: 0;
+            position: relative;
+        }
+        #map { width: 100%; height: 100%; }
+
+        /* 定位按钮 */
+        #locate-btn {
+            position: absolute;
+            bottom: 12px;
+            right: 12px;
+            z-index: 999;
+            width: 38px; height: 38px;
+            border-radius: 50%;
+            border: none;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            cursor: pointer;
+            font-size: 1.1em;
+            display: flex; align-items: center; justify-content: center;
+            transition: transform 0.15s;
+        }
+        #locate-btn:active { transform: scale(0.92); }
+
+        /* Toggle */
+        .toggle-bar {
+            display: flex;
+            margin: 12px 14px 0;
+            background: #fff;
+            border-radius: 12px;
+            padding: 4px;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+            flex-shrink: 0;
+        }
+        .toggle-btn {
+            flex: 1;
+            padding: 9px 0;
+            border: none;
+            background: transparent;
+            border-radius: 9px;
+            font-size: 0.9em;
+            font-weight: 600;
+            color: #999;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+        .toggle-btn.active {
+            background: linear-gradient(135deg, #42a5f5, #1e88e5);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(30,136,229,0.3);
+        }
+        .toggle-btn.active.park {
+            background: linear-gradient(135deg, #66bb6a, #43a047);
+            box-shadow: 0 2px 8px rgba(67,160,71,0.3);
+        }
+
+        /* 列表 */
+        .list-wrap {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px 14px 14px;
+        }
+        .list-status {
+            text-align: center;
+            color: #bbb;
+            padding: 24px;
+            font-size: 0.88em;
+        }
+        .place-card {
+            background: #fff;
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s;
+            border: 2px solid transparent;
+        }
+        .place-card:active { transform: scale(0.98); }
+        .place-card.focused {
+            border-color: #1e88e5;
+            box-shadow: 0 2px 12px rgba(30,136,229,0.18);
+        }
+        .place-card.focused.park {
+            border-color: #43a047;
+            box-shadow: 0 2px 12px rgba(67,160,71,0.18);
+        }
+        .place-icon {
+            width: 38px; height: 38px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.1em;
+            flex-shrink: 0;
+        }
+        .place-icon.hospital { background: #e3f2fd; }
+        .place-icon.park { background: #e8f5e9; }
+        .place-info { flex: 1; min-width: 0; }
+        .place-info h4 {
+            margin: 0 0 3px;
+            font-size: 0.95em;
+            color: #222;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .place-info p {
+            margin: 0;
+            font-size: 0.78em;
+            color: #999;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .dist-badge {
+            font-size: 0.78em;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .dist-badge.hospital { background: #e3f2fd; color: #1565c0; }
+        .dist-badge.park { background: #e8f5e9; color: #2e7d32; }
+
+        /* 导航按钮 */
+        .nav-btn {
+            flex-shrink: 0;
+            margin-left: 8px;
+            width: 34px; height: 34px;
+            border-radius: 50%;
+            border: none;
+            background: #1e88e5;
+            color: #fff;
+            font-size: 1em;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 6px rgba(30,136,229,0.35);
+            transition: transform 0.15s, background 0.2s;
+        }
+        .nav-btn:active { transform: scale(0.9); }
+        .nav-btn.park { background: #43a047; box-shadow: 0 2px 6px rgba(67,160,71,0.35); }
+
+        /* 用户位置蓝点动画 */
+        @keyframes pulse {
+            0%   { transform: scale(1); opacity: 1; }
+            100% { transform: scale(2.5); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="ai-card">
+        <div class="ai-avatar">👨‍⚕️</div>
+        <div style="flex:1;min-width:0;">
+            <div class="ai-name">私人专属医生 小林</div>
+            <div class="ai-bubble" id="ai-text">正在获取您的位置…</div>
+        </div>
+    </div>
+
+    <div class="map-wrap">
+        <div id="map"></div>
+        <button id="locate-btn" title="回到我的位置">📍</button>
+    </div>
+
+    <div class="toggle-bar">
+        <button class="toggle-btn active" id="btn-hospital" onclick="switchMode('hospital')">🏥 附近医院</button>
+        <button class="toggle-btn" id="btn-park" onclick="switchMode('park')">🌳 附近公园</button>
+    </div>
+
+    <div class="list-wrap">
+        <div id="cards-container"><div class="list-status">定位中，请稍候…</div></div>
+    </div>
+</div>
+
+<script>
+    var map = new BMap.Map("map");
+    map.enableScrollWheelZoom(true);
+
+    var userPoint = null;
+    var currentMode = 'hospital';
+    var currentMarkers = [];
+    var currentCards = [];
+    var currentRoute = null;
+    var userOverlays = [];   // 用户位置相关的所有 overlay
+
+    var AI_TEXT = {
+        hospital: '王叔，您好！我已为您查询了附近的医疗网点，有任何不适请及时就医。',
+        park: '感觉您近日没怎么出门，您想不想适当出去走走呢？这里是一些推荐给您的附近公园：'
+    };
+
+    // 定位按钮
+    document.getElementById('locate-btn').addEventListener('click', function() {
+        if (userPoint) {
+            map.panTo(userPoint);
+            map.setZoom(15);
+        }
+    });
+
+    // 绘制用户位置（自定义蓝点图标 + 标签）
+    var USER_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28">'
+        + '<circle cx="14" cy="14" r="13" fill="#4285f4" fill-opacity="0.2" stroke="#4285f4" stroke-width="1"/>'
+        + '<circle cx="14" cy="14" r="7" fill="#4285f4" stroke="#fff" stroke-width="2.5"/>'
+        + '</svg>';
+    var USER_ICON = new BMap.Icon(
+        'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(USER_ICON_SVG),
+        new BMap.Size(28, 28),
+        { anchor: new BMap.Size(14, 14) }
+    );
+
+    function addUserOverlays() {
+        userOverlays.forEach(function(o) { map.removeOverlay(o); });
+        userOverlays = [];
+
+        var marker = new BMap.Marker(userPoint, { icon: USER_ICON });
+        map.addOverlay(marker);
+        userOverlays.push(marker);
+
+        var label = new BMap.Label('您在这里', {
+            position: userPoint,
+            offset: new BMap.Size(16, -8)
+        });
+        label.setStyle({
+            background: '#4285f4', color: '#fff', border: 'none',
+            borderRadius: '6px', padding: '2px 8px',
+            fontSize: '12px', fontWeight: '600',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.25)', whiteSpace: 'nowrap'
+        });
+        map.addOverlay(label);
+        userOverlays.push(label);
+    }
+
+    // 清除路线
+    function clearRoute() {
+        if (currentRoute) {
+            currentRoute.clearResults();
+            currentRoute = null;
+        }
+    }
+
+    // 清除搜索结果 marker
+    function clearResultMarkers() {
+        clearRoute();
+        currentMarkers.forEach(function(m) { map.removeOverlay(m); });
+        currentMarkers = [];
+        currentCards = [];
+    }
+
+    // 定位
+    var geolocation = new BMap.Geolocation();
+    geolocation.getCurrentPosition(function(r) {
+        if (this.getStatus() !== BMAP_STATUS_SUCCESS) {
+            document.getElementById('cards-container').innerHTML = '<div class="list-status">定位失败，请允许浏览器获取位置权限</div>';
+            document.getElementById('ai-text').textContent = '获取位置失败，无法为您推荐附近地点。';
+            return;
+        }
+        userPoint = r.point;
+        map.centerAndZoom(userPoint, 15);
+        addUserOverlays();
+        doSearch('hospital');
+    });
+
+    function switchMode(mode) {
+        if (mode === currentMode) return;
+        currentMode = mode;
+        document.getElementById('btn-hospital').className = 'toggle-btn' + (mode === 'hospital' ? ' active' : '');
+        document.getElementById('btn-park').className = 'toggle-btn' + (mode === 'park' ? ' active park' : '');
+        clearResultMarkers();
+        document.getElementById('cards-container').innerHTML = '<div class="list-status">搜索中…</div>';
+        doSearch(mode);
+    }
+
+    function doSearch(mode) {
+        if (!userPoint) return;
+        document.getElementById('ai-text').textContent = AI_TEXT[mode];
+
+        var keyword = mode === 'hospital' ? '医院' : '公园';
+        var local = new BMap.LocalSearch(map, {
+            renderOptions: { autoViewport: false },   // 不让 SDK 自己画
+            onSearchComplete: function(results) {
+                clearResultMarkers();
+                var container = document.getElementById('cards-container');
+                container.innerHTML = '';
+
+                if (!results || local.getStatus() !== BMAP_STATUS_SUCCESS || results.getCurrentNumPois() === 0) {
+                    container.innerHTML = '<div class="list-status">附近暂无相关地点</div>';
+                    return;
+                }
+
+                var count = results.getCurrentNumPois();
+                for (var i = 0; i < count; i++) {
+                    (function(idx) {
+                        var poi = results.getPoi(idx);
+                        var dist = map.getDistance(userPoint, poi.point);
+                        var distText = dist >= 1000
+                            ? (dist / 1000).toFixed(1) + ' km'
+                            : Math.round(dist) + ' m';
+
+                        // Marker
+                        var marker = new BMap.Marker(poi.point);
+                        map.addOverlay(marker);
+                        currentMarkers.push(marker);
+                        marker.addEventListener('click', function() { focusCard(idx, poi); });
+
+                        // 卡片
+                        var card = document.createElement('div');
+                        card.className = 'place-card';
+                        card.innerHTML = `
+                            <div class="place-icon ${mode}">${mode === 'hospital' ? '🏥' : '🌳'}</div>
+                            <div class="place-info">
+                                <h4>${poi.title}</h4>
+                                <p>${poi.address || '暂无地址信息'}</p>
+                            </div>
+                            <div class="dist-badge ${mode}">${distText}</div>
+                            <button class="nav-btn ${mode}" title="导航前往">➤</button>
+                        `;
+                        // 点卡片主体 → 聚焦地图；点导航按钮 → 唤起导航
+                        card.addEventListener('click', function(e) {
+                            if (e.target.classList.contains('nav-btn')) return;
+                            focusCard(idx, poi);
+                        });
+                        card.querySelector('.nav-btn').addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            navigateTo(poi);
+                        });
+                        container.appendChild(card);
+                        currentCards.push(card);
+                    })(i);
+                }
+            }
+        });
+        local.searchNearby(keyword, userPoint, 4000);
+    }
+
+    function focusCard(idx, poi) {
+        // 高亮卡片
+        currentCards.forEach(function(c) { c.classList.remove('focused', 'park'); });
+        currentCards[idx].classList.add('focused');
+        if (currentMode === 'park') currentCards[idx].classList.add('park');
+        currentCards[idx].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+        // 地图聚焦
+        map.panTo(poi.point);
+        currentMarkers[idx].openInfoWindow(
+            new BMap.InfoWindow(`<b>${poi.title}</b><br><span style="color:#888;font-size:12px;">${poi.address || ''}</span>`)
+        );
+
+        // 清除旧路线，绘制新的步行路线
+        clearRoute();
+        var routeColor = currentMode === 'hospital' ? '#1e88e5' : '#43a047';
+        var walking = new BMap.WalkingRoute(map, {
+            renderOptions: { map: map, autoViewport: false },
+            onSearchComplete: function(results) {
+                if (walking.getStatus() !== BMAP_STATUS_SUCCESS) return;
+                // 自定义路线颜色
+                var plan = results.getPlan(0);
+                for (var s = 0; s < plan.getNumRoutes(); s++) {
+                    var route = plan.getRoute(s);
+                    var path = route.getPolyline();
+                    if (path) {
+                        path.setStrokeColor(routeColor);
+                        path.setStrokeWeight(5);
+                        path.setStrokeOpacity(0.85);
+                    }
+                }
+                // 把用户蓝点置顶，不被路线遮住
+                addUserOverlays();
+            }
+        });
+        walking.search(userPoint, poi.point);
+        currentRoute = walking;
+    }
+
+    function navigateTo(poi) {
+        var destLat = poi.point.lat;
+        var destLng = poi.point.lng;
+        var destName = encodeURIComponent(poi.title);
+        var srcLat = userPoint.lat;
+        var srcLng = userPoint.lng;
+
+        var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+        // 百度地图 App URL Scheme：不传 origin，让 App 用实时 GPS
+        var appUrl = 'baidumap://map/direction'
+            + '?destination=latlng:' + destLat + ',' + destLng + '|name:' + destName
+            + '&mode=walking&coord_type=bd09ll&src=webapp';
+
+        // 网页版降级：用 marker API，用户点击"到这里"即可导航
+        var webUrl = 'https://api.map.baidu.com/marker'
+            + '?location=' + destLat + ',' + destLng
+            + '&title=' + destName
+            + '&output=html&coord_type=bd09ll&src=webapp';
+
+        if (isMobile) {
+            // 先尝试唤起 App，2s 后若仍在页面则跳网页版
+            window.location.href = appUrl;
+            setTimeout(function() {
+                window.location.href = webUrl;
+            }, 2000);
+        } else {
+            window.open(webUrl, '_blank');
+        }
+    }
+</script>
+</body>
+</html>

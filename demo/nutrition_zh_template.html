@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>个性化营养指导 — {{PATIENT_NAME}}</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<script>
+tailwind.config = { theme: { extend: { fontFamily: { sans: ['Inter','Noto Sans SC','sans-serif'] } } } }
+</script>
+<style>
+  .tab-btn.active { background: #4f46e5; color: #fff; box-shadow: 0 2px 8px rgba(79,70,229,0.3); }
+  .meal-section { display: none; }
+  .meal-section.active { display: block; animation: fadeUp .3s ease; }
+  @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .food-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+  .condition-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+</style>
+</head>
+<body class="bg-slate-50/50 text-slate-800 font-sans">
+
+<!-- ===== HEADER ===== -->
+<header class="bg-gradient-to-r from-emerald-600 to-teal-600 text-white px-6 py-6">
+  <div class="max-w-4xl mx-auto">
+    <div class="flex items-center gap-3 mb-2">
+      <span class="text-3xl">🍎</span>
+      <h1 class="text-xl font-bold">个性化营养指导</h1>
+    </div>
+    <div class="flex items-center gap-3 mt-3 flex-wrap">
+      <div class="bg-white/20 rounded-full px-4 py-1.5 text-sm font-medium flex items-center gap-2">
+        <span>👤</span> {{PATIENT_NAME}}
+      </div>
+      {{CONDITION_BADGES}}
+    </div>
+    <p class="text-emerald-100 text-sm mt-3 leading-relaxed">{{PROFILE_SUMMARY}}</p>
+  </div>
+</header>
+
+<div class="max-w-4xl mx-auto px-4 py-5 space-y-4">
+
+  <!-- ===== DISEASE-DIET TABLE ===== -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+      <span class="text-lg">📋</span>
+      <h2 class="text-sm font-bold text-slate-800">疾病与饮食关联</h2>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="bg-slate-50">
+            <th class="text-left px-4 py-3 font-semibold text-slate-700 rounded-tl-lg">疾病</th>
+            <th class="text-left px-4 py-3 font-semibold text-slate-700">饮食原则</th>
+            <th class="text-left px-4 py-3 font-semibold text-emerald-700">推荐</th>
+            <th class="text-left px-4 py-3 font-semibold text-rose-700 rounded-tr-lg">避免</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          {{DIET_TABLE_ROWS}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===== WEEKLY MEAL PLAN ===== -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+      <span class="text-lg">📅</span>
+      <h2 class="text-sm font-bold text-slate-800">一周饮食计划</h2>
+      <span class="ml-auto text-xs text-slate-400">点击每天查看详情</span>
+    </div>
+
+    <!-- Day tabs -->
+    <div class="flex gap-1.5 mb-4 overflow-x-auto pb-1" id="day-tabs">
+      <button class="tab-btn active flex-shrink-0 px-4 py-2 rounded-lg text-xs font-semibold transition-all" onclick="switchDay(0)">周一</button>
+      <button class="tab-btn flex-shrink-0 px-4 py-2 rounded-lg text-xs font-semibold transition-all text-slate-500 hover:bg-slate-100" onclick="switchDay(1)">周二</button>
+      <button class="tab-btn flex-shrink-0 px-4 py-2 rounded-lg text-xs font-semibold transition-all text-slate-500 hover:bg-slate-100" onclick="switchDay(2)">周三</button>
+      <button class="tab-btn flex-shrink-0 px-4 py-2 rounded-lg text-xs font-semibold transition-all text-slate-500 hover:bg-slate-100" onclick="switchDay(3)">周四</button>
+      <button class="tab-btn flex-shrink-0 px-4 py-2 rounded-lg text-xs font-semibold transition-all text-slate-500 hover:bg-slate-100" onclick="switchDay(4)">周五</button>
+      <button class="tab-btn flex-shrink-0 px-4 py-2 rounded-lg text-xs font-semibold transition-all text-slate-500 hover:bg-slate-100" onclick="switchDay(5)">周六</button>
+      <button class="tab-btn flex-shrink-0 px-4 py-2 rounded-lg text-xs font-semibold transition-all text-slate-500 hover:bg-slate-100" onclick="switchDay(6)">周日</button>
+    </div>
+
+    <!-- Meal content (rendered by JS) -->
+    <div id="meal-content"></div>
+  </div>
+
+  <!-- ===== GENERAL TIPS ===== -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+      <span class="text-lg">💡</span>
+      <h2 class="text-sm font-bold text-slate-800">饮食小贴士</h2>
+    </div>
+    <div class="grid sm:grid-cols-2 gap-3">
+      {{TIPS_HTML}}
+    </div>
+  </div>
+
+  <!-- ===== GUARDRAIL ===== -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+      <span class="text-lg">⚠️</span>
+      <h2 class="text-sm font-bold text-slate-800">安全提醒</h2>
+    </div>
+    <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-900 leading-relaxed">
+      {{GUARDRAIL_TEXT}}
+    </div>
+  </div>
+
+</div>
+
+<footer class="text-center py-6 text-xs text-slate-400">
+  Solo Elderly Health Agent · 个性化营养指导 · 仅供参考，不构成医疗诊断
+</footer>
+
+<!-- ===== MEAL DATA + RENDERING ===== -->
+<script>
+var MEAL_DATA = {{MEAL_DATA_JSON}};
+
+var MEAL_ICONS = { breakfast: '🌅', lunch: '☀️', dinner: '🌙' };
+var MEAL_LABELS = { breakfast: '早餐', lunch: '午餐', dinner: '晚餐' };
+var MEAL_COLORS = {
+  breakfast: { bg: 'bg-amber-50', border: 'border-amber-200', accent: 'text-amber-700' },
+  lunch:     { bg: 'bg-sky-50',   border: 'border-sky-200',   accent: 'text-sky-700' },
+  dinner:    { bg: 'bg-violet-50', border: 'border-violet-200', accent: 'text-violet-700' }
+};
+
+var CONDITION_COLORS = {
+  '高血压':    'bg-rose-100 text-rose-700',
+  '糖尿病':    'bg-amber-100 text-amber-700',
+  '2型糖尿病': 'bg-amber-100 text-amber-700',
+  '高脂血症':   'bg-orange-100 text-orange-700',
+  '化疗':      'bg-purple-100 text-purple-700',
+  '活动量低':   'bg-blue-100 text-blue-700',
+  '食欲不振':   'bg-yellow-100 text-yellow-700'
+};
+
+function getConditionClass(condition) {
+  for (var key in CONDITION_COLORS) {
+    if (condition.indexOf(key) !== -1) return CONDITION_COLORS[key];
+  }
+  return 'bg-slate-100 text-slate-600';
+}
+
+function renderDay(dayIdx) {
+  var day = MEAL_DATA[dayIdx];
+  if (!day) return '<div class="text-center text-slate-400 py-8">暂无数据</div>';
+
+  var html = '';
+  ['breakfast', 'lunch', 'dinner'].forEach(function(mealKey) {
+    var meal = day[mealKey];
+    if (!meal || !meal.length) return;
+
+    var colors = MEAL_COLORS[mealKey];
+    html += '<div class="mb-4">';
+    html += '<div class="flex items-center gap-2 mb-2"><span class="text-lg">' + MEAL_ICONS[mealKey] + '</span>';
+    html += '<h3 class="text-sm font-bold ' + colors.accent + '">' + MEAL_LABELS[mealKey] + '</h3></div>';
+    html += '<div class="grid sm:grid-cols-2 gap-2.5">';
+
+    meal.forEach(function(item) {
+      var condClass = getConditionClass(item.condition || '');
+      html += '<div class="food-card ' + colors.bg + ' border ' + colors.border + ' rounded-xl p-3.5 transition-all cursor-default">';
+      html += '<div class="flex items-start gap-2.5">';
+      html += '<div class="text-2xl flex-shrink-0 mt-0.5">' + (item.icon || '🍽️') + '</div>';
+      html += '<div class="flex-1 min-w-0">';
+      html += '<div class="font-semibold text-slate-800 text-sm">' + item.name + '</div>';
+      if (item.condition) {
+        html += '<span class="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-medium ' + condClass + '">' + item.condition + '</span>';
+      }
+      html += '<div class="text-xs text-slate-600 mt-1.5 leading-relaxed">' + item.benefit + '</div>';
+      html += '</div></div></div>';
+    });
+
+    html += '</div></div>';
+  });
+
+  return html;
+}
+
+function switchDay(idx) {
+  var tabs = document.querySelectorAll('#day-tabs .tab-btn');
+  tabs.forEach(function(t, i) {
+    if (i === idx) {
+      t.className = 'tab-btn active flex-shrink-0 px-4 py-2 rounded-lg text-xs font-semibold transition-all';
+    } else {
+      t.className = 'tab-btn flex-shrink-0 px-4 py-2 rounded-lg text-xs font-semibold transition-all text-slate-500 hover:bg-slate-100';
+    }
+  });
+  var container = document.getElementById('meal-content');
+  container.innerHTML = renderDay(idx);
+  container.querySelector('.mb-4') && container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+switchDay(0);
+</script>
+</body>
+</html>

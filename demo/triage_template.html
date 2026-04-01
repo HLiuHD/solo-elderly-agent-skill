@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>分诊审核 - MediAssist</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script type="text/javascript" src="https://api.map.baidu.com/api?v=3.0&ak=6zXfgKZZiCdrL3MZBH7DGpjemq5IRxRC"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: { sans: ['Inter', 'Noto Sans SC', 'sans-serif'] }
+    }
+  }
+}
+</script>
+<style>
+  .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+  .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+  .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
+  @keyframes pulse-dot { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(2.5);opacity:0} }
+  .place-card-active { border-color: #4f46e5 !important; box-shadow: 0 0 0 2px rgba(79,70,229,0.2); }
+  .place-card-active.park-mode { border-color: #059669 !important; box-shadow: 0 0 0 2px rgba(5,150,105,0.2); }
+</style>
+</head>
+<body class="bg-slate-50/50 text-slate-800 font-sans">
+
+<!-- ========== HEADER ========== -->
+<header class="bg-white border-b border-slate-200 px-6 h-16 flex items-center justify-between sticky top-0 z-50 shadow-sm">
+  <div class="flex items-center gap-3">
+    <span class="text-2xl">🏥</span>
+    <h1 class="text-lg font-bold text-indigo-600">分诊审核</h1>
+    <span class="text-xs text-slate-400 hidden sm:inline">MediAssist</span>
+  </div>
+  <div class="flex items-center gap-4">
+    <div class="status-badge {{STATUS_TW_CLASS}} px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1.5">
+      <span>{{STATUS_ICON}}</span> {{STATUS_TEXT}}
+    </div>
+    <div class="text-xs text-slate-500">{{CURRENT_TIME}}</div>
+  </div>
+</header>
+
+<div class="max-w-5xl mx-auto px-4 py-5 space-y-4">
+
+  <!-- ========== PATIENT PROFILE ========== -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+      <span class="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 font-bold text-sm">患</span>
+      <h2 class="text-sm font-bold text-slate-800">患者档案</h2>
+      <span class="ml-auto text-xs text-slate-400">ID: {{USER_ID}}</span>
+    </div>
+    <div class="space-y-3">
+      <div>
+        <div class="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">长期健康档案</div>
+        <div class="text-sm text-slate-700 bg-slate-50 rounded-lg p-3 border-l-3 border-l-indigo-500" style="border-left:3px solid #6366f1">{{LONG_TERM_PROFILE}}</div>
+      </div>
+      <div>
+        <div class="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">近期健康动态</div>
+        <div class="text-sm text-slate-700 bg-slate-50 rounded-lg p-3 border-l-3 border-l-emerald-500" style="border-left:3px solid #10b981">{{RECENT_DYNAMICS}}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== SIGNAL ANALYSIS ========== -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+      <span class="text-lg">📡</span>
+      <h2 class="text-sm font-bold text-slate-800">信号检测分析</h2>
+    </div>
+    <div class="space-y-3">
+      <div>
+        <div class="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">监测窗口</div>
+        <div class="text-sm text-slate-700 bg-violet-50 rounded-lg p-3" style="border-left:3px solid #7c3aed">{{SIGNAL_WINDOW}}</div>
+      </div>
+      <div>
+        <div class="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">异常标签</div>
+        <div class="flex flex-wrap gap-2 mt-1">{{ANOMALY_TAGS}}</div>
+      </div>
+      <div>
+        <div class="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">信号总结</div>
+        <div class="text-sm text-slate-700 bg-violet-50 rounded-lg p-3" style="border-left:3px solid #7c3aed">{{SIGNAL_SUMMARY}}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== HEALTH VITALS ========== -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+      <span class="text-lg">💓</span>
+      <h2 class="text-sm font-bold text-slate-800">最新健康指标</h2>
+    </div>
+    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+      {{VITALS_HTML}}
+    </div>
+  </div>
+
+  <!-- ========== RISK ASSESSMENT (TRIAGE) ========== -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+      <span class="text-lg">⚡</span>
+      <h2 class="text-sm font-bold text-slate-800">风险评估 (Triage)</h2>
+    </div>
+    <div class="{{TRIAGE_TW_CLASS}} rounded-lg px-4 py-2.5 inline-flex items-center gap-2 text-sm font-semibold mb-4" style="border-left:4px solid">
+      {{TRIAGE_ICON}} 分诊等级：{{TRIAGE_TEXT}}
+    </div>
+    <div>
+      <div class="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">风险标签</div>
+      <div class="flex flex-wrap gap-2 mt-1">{{RISK_TAGS}}</div>
+    </div>
+    {{REASONING_HTML}}
+  </div>
+
+  <!-- ========== AI RECOMMENDATIONS ========== -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+      <span class="text-lg">💬</span>
+      <h2 class="text-sm font-bold text-slate-800">AI 临床建议</h2>
+    </div>
+    {{RECOMMENDATIONS_HTML}}
+  </div>
+
+  <!-- ========== NUTRITION ========== -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+      <span class="text-lg">🍎</span>
+      <h2 class="text-sm font-bold text-slate-800">营养建议</h2>
+    </div>
+    {{NUTRITION_HTML}}
+  </div>
+
+  <!-- ========== ADHERENCE ========== -->
+  {{ADHERENCE_CARD}}
+
+  <!-- ========== LOCATION + BAIDU MAP ========== -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+    <div class="p-5 pb-3">
+      <div class="flex items-center gap-2 mb-3 pb-3 border-b border-slate-100">
+        <span class="text-lg">📍</span>
+        <h2 class="text-sm font-bold text-slate-800">位置与周边推荐</h2>
+      </div>
+      <!-- AI doctor message -->
+      <div class="flex gap-3 items-start mb-3">
+        <div class="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white text-sm flex-shrink-0">👨‍⚕️</div>
+        <div class="flex-1 min-w-0">
+          <div class="text-[11px] text-slate-400 mb-0.5">AI 健康助手</div>
+          <div class="bg-emerald-50 rounded-tr-xl rounded-br-xl rounded-bl-xl px-3 py-2 text-sm text-slate-700 leading-relaxed" id="ai-map-text">{{AI_MAP_MESSAGE}}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Map -->
+    <div class="relative" style="height:260px">
+      <div id="baidu-map" style="width:100%;height:100%"></div>
+      <button id="locate-btn" title="回到患者位置" class="absolute bottom-3 right-3 z-10 w-9 h-9 rounded-full bg-white shadow-md flex items-center justify-center text-base hover:shadow-lg transition-shadow">📍</button>
+    </div>
+
+    <!-- Toggle bar -->
+    <div class="flex m-3 bg-slate-100 rounded-lg p-1 gap-1">
+      <button id="btn-hospital" onclick="switchMapMode('hospital')" class="flex-1 py-2 rounded-md text-xs font-semibold transition-all bg-indigo-600 text-white shadow-sm">🏥 附近医院</button>
+      <button id="btn-park" onclick="switchMapMode('park')" class="flex-1 py-2 rounded-md text-xs font-semibold transition-all text-slate-500 hover:text-slate-700">🌳 附近公园</button>
+    </div>
+
+    <!-- Place cards -->
+    <div class="px-3 pb-3 max-h-64 overflow-y-auto custom-scrollbar" id="map-cards-container">
+      <div class="text-center text-xs text-slate-400 py-6">搜索中…</div>
+    </div>
+  </div>
+
+  <!-- ========== SAFETY GUARDRAIL ========== -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+      <span class="text-lg">⚠️</span>
+      <h2 class="text-sm font-bold text-slate-800">安全提醒</h2>
+    </div>
+    <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-900 leading-relaxed">{{GUARDRAIL_TEXT}}</div>
+  </div>
+
+</div>
+
+<!-- Footer -->
+<footer class="text-center py-6 text-xs text-slate-400">
+  Solo Elderly Health Agent · MediAssist 分诊审核系统 · 仅供临床参考，不构成医疗诊断
+</footer>
+
+<!-- ========== BAIDU MAP SCRIPT ========== -->
+<script>
+(function() {
+    var PATIENT_LAT = {{PATIENT_LAT}};
+    var PATIENT_LON = {{PATIENT_LON}};
+
+    if (!PATIENT_LAT || !PATIENT_LON) {
+        document.getElementById('baidu-map').innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#94a3b8;font-size:14px;">暂无位置数据</div>';
+        document.getElementById('map-cards-container').innerHTML = '<div class="text-center text-xs text-slate-400 py-6">暂无位置数据</div>';
+        return;
+    }
+
+    var map = new BMap.Map("baidu-map");
+    map.enableScrollWheelZoom(true);
+
+    var patientPoint = new BMap.Point(PATIENT_LON, PATIENT_LAT);
+    map.centerAndZoom(patientPoint, 15);
+
+    var currentMode = 'hospital';
+    var currentMarkers = [];
+    var currentCards = [];
+    var currentRoute = null;
+    var userOverlays = [];
+
+    var AI_TEXT = {
+        hospital: '已为您查询患者附近的医疗网点，有任何不适请建议患者及时就医。',
+        park: '患者近日活动量偏低，以下是附近推荐的公园，可建议患者适当外出散步。'
+    };
+
+    var USER_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28">'
+        + '<circle cx="14" cy="14" r="13" fill="#4f46e5" fill-opacity="0.2" stroke="#4f46e5" stroke-width="1"/>'
+        + '<circle cx="14" cy="14" r="7" fill="#4f46e5" stroke="#fff" stroke-width="2.5"/>'
+        + '</svg>';
+    var USER_ICON = new BMap.Icon(
+        'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(USER_ICON_SVG),
+        new BMap.Size(28, 28),
+        { anchor: new BMap.Size(14, 14) }
+    );
+
+    function addPatientOverlays() {
+        userOverlays.forEach(function(o) { map.removeOverlay(o); });
+        userOverlays = [];
+        var marker = new BMap.Marker(patientPoint, { icon: USER_ICON });
+        map.addOverlay(marker);
+        userOverlays.push(marker);
+        var label = new BMap.Label('患者位置', {
+            position: patientPoint,
+            offset: new BMap.Size(16, -8)
+        });
+        label.setStyle({
+            background: '#4f46e5', color: '#fff', border: 'none',
+            borderRadius: '6px', padding: '2px 8px',
+            fontSize: '11px', fontWeight: '600',
+            boxShadow: '0 1px 4px rgba(0,0,0,0.25)', whiteSpace: 'nowrap'
+        });
+        map.addOverlay(label);
+        userOverlays.push(label);
+    }
+
+    addPatientOverlays();
+
+    document.getElementById('locate-btn').addEventListener('click', function() {
+        map.panTo(patientPoint);
+        map.setZoom(15);
+    });
+
+    function clearRoute() {
+        if (currentRoute) { currentRoute.clearResults(); currentRoute = null; }
+    }
+    function clearResultMarkers() {
+        clearRoute();
+        currentMarkers.forEach(function(m) { map.removeOverlay(m); });
+        currentMarkers = [];
+        currentCards = [];
+    }
+
+    window.switchMapMode = function(mode) {
+        if (mode === currentMode) return;
+        currentMode = mode;
+        var hospBtn = document.getElementById('btn-hospital');
+        var parkBtn = document.getElementById('btn-park');
+        if (mode === 'hospital') {
+            hospBtn.className = 'flex-1 py-2 rounded-md text-xs font-semibold transition-all bg-indigo-600 text-white shadow-sm';
+            parkBtn.className = 'flex-1 py-2 rounded-md text-xs font-semibold transition-all text-slate-500 hover:text-slate-700';
+        } else {
+            hospBtn.className = 'flex-1 py-2 rounded-md text-xs font-semibold transition-all text-slate-500 hover:text-slate-700';
+            parkBtn.className = 'flex-1 py-2 rounded-md text-xs font-semibold transition-all bg-emerald-600 text-white shadow-sm';
+        }
+        clearResultMarkers();
+        document.getElementById('map-cards-container').innerHTML = '<div class="text-center text-xs text-slate-400 py-6">搜索中…</div>';
+        doSearch(mode);
+    };
+
+    function doSearch(mode) {
+        document.getElementById('ai-map-text').textContent = AI_TEXT[mode];
+        var keyword = mode === 'hospital' ? '医院' : '公园';
+        var local = new BMap.LocalSearch(map, {
+            renderOptions: { autoViewport: false },
+            onSearchComplete: function(results) {
+                clearResultMarkers();
+                var container = document.getElementById('map-cards-container');
+                container.innerHTML = '';
+                if (!results || local.getStatus() !== BMAP_STATUS_SUCCESS || results.getCurrentNumPois() === 0) {
+                    container.innerHTML = '<div class="text-center text-xs text-slate-400 py-6">附近暂无相关地点</div>';
+                    return;
+                }
+                var count = results.getCurrentNumPois();
+                for (var i = 0; i < count; i++) {
+                    (function(idx) {
+                        var poi = results.getPoi(idx);
+                        var dist = map.getDistance(patientPoint, poi.point);
+                        var distText = dist >= 1000 ? (dist / 1000).toFixed(1) + ' km' : Math.round(dist) + ' m';
+
+                        var marker = new BMap.Marker(poi.point);
+                        map.addOverlay(marker);
+                        currentMarkers.push(marker);
+                        marker.addEventListener('click', function() { focusCard(idx, poi); });
+
+                        var iconBg = mode === 'hospital' ? 'bg-indigo-50' : 'bg-emerald-50';
+                        var iconEmoji = mode === 'hospital' ? '🏥' : '🌳';
+                        var distBg = mode === 'hospital' ? 'bg-indigo-50 text-indigo-700' : 'bg-emerald-50 text-emerald-700';
+                        var navBg = mode === 'hospital' ? 'bg-indigo-600 hover:bg-indigo-700' : 'bg-emerald-600 hover:bg-emerald-700';
+
+                        var card = document.createElement('div');
+                        card.className = 'flex items-center gap-3 p-3 mb-2 rounded-xl border-2 border-transparent bg-white hover:bg-slate-50 cursor-pointer transition-all';
+                        card.innerHTML =
+                            '<div class="w-9 h-9 rounded-lg ' + iconBg + ' flex items-center justify-center text-base flex-shrink-0">' + iconEmoji + '</div>'
+                            + '<div class="flex-1 min-w-0">'
+                            + '<div class="text-sm font-semibold text-slate-800 truncate">' + poi.title + '</div>'
+                            + '<div class="text-[11px] text-slate-400 truncate">' + (poi.address || '暂无地址') + '</div>'
+                            + '</div>'
+                            + '<div class="text-[11px] font-bold px-2.5 py-1 rounded-full ' + distBg + ' flex-shrink-0">' + distText + '</div>'
+                            + '<button class="nav-btn w-8 h-8 rounded-full ' + navBg + ' text-white flex items-center justify-center text-sm flex-shrink-0 shadow-sm transition-colors" title="导航前往">➤</button>';
+
+                        card.addEventListener('click', function(e) {
+                            if (e.target.classList.contains('nav-btn') || e.target.closest('.nav-btn')) return;
+                            focusCard(idx, poi);
+                        });
+                        card.querySelector('.nav-btn').addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            navigateTo(poi);
+                        });
+                        container.appendChild(card);
+                        currentCards.push(card);
+                    })(i);
+                }
+            }
+        });
+        local.searchNearby(keyword, patientPoint, 4000);
+    }
+
+    function focusCard(idx, poi) {
+        currentCards.forEach(function(c) { c.classList.remove('place-card-active', 'park-mode'); });
+        currentCards[idx].classList.add('place-card-active');
+        if (currentMode === 'park') currentCards[idx].classList.add('park-mode');
+        currentCards[idx].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        map.panTo(poi.point);
+        currentMarkers[idx].openInfoWindow(
+            new BMap.InfoWindow('<b>' + poi.title + '</b><br><span style="color:#64748b;font-size:12px;">' + (poi.address || '') + '</span>')
+        );
+        clearRoute();
+        var routeColor = currentMode === 'hospital' ? '#4f46e5' : '#059669';
+        var walking = new BMap.WalkingRoute(map, {
+            renderOptions: { map: map, autoViewport: false },
+            onSearchComplete: function(results) {
+                if (walking.getStatus() !== BMAP_STATUS_SUCCESS) return;
+                var plan = results.getPlan(0);
+                for (var s = 0; s < plan.getNumRoutes(); s++) {
+                    var route = plan.getRoute(s);
+                    var path = route.getPolyline();
+                    if (path) {
+                        path.setStrokeColor(routeColor);
+                        path.setStrokeWeight(5);
+                        path.setStrokeOpacity(0.85);
+                    }
+                }
+                addPatientOverlays();
+            }
+        });
+        walking.search(patientPoint, poi.point);
+        currentRoute = walking;
+    }
+
+    function navigateTo(poi) {
+        var destLat = poi.point.lat, destLng = poi.point.lng;
+        var destName = encodeURIComponent(poi.title);
+        var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        var appUrl = 'baidumap://map/direction?destination=latlng:' + destLat + ',' + destLng + '|name:' + destName + '&mode=walking&coord_type=bd09ll&src=webapp';
+        var webUrl = 'https://api.map.baidu.com/marker?location=' + destLat + ',' + destLng + '&title=' + destName + '&output=html&coord_type=bd09ll&src=webapp';
+        if (isMobile) {
+            window.location.href = appUrl;
+            setTimeout(function() { window.location.href = webUrl; }, 2000);
+        } else {
+            window.open(webUrl, '_blank');
+        }
+    }
+
+    doSearch('hospital');
+})();
+</script>
+
+</body>
+</html>

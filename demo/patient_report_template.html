@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>健康管家 — {{PATIENT_NAME}}</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script type="text/javascript" src="https://api.map.baidu.com/api?v=3.0&ak=6zXfgKZZiCdrL3MZBH7DGpjemq5IRxRC"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<script>tailwind.config={theme:{extend:{fontFamily:{sans:['Noto Sans SC','sans-serif']}}}}</script>
+<style>
+  .tab-btn.active{background:#4f46e5;color:#fff;box-shadow:0 2px 8px rgba(79,70,229,.3)}
+  .food-card:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,0,0,.08)}
+  .food-img{width:88px;height:88px;object-fit:cover;border-radius:12px;flex-shrink:0;background:#f1f5f9}
+  .food-img-fallback{width:88px;height:88px;border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:2.2rem}
+  .place-card-active{border-color:#4f46e5!important;box-shadow:0 0 0 2px rgba(79,70,229,.2)}
+  .place-card-active.park-mode{border-color:#059669!important;box-shadow:0 0 0 2px rgba(5,150,105,.2)}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  .fade-up{animation:fadeUp .3s ease}
+  .custom-scrollbar::-webkit-scrollbar{width:6px}
+  .custom-scrollbar::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:20px}
+</style>
+</head>
+<body class="bg-slate-50/50 text-slate-800 font-sans">
+
+<!-- ===== GREETING HEADER ===== -->
+<header class="bg-gradient-to-r from-emerald-600 to-teal-500 text-white px-6 py-6">
+  <div class="max-w-4xl mx-auto">
+    <div class="flex items-center gap-3">
+      <div class="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-2xl">👨‍⚕️</div>
+      <div>
+        <h1 class="text-lg font-bold">{{PATIENT_NAME}}，您好！</h1>
+        <p class="text-emerald-100 text-sm mt-0.5">这是您的专属健康报告 · {{CURRENT_TIME}}</p>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="max-w-4xl mx-auto px-4 py-5 space-y-4">
+
+<!-- ===== SECTION 1: HEALTH OVERVIEW ===== -->
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+  <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+    <span class="text-lg">💓</span>
+    <h2 class="text-sm font-bold text-slate-800">今日健康概览</h2>
+    <div class="ml-auto {{STATUS_TW_CLASS}} px-3 py-1 rounded-full text-xs font-semibold">{{STATUS_ICON}} {{STATUS_TEXT}}</div>
+  </div>
+  <p class="text-sm text-slate-600 leading-relaxed mb-4">{{AI_PATIENT_MESSAGE}}</p>
+  <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">{{VITALS_HTML}}</div>
+</div>
+
+<!-- ===== SECTION 2: NEARBY MAP ===== -->
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+  <div class="p-5 pb-3">
+    <div class="flex items-center gap-2 mb-3 pb-3 border-b border-slate-100">
+      <span class="text-lg">📍</span>
+      <h2 class="text-sm font-bold text-slate-800">附近推荐</h2>
+    </div>
+    <div class="flex gap-3 items-start mb-3">
+      <div class="w-9 h-9 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white text-sm flex-shrink-0">👨‍⚕️</div>
+      <div class="flex-1 min-w-0">
+        <div class="text-[11px] text-slate-400 mb-0.5">AI 健康助手</div>
+        <div class="bg-emerald-50 rounded-tr-xl rounded-br-xl rounded-bl-xl px-3 py-2 text-sm text-slate-700 leading-relaxed" id="ai-map-text">{{AI_MAP_MESSAGE}}</div>
+      </div>
+    </div>
+  </div>
+  <div class="relative" style="height:240px">
+    <div id="baidu-map" style="width:100%;height:100%"></div>
+    <button id="locate-btn" title="回到我的位置" class="absolute bottom-3 right-3 z-10 w-9 h-9 rounded-full bg-white shadow-md flex items-center justify-center text-base hover:shadow-lg transition-shadow">📍</button>
+  </div>
+  <div class="flex m-3 bg-slate-100 rounded-lg p-1 gap-1">
+    <button id="btn-hospital" onclick="switchMapMode('hospital')" class="flex-1 py-2 rounded-md text-xs font-semibold transition-all bg-indigo-600 text-white shadow-sm">🏥 附近医院</button>
+    <button id="btn-park" onclick="switchMapMode('park')" class="flex-1 py-2 rounded-md text-xs font-semibold transition-all text-slate-500 hover:text-slate-700">🌳 附近公园</button>
+  </div>
+  <div class="px-3 pb-3 max-h-52 overflow-y-auto custom-scrollbar" id="map-cards-container">
+    <div class="text-center text-xs text-slate-400 py-6">搜索中…</div>
+  </div>
+</div>
+
+<!-- ===== SECTION 3: DIET TABLE ===== -->
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+  <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+    <span class="text-lg">📋</span>
+    <h2 class="text-sm font-bold text-slate-800">{{PATIENT_NAME}}的饮食原则</h2>
+  </div>
+  <div class="flex flex-wrap gap-2 mb-4">{{CONDITION_BADGES}}</div>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead><tr class="bg-slate-50">
+        <th class="text-left px-4 py-2.5 font-semibold text-slate-700 rounded-tl-lg">疾病</th>
+        <th class="text-left px-4 py-2.5 font-semibold text-slate-700">饮食原则</th>
+        <th class="text-left px-4 py-2.5 font-semibold text-emerald-700">推荐食物</th>
+        <th class="text-left px-4 py-2.5 font-semibold text-rose-700 rounded-tr-lg">需要避免</th>
+      </tr></thead>
+      <tbody class="divide-y divide-slate-100">{{DIET_TABLE_ROWS}}</tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== SECTION 4: WEEKLY MEAL PLAN ===== -->
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+  <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+    <span class="text-lg">📅</span>
+    <h2 class="text-sm font-bold text-slate-800">一周饮食计划</h2>
+    <span class="ml-auto text-xs text-slate-400">每餐都为您的健康量身定制</span>
+  </div>
+  <div class="flex gap-1.5 mb-4 overflow-x-auto pb-1" id="day-tabs">
+    <button class="tab-btn active flex-shrink-0 px-4 py-2 rounded-lg text-xs font-semibold transition-all" onclick="switchDay(0)">周一</button>
+    <button class="tab-btn flex-shrink-0 px-4 py-2 rounded-lg text-xs font-semibold transition-all text-slate-500 hover:bg-slate-100" onclick="switchDay(1)">周二</button>
+    <button class="tab-btn flex-shrink-0 px-4 py-2 rounded-lg text-xs font-semibold transition-all text-slate-500 hover:bg-slate-100" onclick="switchDay(2)">周三</button>
+    <button class="tab-btn flex-shrink-0 px-4 py-2 rounded-lg text-xs font-semibold transition-all text-slate-500 hover:bg-slate-100" onclick="switchDay(3)">周四</button>
+    <button class="tab-btn flex-shrink-0 px-4 py-2 rounded-lg text-xs font-semibold transition-all text-slate-500 hover:bg-slate-100" onclick="switchDay(4)">周五</button>
+    <button class="tab-btn flex-shrink-0 px-4 py-2 rounded-lg text-xs font-semibold transition-all text-slate-500 hover:bg-slate-100" onclick="switchDay(5)">周六</button>
+    <button class="tab-btn flex-shrink-0 px-4 py-2 rounded-lg text-xs font-semibold transition-all text-slate-500 hover:bg-slate-100" onclick="switchDay(6)">周日</button>
+  </div>
+  <div id="meal-content"></div>
+</div>
+
+<!-- ===== SECTION 5: TIPS ===== -->
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+  <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+    <span class="text-lg">💡</span>
+    <h2 class="text-sm font-bold text-slate-800">饮食小贴士</h2>
+  </div>
+  <div class="grid sm:grid-cols-2 gap-3">{{TIPS_HTML}}</div>
+</div>
+
+<!-- ===== SECTION 6: GUARDRAIL ===== -->
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+  <div class="flex items-center gap-2 mb-3 pb-3 border-b border-slate-100">
+    <span class="text-lg">⚠️</span>
+    <h2 class="text-sm font-bold text-slate-800">温馨提醒</h2>
+  </div>
+  <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-900 leading-relaxed">{{GUARDRAIL_TEXT}}</div>
+</div>
+
+</div>
+
+<footer class="text-center py-6 text-xs text-slate-400">
+  AI 健康管家 · Solo Elderly Health Agent · 仅供参考，请遵医嘱
+</footer>
+
+<!-- ===== MEAL RENDERING ===== -->
+<script>
+var MEAL_DATA = {{MEAL_DATA_JSON}};
+var MEAL_ICONS={breakfast:'🌅',lunch:'☀️',dinner:'🌙'};
+var MEAL_LABELS={breakfast:'早餐',lunch:'午餐',dinner:'晚餐'};
+var MEAL_BG={breakfast:'bg-amber-50 border-amber-200',lunch:'bg-sky-50 border-sky-200',dinner:'bg-violet-50 border-violet-200'};
+var MEAL_ACCENT={breakfast:'text-amber-700',lunch:'text-sky-700',dinner:'text-violet-700'};
+var COND_CLS={'高血压':'bg-rose-100 text-rose-700','糖尿病':'bg-amber-100 text-amber-700','2型糖尿病':'bg-amber-100 text-amber-700','高脂血症':'bg-orange-100 text-orange-700','化疗':'bg-purple-100 text-purple-700'};
+
+function condCls(c){for(var k in COND_CLS)if(c.indexOf(k)!==-1)return COND_CLS[k];return'bg-slate-100 text-slate-600'}
+
+function renderDay(idx){
+  var day=MEAL_DATA[idx];if(!day)return'<div class="text-center text-slate-400 py-8">暂无数据</div>';
+  var h='';
+  ['breakfast','lunch','dinner'].forEach(function(mk){
+    var items=day[mk];if(!items||!items.length)return;
+    h+='<div class="mb-5 fade-up">';
+    h+='<div class="flex items-center gap-2 mb-3"><span class="text-lg">'+MEAL_ICONS[mk]+'</span><h3 class="text-sm font-bold '+MEAL_ACCENT[mk]+'">'+MEAL_LABELS[mk]+'</h3></div>';
+    h+='<div class="space-y-2.5">';
+    items.forEach(function(it){
+      var cc=condCls(it.condition||'');
+      h+='<div class="food-card flex gap-3 p-3 rounded-xl border '+MEAL_BG[mk]+' transition-all">';
+      // image
+      if(it.img){
+        h+='<img src="'+it.img+'" alt="'+it.name+'" class="food-img" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">';
+        h+='<div class="food-img-fallback '+MEAL_BG[mk].split(' ')[0]+'" style="display:none">'+it.icon+'</div>';
+      }else{
+        h+='<div class="food-img-fallback '+MEAL_BG[mk].split(' ')[0]+'">'+it.icon+'</div>';
+      }
+      h+='<div class="flex-1 min-w-0">';
+      h+='<div class="font-semibold text-slate-800 text-[15px]">'+it.name+'</div>';
+      if(it.condition) h+='<span class="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-medium '+cc+'">💊 '+it.condition+'</span>';
+      h+='<div class="text-xs text-slate-600 mt-1.5 leading-relaxed">'+it.benefit+'</div>';
+      h+='</div></div>';
+    });
+    h+='</div></div>';
+  });
+  return h;
+}
+
+function switchDay(idx){
+  var tabs=document.querySelectorAll('#day-tabs .tab-btn');
+  tabs.forEach(function(t,i){
+    t.className=i===idx
+      ?'tab-btn active flex-shrink-0 px-4 py-2 rounded-lg text-xs font-semibold transition-all'
+      :'tab-btn flex-shrink-0 px-4 py-2 rounded-lg text-xs font-semibold transition-all text-slate-500 hover:bg-slate-100';
+  });
+  document.getElementById('meal-content').innerHTML=renderDay(idx);
+}
+switchDay(0);
+</script>
+
+<!-- ===== BAIDU MAP ===== -->
+<script>
+(function(){
+  var LAT={{PATIENT_LAT}},LON={{PATIENT_LON}};
+  if(!LAT||!LON){document.getElementById('baidu-map').innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#94a3b8;font-size:14px">暂无位置数据</div>';document.getElementById('map-cards-container').innerHTML='<div class="text-center text-xs text-slate-400 py-6">暂无位置数据</div>';return}
+  var map=new BMap.Map("baidu-map");map.enableScrollWheelZoom(true);
+  var pt=new BMap.Point(LON,LAT);map.centerAndZoom(pt,15);
+  var mode='hospital',markers=[],cards=[],route=null,uOvs=[];
+  var AI_T={hospital:'已为您查询附近的医疗机构，有需要请及时就医。',park:'天气不错，附近有这些公园适合散步哦！'};
+  var USVG='<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28"><circle cx="14" cy="14" r="13" fill="#4f46e5" fill-opacity=".2" stroke="#4f46e5" stroke-width="1"/><circle cx="14" cy="14" r="7" fill="#4f46e5" stroke="#fff" stroke-width="2.5"/></svg>';
+  var UICON=new BMap.Icon('data:image/svg+xml;charset=utf-8,'+encodeURIComponent(USVG),new BMap.Size(28,28),{anchor:new BMap.Size(14,14)});
+  function addUO(){uOvs.forEach(function(o){map.removeOverlay(o)});uOvs=[];var m=new BMap.Marker(pt,{icon:UICON});map.addOverlay(m);uOvs.push(m);var l=new BMap.Label('我的位置',{position:pt,offset:new BMap.Size(16,-8)});l.setStyle({background:'#4f46e5',color:'#fff',border:'none',borderRadius:'6px',padding:'2px 8px',fontSize:'11px',fontWeight:'600',boxShadow:'0 1px 4px rgba(0,0,0,.25)',whiteSpace:'nowrap'});map.addOverlay(l);uOvs.push(l)}
+  addUO();
+  document.getElementById('locate-btn').onclick=function(){map.panTo(pt);map.setZoom(15)};
+  function clrR(){if(route){route.clearResults();route=null}}
+  function clrM(){clrR();markers.forEach(function(m){map.removeOverlay(m)});markers=[];cards=[]}
+  window.switchMapMode=function(m){if(m===mode)return;mode=m;var h=document.getElementById('btn-hospital'),p=document.getElementById('btn-park');if(m==='hospital'){h.className='flex-1 py-2 rounded-md text-xs font-semibold transition-all bg-indigo-600 text-white shadow-sm';p.className='flex-1 py-2 rounded-md text-xs font-semibold transition-all text-slate-500 hover:text-slate-700'}else{h.className='flex-1 py-2 rounded-md text-xs font-semibold transition-all text-slate-500 hover:text-slate-700';p.className='flex-1 py-2 rounded-md text-xs font-semibold transition-all bg-emerald-600 text-white shadow-sm'}clrM();document.getElementById('map-cards-container').innerHTML='<div class="text-center text-xs text-slate-400 py-6">搜索中…</div>';doS(m)};
+  function doS(m){document.getElementById('ai-map-text').textContent=AI_T[m];var kw=m==='hospital'?'医院':'公园';var lc=new BMap.LocalSearch(map,{renderOptions:{autoViewport:false},onSearchComplete:function(r){clrM();var c=document.getElementById('map-cards-container');c.innerHTML='';if(!r||lc.getStatus()!==BMAP_STATUS_SUCCESS||r.getCurrentNumPois()===0){c.innerHTML='<div class="text-center text-xs text-slate-400 py-6">附近暂无相关地点</div>';return}var n=r.getCurrentNumPois();for(var i=0;i<n;i++){(function(idx){var poi=r.getPoi(idx);var d=map.getDistance(pt,poi.point);var dt=d>=1000?(d/1000).toFixed(1)+' km':Math.round(d)+' m';var mk=new BMap.Marker(poi.point);map.addOverlay(mk);markers.push(mk);mk.addEventListener('click',function(){focC(idx,poi)});var ib=m==='hospital'?'bg-indigo-50':'bg-emerald-50';var ie=m==='hospital'?'🏥':'🌳';var db=m==='hospital'?'bg-indigo-50 text-indigo-700':'bg-emerald-50 text-emerald-700';var nb=m==='hospital'?'bg-indigo-600 hover:bg-indigo-700':'bg-emerald-600 hover:bg-emerald-700';var cd=document.createElement('div');cd.className='flex items-center gap-3 p-3 mb-2 rounded-xl border-2 border-transparent bg-white hover:bg-slate-50 cursor-pointer transition-all';cd.innerHTML='<div class="w-9 h-9 rounded-lg '+ib+' flex items-center justify-center text-base flex-shrink-0">'+ie+'</div><div class="flex-1 min-w-0"><div class="text-sm font-semibold text-slate-800 truncate">'+poi.title+'</div><div class="text-[11px] text-slate-400 truncate">'+(poi.address||'')+'</div></div><div class="text-[11px] font-bold px-2.5 py-1 rounded-full '+db+' flex-shrink-0">'+dt+'</div><button class="nav-btn w-8 h-8 rounded-full '+nb+' text-white flex items-center justify-center text-sm flex-shrink-0 shadow-sm">➤</button>';cd.addEventListener('click',function(e){if(e.target.classList.contains('nav-btn')||e.target.closest('.nav-btn'))return;focC(idx,poi)});cd.querySelector('.nav-btn').addEventListener('click',function(e){e.stopPropagation();navTo(poi)});c.appendChild(cd);cards.push(cd)})(i)}}});lc.searchNearby(kw,pt,4000)}
+  function focC(idx,poi){cards.forEach(function(c){c.classList.remove('place-card-active','park-mode')});cards[idx].classList.add('place-card-active');if(mode==='park')cards[idx].classList.add('park-mode');cards[idx].scrollIntoView({behavior:'smooth',block:'nearest'});map.panTo(poi.point);markers[idx].openInfoWindow(new BMap.InfoWindow('<b>'+poi.title+'</b><br><span style="color:#64748b;font-size:12px">'+(poi.address||'')+'</span>'));clrR();var rc=mode==='hospital'?'#4f46e5':'#059669';var w=new BMap.WalkingRoute(map,{renderOptions:{map:map,autoViewport:false},onSearchComplete:function(r){if(w.getStatus()!==BMAP_STATUS_SUCCESS)return;var p=r.getPlan(0);for(var s=0;s<p.getNumRoutes();s++){var rt=p.getRoute(s).getPolyline();if(rt){rt.setStrokeColor(rc);rt.setStrokeWeight(5);rt.setStrokeOpacity(.85)}}addUO()}});w.search(pt,poi.point);route=w}
+  function navTo(poi){var dl=poi.point.lat,dg=poi.point.lng,dn=encodeURIComponent(poi.title);var mob=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);var au='baidumap://map/direction?destination=latlng:'+dl+','+dg+'|name:'+dn+'&mode=walking&coord_type=bd09ll&src=webapp';var wu='https://api.map.baidu.com/marker?location='+dl+','+dg+'&title='+dn+'&output=html&coord_type=bd09ll&src=webapp';if(mob){window.location.href=au;setTimeout(function(){window.location.href=wu},2000)}else{window.open(wu,'_blank')}}
+  doS('hospital');
+})();
+</script>
+
+</body>
+</html>

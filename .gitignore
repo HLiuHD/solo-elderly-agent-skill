@@ -1,9 +1,18 @@
 # API keys (never upload)
 demo/.env
 
-# Generated files
+# Generated output files (don't commit these)
 demo/nutrition_report.html
+demo/nutrition_zh_report.html
+demo/triage_report.html
+demo/patient_report.html
 demo/demo_output.json
+
+# Downloaded reference PDF
+demo/reference_nutrition.pdf
+
+# Cloned example repo (not our code)
+webpage_example/
 
 # PowerPoint temp files
 ~$*.pptx
