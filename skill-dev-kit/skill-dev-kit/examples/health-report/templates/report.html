@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{title}</title>
+<style>
+  * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+  body {{ font-family: system-ui, -apple-system, sans-serif; background: #f8fafb; color: #1e293b; line-height: 1.7; font-size: 14px; }}
+  .wrap {{ max-width: 640px; margin: 0 auto; padding: 16px; }}
+
+  /* header */
+  .header {{ background: linear-gradient(135deg, #059669, #0f766e); color: #fff; padding: 24px 20px; border-radius: 16px; margin-bottom: 16px; }}
+  .header h1 {{ font-size: 18px; font-weight: 700; }}
+  .header p {{ font-size: 13px; color: #a7f3d0; margin-top: 4px; }}
+
+  /* card */
+  .card {{ background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.04); }}
+  .card-title {{ font-size: 15px; font-weight: 700; padding-bottom: 10px; margin-bottom: 14px; border-bottom: 1px solid #f1f5f9; }}
+
+  /* status badge */
+  .badge {{ display: inline-block; padding: 3px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }}
+  .badge-stable {{ background: #d1fae5; color: #065f46; }}
+  .badge-attention {{ background: #fef3c7; color: #92400e; }}
+  .badge-warning {{ background: #fee2e2; color: #991b1b; }}
+
+  /* vitals grid */
+  .vitals {{ display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 10px; margin-top: 12px; }}
+  .vital-card {{ background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; text-align: center; }}
+  .vital-card .value {{ font-size: 20px; font-weight: 700; color: #0f172a; }}
+  .vital-card .unit {{ font-size: 11px; color: #94a3b8; }}
+  .vital-card .label {{ font-size: 12px; color: #64748b; margin-top: 4px; }}
+  .vital-card .note {{ font-size: 11px; margin-top: 2px; }}
+  .vital-card .note-normal {{ color: #059669; }}
+  .vital-card .note-high {{ color: #ef4444; }}
+  .vital-card .note-low {{ color: #f59e0b; }}
+
+  /* risk tags */
+  .tags {{ display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }}
+  .tag {{ background: #fef2f2; color: #dc2626; padding: 3px 10px; border-radius: 16px; font-size: 12px; font-weight: 500; }}
+
+  /* recommendations */
+  .rec-list {{ list-style: none; }}
+  .rec-list li {{ padding: 8px 12px; margin-bottom: 6px; border-radius: 8px; font-size: 14px; }}
+  .rec-high {{ background: #fef2f2; border-left: 3px solid #ef4444; }}
+  .rec-medium {{ background: #fffbeb; border-left: 3px solid #f59e0b; }}
+  .rec-low {{ background: #f0fdf4; border-left: 3px solid #22c55e; }}
+
+  /* reasoning (collapsible) */
+  details {{ margin-top: 12px; }}
+  details summary {{ cursor: pointer; font-size: 13px; color: #64748b; font-weight: 500; }}
+  details p {{ margin-top: 8px; font-size: 13px; color: #64748b; line-height: 1.7; }}
+
+  /* adherence */
+  .adh-grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }}
+  .adh-item {{ padding: 12px; border-radius: 10px; border: 1px solid #e2e8f0; }}
+  .adh-item .dim {{ font-size: 13px; font-weight: 600; margin-bottom: 4px; }}
+  .adh-item .detail {{ font-size: 12px; color: #64748b; }}
+  .adh-good {{ background: #f0fdf4; }}
+  .adh-good .dim {{ color: #059669; }}
+  .adh-fair {{ background: #fffbeb; }}
+  .adh-fair .dim {{ color: #d97706; }}
+  .adh-poor {{ background: #fef2f2; }}
+  .adh-poor .dim {{ color: #dc2626; }}
+
+  /* diet table */
+  .diet-table {{ width: 100%; border-collapse: collapse; font-size: 13px; }}
+  .diet-table th {{ text-align: left; padding: 8px 10px; background: #f8fafc; font-weight: 600; color: #475569; }}
+  .diet-table td {{ padding: 8px 10px; border-top: 1px solid #f1f5f9; }}
+  .diet-table .good {{ color: #059669; }}
+  .diet-table .avoid {{ color: #dc2626; }}
+
+  /* guardrail */
+  .guardrail {{ background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 14px; font-size: 13px; color: #92400e; line-height: 1.6; }}
+
+  .footer {{ text-align: center; padding: 20px; font-size: 12px; color: #94a3b8; }}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <h1>{greeting}</h1>
+    <p>{subtitle}</p>
+  </div>
+
+  <!-- Health Overview -->
+  <div class="card">
+    <div class="card-title">
+      {overview_status_badge}
+      &nbsp; 健康概览
+    </div>
+    <p style="font-size:14px;color:#475569;margin-bottom:8px;">{overall_summary}</p>
+    <div class="vitals">{vitals_html}</div>
+  </div>
+
+  <!-- Recommendations -->
+  <div class="card">
+    <div class="card-title">健康建议</div>
+    {risk_tags_html}
+    <ul class="rec-list">{recommendations_html}</ul>
+    <details>
+      <summary>AI 分析依据</summary>
+      <p>{reasoning}</p>
+    </details>
+  </div>
+
+  <!-- Adherence -->
+  <div class="card">
+    <div class="card-title">依从性跟踪</div>
+    <div class="adh-grid">{adherence_html}</div>
+  </div>
+
+  <!-- Diet Guidance (optional) -->
+  {diet_section}
+
+  <!-- Guardrail -->
+  <div class="card">
+    <div class="card-title">温馨提醒</div>
+    <div class="guardrail">本报告由 AI 健康助手生成，仅供参考。如有不适请及时就医，遵医嘱为准。</div>
+  </div>
+
+</div>
+<div class="footer">AI 健康管家 · 仅供参考，请遵医嘱</div>
+</body>
+</html>

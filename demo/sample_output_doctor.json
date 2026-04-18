@@ -1,0 +1,69 @@
+{
+  "meta": {
+    "user_id": "example_user_001",
+    "session_id": "session_20260330_001",
+    "role": "doctor",
+    "lang": "zh",
+    "generated_at": "2026-03-30T09:31:00+08:00"
+  },
+  "patient_profile": {
+    "name": "王叔叔",
+    "age": 76,
+    "gender": "男",
+    "diagnoses": ["高血压", "2型糖尿病", "高脂血症"],
+    "medications": ["氨氯地平", "二甲双胍", "阿托伐他汀"],
+    "baseline_note": "长期服药，生命体征基线相对稳定"
+  },
+  "patient_status": "at_risk",
+  "triage_level": "semi_urgent",
+  "risk_tags": [
+    "心率轻度波动",
+    "活动量偏低"
+  ],
+  "assistant_message_doctor": "该患者76岁，既往高血压、2型糖尿病、高脂血症，长期服用氨氯地平、二甲双胍、阿托伐他汀。近2周依从性尚可，但活动量明显下降，患者自述近日未出门且感觉疲倦。当前信号窗口显示心率轻度波动（78次/分）、日步数仅1200步。血压138/82 mmHg，血糖7.2 mmol/L，均较基线略高。建议关注活动量持续下降是否与心功能变化相关，必要时安排心电图或动态心率监测。",
+  "reasoning": "患者近期活动量显著下降伴自觉疲倦，结合心率波动信号，需排除心功能减退或药物副作用所致。血压与血糖轻度偏高但未达急性干预阈值，综合判断为次急诊级别，建议加强监测。",
+  "signals_summary": {
+    "window": "2026-03-23T10:08:03 — 11:08:03",
+    "description": "近1小时信号显示：心率轻度波动，步数偏低，未见明确高危急性异常。",
+    "anomalies": [
+      "心率轻度波动",
+      "活动量偏低"
+    ]
+  },
+  "latest_vitals": {
+    "blood_pressure": "138/82 mmHg",
+    "heart_rate": 78,
+    "blood_oxygen": 97,
+    "blood_glucose": 7.2,
+    "steps": 1200
+  },
+  "adherence_analysis": {
+    "statuses": ["按时服药"],
+    "preferences": ["偏好清淡饮食"],
+    "interventions": [],
+    "suggestions": ["建议增加户外活动"]
+  },
+  "location": {
+    "lat": 39.9042,
+    "lon": 116.4074,
+    "record_at": "2026-03-30T09:20:00+08:00"
+  },
+  "recommendations": [
+    "关注活动量持续下降趋势，排查心功能变化",
+    "建议安排心电图检查或动态心率监测",
+    "血压138/82，接近干预阈值，继续观察，必要时调整氨氯地平剂量",
+    "血糖7.2 mmol/L，提醒患者控制碳水摄入，复查糖化血红蛋白",
+    "持续监测用药依从性，评估阿托伐他汀耐受情况"
+  ],
+  "nutrition_plan_summary": {
+    "conditions_addressed": ["高血压", "2型糖尿病", "高脂血症"],
+    "diet_principles": [
+      "低钠、高钾、富含膳食纤维（高血压）",
+      "低糖、高纤维、少食多餐、控制碳水（糖尿病）",
+      "低脂、低胆固醇、增加不饱和脂肪酸（高脂血症）"
+    ],
+    "weekly_plan_generated": true,
+    "plan_note": "已为患者生成个性化一周三餐计划，针对三种慢性病搭配食材，详见患者端推送"
+  },
+  "guardrail": "本报告部分信息及推荐由模型健康助手生成，仅供临床参考，不构成医疗诊断。请结合患者实际情况做出临床判断。如有任何急性症状，请立即拨打急救电话。"
+}

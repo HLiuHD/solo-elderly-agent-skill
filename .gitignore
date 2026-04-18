@@ -18,6 +18,13 @@ webpage_example/
 # PowerPoint temp files
 ~$*.pptx
 
+# Python virtual environments
+.venv/
+__pycache__/
+
+# Verification output (regenerate with verify.py)
+skill-dev-kit/skill-dev-kit/*-output.html
+
 # OS files
 Thumbs.db
 .DS_Store
