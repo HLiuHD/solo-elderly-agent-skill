@@ -1,0 +1,6 @@
+[project]
+name = "patient-report"
+version = "0.1.0"
+description = "post_llm script for patient-facing health report rendering"
+requires-python = ">=3.11"
+dependencies = []
