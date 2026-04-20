@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{patient_name}的健康报告</title>
+<title>{report_title}</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<script type="text/javascript" src="https://api.map.baidu.com/api?v=3.0&ak={baidu_map_ak}"></script>
 <style>
   body {{ font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; }}
   .meal-card {{ transition: all .2s; }}
@@ -16,7 +17,7 @@
 
   <!-- Header -->
   <div class="bg-gradient-to-br from-emerald-600 to-teal-700 text-white rounded-2xl p-6 mb-4 shadow-lg">
-    <h1 class="text-xl font-bold">{patient_name}，您好！</h1>
+    <h1 class="text-xl font-bold">{header_greeting}</h1>
     <p class="text-emerald-100 text-sm mt-1">这是您的专属健康报告 · {current_time}</p>
     <div class="flex items-center gap-2 mt-3">
       <span class="inline-flex items-center gap-1 {status_badge_class} px-3 py-1 rounded-full text-xs font-semibold">{status_icon} {status_text}</span>
@@ -83,19 +84,8 @@
   <!-- Diet Tips -->
   {diet_tips_html}
 
-  <!-- Map -->
-  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
-    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
-      <span class="text-lg">📍</span>
-      <h2 class="text-sm font-bold text-slate-800">附近推荐</h2>
-    </div>
-    <p class="text-sm text-slate-600 mb-3">{ai_map_message}</p>
-    <div class="rounded-lg overflow-hidden border border-slate-200" style="height:240px">
-      <iframe width="100%" height="100%" frameborder="0" style="border:0"
-        src="https://maps.google.com/maps?q={patient_lat},{patient_lon}&z=15&output=embed"
-        allowfullscreen loading="lazy"></iframe>
-    </div>
-  </div>
+  <!-- Map (rendered by render_report.py with Baidu Maps) -->
+  {map_html}
 
   <!-- Guardrail -->
   <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
@@ -108,7 +98,9 @@
 <script>
 const DAYS = ["周一","周二","周三","周四","周五","周六","周日"];
 const MEAL_LABELS = {{"breakfast":"早餐","lunch":"午餐","dinner":"晚餐"}};
-const meals = {meal_data_json};
+const rawMeals = {meal_data_json};
+// LLM only generates 3 days; cycle to fill 7
+const meals = DAYS.map((d, i) => ({{ ...rawMeals[i % rawMeals.length], day: d }}));
 let activeDay = 0;
 
 function renderTabs() {{
