@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>分诊审核报告</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; }
+</style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+<div class="max-w-3xl mx-auto px-4 py-6">
+
+  <!-- Header -->
+  <div class="bg-gradient-to-br from-slate-700 to-slate-900 text-white rounded-2xl p-6 mb-4 shadow-lg">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-lg font-bold">分诊审核报告</h1>
+        <p class="text-slate-300 text-sm mt-1">患者 P-20260419-001 · 2026-04-19 10:30</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-bold">⚠️ 关注</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Patient Profile -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
+    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+      <span class="text-lg">👤</span>
+      <h2 class="text-sm font-bold text-slate-800">患者概况</h2>
+    </div>
+    <div class="text-sm text-slate-700 space-y-1">
+      <p><strong>长期档案：</strong>王建国，男，72岁。诊断：高血压（10年）、2型糖尿病（5年）、高脂血症。长期用药：氨氯地平 5mg qd、二甲双胍 500mg bid、阿托伐他汀 20mg qn。独居，生活基本自理。</p>
+      <p><strong>近期动态：</strong>近一周血压波动较大，收缩压在135-158mmHg之间；血糖控制尚可，空腹血糖6.2-7.1mmol/L；活动量较前两周有所下降，日均步数从3200步降至1800步。睡眠质量一般，夜间偶有起夜。</p>
+    </div>
+  </div>
+
+  <!-- Signal Summary -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
+    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+      <span class="text-lg">📡</span>
+      <h2 class="text-sm font-bold text-slate-800">信号概览</h2>
+    </div>
+    <div class="text-xs text-slate-500 mb-2">窗口：2026-04-12 ~ 2026-04-19</div>
+    <div class="flex flex-wrap gap-2 mb-3"><span class="inline-block px-3 py-1 rounded-full text-xs font-medium bg-rose-50 text-rose-700">血压波动增大</span>
+<span class="inline-block px-3 py-1 rounded-full text-xs font-medium bg-rose-50 text-rose-700">活动量持续下降</span>
+<span class="inline-block px-3 py-1 rounded-full text-xs font-medium bg-rose-50 text-rose-700">血氧偶有轻度下降</span></div>
+    <p class="text-sm text-slate-600">过去7天手环数据显示心率平稳但活动量逐日下降，血氧偶有轻度下降（最低93%），血压波动增大。</p>
+  </div>
+
+  <!-- Vitals -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
+    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+      <span class="text-lg">📊</span>
+      <h2 class="text-sm font-bold text-slate-800">最新体征</h2>
+    </div>
+    <div class="grid grid-cols-3 sm:grid-cols-5 gap-2"><div class="bg-slate-50 rounded-lg p-3 text-center border border-slate-100"><div class="text-[11px] text-slate-500 font-medium mb-1">血压</div><div class="text-xl font-bold text-slate-800">152/92 <span class="text-[10px] font-normal text-slate-400">mmHg</span></div></div>
+<div class="bg-slate-50 rounded-lg p-3 text-center border border-slate-100"><div class="text-[11px] text-slate-500 font-medium mb-1">心率</div><div class="text-xl font-bold text-slate-800">76 <span class="text-[10px] font-normal text-slate-400">bpm</span></div></div>
+<div class="bg-slate-50 rounded-lg p-3 text-center border border-slate-100"><div class="text-[11px] text-slate-500 font-medium mb-1">血氧</div><div class="text-xl font-bold text-slate-800">95 <span class="text-[10px] font-normal text-slate-400">%</span></div></div>
+<div class="bg-slate-50 rounded-lg p-3 text-center border border-slate-100"><div class="text-[11px] text-slate-500 font-medium mb-1">血糖</div><div class="text-xl font-bold text-slate-800">6.8 <span class="text-[10px] font-normal text-slate-400">mmol/L</span></div></div>
+<div class="bg-slate-50 rounded-lg p-3 text-center border border-slate-100"><div class="text-[11px] text-slate-500 font-medium mb-1">步数</div><div class="text-xl font-bold text-slate-800">1200 <span class="text-[10px] font-normal text-slate-400">步</span></div></div></div>
+  </div>
+
+  <!-- Triage Assessment -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
+    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+      <span class="text-lg">🏥</span>
+      <h2 class="text-sm font-bold text-slate-800">分诊评估</h2>
+    </div>
+    <div class="flex items-center gap-3 mb-4">
+      <span class="bg-yellow-50 text-yellow-700 border-yellow-400 px-4 py-2 rounded-lg text-sm font-bold border">📋 次急</span>
+    </div>
+    <div class="mb-3">
+      <div class="text-xs font-medium text-slate-500 uppercase tracking-wide mb-2">风险标签</div>
+      <div class="flex flex-wrap gap-2"><span class="inline-block px-3 py-1 rounded-full text-xs font-medium bg-orange-50 text-orange-700">血压波动增大</span>
+<span class="inline-block px-3 py-1 rounded-full text-xs font-medium bg-orange-50 text-orange-700">活动量持续下降</span>
+<span class="inline-block px-3 py-1 rounded-full text-xs font-medium bg-orange-50 text-orange-700">心率轻度波动</span></div>
+    </div>
+    <div class="mt-4"><div class="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">评估依据</div><div class="text-sm text-slate-700 bg-amber-50 rounded-lg p-3" style="border-left:3px solid #f59e0b">分诊判断为次急：血压虽未达危象标准（>180/120），但波动明显且超出目标值（<140/90），结合活动量持续下降，提示可能存在功能状态恶化趋势。患者独居，社会支持有限，跌倒和急性事件风险较普通患者更高。综合评估需24小时内随访。</div></div>
+  </div>
+
+  <!-- Recommendations -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
+    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+      <span class="text-lg">📋</span>
+      <h2 class="text-sm font-bold text-slate-800">临床建议</h2>
+    </div>
+    <div class="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">给医生</div><div class="text-sm text-slate-700 bg-amber-50 rounded-lg p-3 mb-3" style="border-left:3px solid #f59e0b">该患者为72岁独居老人，合并高血压、2型糖尿病及高脂血症。近一周监测数据显示血压控制不佳，收缩压波动于135-158mmHg，今日测量152/92mmHg，超出目标值。同时活动量呈持续下降趋势，日均步数已降至1200步，需警惕心功能变化和情绪低落可能。血糖控制尚在可接受范围。建议近期安排门诊随访，评估降压方案调整必要性，并关注患者心理状态。</div>
+    <div class="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">具体建议</div><div class="text-sm text-slate-700 bg-blue-50 rounded-lg p-3 mb-2" style="border-left:3px solid #3b82f6">近期安排门诊随访，重点评估血压控制方案，考虑联合用药或调整剂量</div><div class="text-sm text-slate-700 bg-blue-50 rounded-lg p-3 mb-2" style="border-left:3px solid #3b82f6">建议完善心电图和心脏超声检查，排除心功能恶化</div><div class="text-sm text-slate-700 bg-blue-50 rounded-lg p-3 mb-2" style="border-left:3px solid #3b82f6">制定低强度室内运动方案，如每日椅子操15分钟，逐步恢复活动量</div><div class="text-sm text-slate-700 bg-blue-50 rounded-lg p-3 mb-2" style="border-left:3px solid #3b82f6">加强血压自测频率，建议每日晨起和睡前各测一次并记录</div><div class="text-sm text-slate-700 bg-blue-50 rounded-lg p-3 mb-2" style="border-left:3px solid #3b82f6">关注患者心理状态，活动量下降可能与情绪低落有关，必要时安排心理评估</div>
+  </div>
+
+  <!-- Nutrition Plan Summary -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3"><div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100"><span class="text-lg">🥗</span><h2 class="text-sm font-bold text-slate-800">营养方案摘要</h2></div><div class="flex flex-wrap gap-2 mb-3"><span class="inline-block px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700">高血压</span><span class="inline-block px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700">2型糖尿病</span><span class="inline-block px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700">高脂血症</span></div><div class="text-sm text-slate-600 mb-1">• 低钠饮食（每日<5g盐）</div><div class="text-sm text-slate-600 mb-1">• 控制精细碳水，增加全谷物比例</div><div class="text-sm text-slate-600 mb-1">• 减少饱和脂肪摄入，增加不饱和脂肪酸</div><div class="text-sm text-slate-600 mb-1">• 适量优质蛋白，每日1.0-1.2g/kg</div><div class="text-sm text-slate-700 bg-blue-50 rounded-lg p-3 mt-3" style="border-left:3px solid #3b82f6">已根据患者三种慢性病组合及偏好面食的习惯，生成个性化一周营养方案。建议逐步用全麦面食替代精白面食。</div></div>
+
+  <!-- Adherence -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3"><div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100"><span class="text-lg">💊</span><h2 class="text-sm font-bold text-slate-800">依从性分析</h2></div><div class="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">当前状态</div><div class="flex flex-wrap gap-2 mb-3"><span class="inline-block px-3 py-1 rounded-full text-xs font-medium bg-purple-50 text-purple-700">用药依从性良好</span><span class="inline-block px-3 py-1 rounded-full text-xs font-medium bg-purple-50 text-purple-700">饮食控制一般</span><span class="inline-block px-3 py-1 rounded-full text-xs font-medium bg-purple-50 text-purple-700">运动量不足</span></div><div class="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">偏好</div><div class="flex flex-wrap gap-2 mb-3"><span class="inline-block px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-600">偏好面食</span><span class="inline-block px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-600">不喜欢运动</span></div><div class="text-xs font-medium text-slate-500 uppercase tracking-wide mb-1">建议</div><div class="text-sm text-slate-700 bg-indigo-50 rounded-lg p-3 mb-2" style="border-left:3px solid #6366f1">建议将氨氯地平调整为晨服并考虑联合ARB类药物</div><div class="text-sm text-slate-700 bg-indigo-50 rounded-lg p-3 mb-2" style="border-left:3px solid #6366f1">推荐室内简易运动方案（如椅子操），降低外出运动的抗拒感</div><div class="text-sm text-slate-700 bg-indigo-50 rounded-lg p-3 mb-2" style="border-left:3px solid #6366f1">安排营养师会诊，制定低钠低糖饮食方案</div></div>
+
+  <!-- Map -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
+    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+      <span class="text-lg">📍</span>
+      <h2 class="text-sm font-bold text-slate-800">患者位置</h2>
+    </div>
+    <p class="text-sm text-slate-600 mb-3">患者近期活动量偏低，以下是附近推荐的公园和医疗网点，可建议患者适当外出活动。</p>
+    <div class="rounded-lg overflow-hidden border border-slate-200" style="height:240px">
+      <iframe width="100%" height="100%" frameborder="0" style="border:0"
+        src="https://maps.google.com/maps?q=39.9042,116.4074&z=15&output=embed"
+        allowfullscreen loading="lazy"></iframe>
+    </div>
+  </div>
+
+  <!-- Guardrail -->
+  <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
+    <p class="text-xs text-amber-800 leading-relaxed">本报告由 AI 健康助手自动生成，仅供临床参考辅助决策，不构成医疗诊断或处方建议。最终临床决策请结合患者实际情况，以主治医师判断为准。</p>
+  </div>
+
+  <div class="text-center text-xs text-slate-400 pb-6">AI 健康助手 · 临床辅助报告 · 仅供参考</div>
+</div>
+</body>
+</html>

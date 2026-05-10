@@ -1,0 +1,194 @@
+{
+  "payload": {
+    "meta": {
+      "user_id": "P-20260419-001",
+      "lang": "zh",
+      "current_time": "2026-04-19T10:30:00"
+    },
+    "memory": {
+      "patient_long_term_profile": "王建国，男，72岁。诊断：高血压、2型糖尿病、高脂血症。",
+      "recent_health_dynamics": "近一周血压稍有波动，活动量有所减少。"
+    },
+    "signals": {
+      "start_ts": "2026-04-12 00:00",
+      "end_ts": "2026-04-19 10:00",
+      "summary_text": "手环数据正常，活动量偏低。",
+      "anomalies": []
+    },
+    "latest_health": {
+      "blood_pressure": "152/92",
+      "heart_rate": 76,
+      "blood_oxygen": 95,
+      "blood_glucose": 6.8,
+      "steps": 1200
+    },
+    "adherence_analysis": {
+      "statuses": ["按时吃药", "饮食还需注意", "运动量不够"],
+      "preferences": ["喜欢面食"],
+      "suggestions": ["每天争取走3000步", "少吃咸的食物"]
+    },
+    "location": {
+      "current": {
+        "lat": 39.9042,
+        "lon": 116.4074,
+        "address": "北京市东城区"
+      }
+    }
+  },
+  "llm_result": {
+    "message": "您的健康报告已生成",
+    "structured_output": {
+      "patient_name": "王叔叔",
+      "patient_status": "at_risk",
+      "risk_tags": ["血压稍高", "活动量偏低"],
+      "assistant_message_patient": "王叔叔，您好！最近您的身体整体还不错，不过血压比之前稍微高了一点点，需要多留意。另外，这几天走路的步数少了些，天气好的时候可以出去散散步，对身体很有好处哦。药一定要按时吃，饮食上少放点盐，多吃蔬菜。有任何不舒服记得告诉家人或者医生。",
+      "recommendations": [
+        "每天按时测量血压，早上起床后和晚上睡觉前各测一次",
+        "每天争取散步30分钟，可以分两次走，慢慢来不着急",
+        "做菜少放盐，可以用醋、姜、葱来提味",
+        "血糖控制得不错，继续保持按时吃药的好习惯",
+        "天气好的时候去附近公园走走，呼吸新鲜空气"
+      ],
+      "nutrition_advice": "王叔叔，您有高血压和糖尿病，饮食上要特别注意少盐少糖。每顿饭多吃些蔬菜，主食可以把白馒头换成杂粮馒头，既好吃又健康。",
+      "latest_health_summary": {
+        "blood_pressure": "152/92",
+        "heart_rate": "76",
+        "blood_oxygen": "95",
+        "blood_glucose": "6.8",
+        "steps_today": "1200"
+      },
+      "adherence": {
+        "statuses": ["按时服药 ✅", "饮食需改善 ⚠️", "运动量不足 ⚠️"],
+        "preferences": ["喜欢面食"],
+        "suggestions": ["试试把白面条换成荞麦面，口感也不错哦", "每天饭后散步15分钟，帮助消化也能降血糖"]
+      },
+      "conditions": ["高血压", "2型糖尿病", "高脂血症"],
+      "diet_table": [
+        {"condition": "高血压", "principle": "低钠高钾", "recommend": "芹菜、菠菜、香蕉、土豆", "avoid": "腌菜、咸鱼、方便面、酱油多的菜"},
+        {"condition": "2型糖尿病", "principle": "低GI、控制总量", "recommend": "荞麦面、燕麦、绿叶菜、豆腐", "avoid": "白米粥、含糖饮料、甜点、精白面食"},
+        {"condition": "高脂血症", "principle": "低脂高纤维", "recommend": "深海鱼、橄榄油、燕麦、坚果", "avoid": "肥肉、动物内脏、油炸食品、奶油"}
+      ],
+      "weekly_meal_plan": [
+        {
+          "day": "周一",
+          "breakfast": [
+            {"name": "燕麦小米粥", "icon": "🥣", "condition": "糖尿病", "benefit": "低GI杂粮粥，血糖升得慢"},
+            {"name": "水煮鸡蛋", "icon": "🥚", "condition": "高脂血症", "benefit": "优质蛋白，胆固醇适量"}
+          ],
+          "lunch": [
+            {"name": "清蒸鲈鱼", "icon": "🐟", "condition": "高脂血症", "benefit": "富含omega-3，有助于降血脂"},
+            {"name": "蒜蓉西兰花", "icon": "🥦", "condition": "高血压", "benefit": "富含钾元素，帮助调节血压"},
+            {"name": "杂粮饭", "icon": "🍚", "condition": "糖尿病", "benefit": "全谷物主食，升糖慢"}
+          ],
+          "dinner": [
+            {"name": "番茄豆腐汤", "icon": "🍅", "condition": "高血压", "benefit": "低钠汤品，番茄富含钾"},
+            {"name": "凉拌菠菜", "icon": "🥬", "condition": "高血压", "benefit": "菠菜富含钾和镁，有益血压"}
+          ]
+        },
+        {
+          "day": "周二",
+          "breakfast": [
+            {"name": "荞麦面条", "icon": "🍜", "condition": "糖尿病", "benefit": "低GI面食，适合王叔叔的面食偏好"},
+            {"name": "拌黄瓜", "icon": "🥒", "condition": "高血压", "benefit": "清淡低钠，富含水分"}
+          ],
+          "lunch": [
+            {"name": "鸡胸肉炒芹菜", "icon": "🍗", "condition": "高脂血症", "benefit": "低脂蛋白+高钾蔬菜"},
+            {"name": "紫米饭", "icon": "🍚", "condition": "糖尿病", "benefit": "富含花青素的全谷物"}
+          ],
+          "dinner": [
+            {"name": "冬瓜排骨汤（去油）", "icon": "🍲", "condition": "高血压", "benefit": "冬瓜利尿降压，汤品撇去浮油"},
+            {"name": "蒸南瓜", "icon": "🎃", "condition": "糖尿病", "benefit": "天然甜味替代糖，富含膳食纤维"}
+          ]
+        },
+        {
+          "day": "周三",
+          "breakfast": [
+            {"name": "全麦馒头", "icon": "🍞", "condition": "糖尿病", "benefit": "全麦替代白面，升糖更缓慢"},
+            {"name": "豆浆（无糖）", "icon": "🥛", "condition": "高脂血症", "benefit": "大豆蛋白有助降低胆固醇"}
+          ],
+          "lunch": [
+            {"name": "红烧豆腐", "icon": "🧈", "condition": "高脂血症", "benefit": "植物蛋白替代肉类，低脂"},
+            {"name": "清炒莴笋", "icon": "🥬", "condition": "高血压", "benefit": "莴笋含钾丰富，少盐烹饪"},
+            {"name": "糙米饭", "icon": "🍚", "condition": "糖尿病", "benefit": "高纤维主食"}
+          ],
+          "dinner": [
+            {"name": "紫菜蛋花汤", "icon": "🥣", "condition": "高血压", "benefit": "紫菜富含钾和镁"},
+            {"name": "白灼虾", "icon": "🦐", "condition": "高脂血症", "benefit": "低脂高蛋白海鲜"}
+          ]
+        },
+        {
+          "day": "周四",
+          "breakfast": [
+            {"name": "红薯粥", "icon": "🍠", "condition": "糖尿病", "benefit": "粗粮粥品，膳食纤维丰富"},
+            {"name": "花生小菜", "icon": "🥜", "condition": "高脂血症", "benefit": "适量坚果提供不饱和脂肪酸"}
+          ],
+          "lunch": [
+            {"name": "西红柿炒鸡蛋", "icon": "🍳", "condition": "高血压", "benefit": "少油少盐烹饪，番茄红素抗氧化"},
+            {"name": "蒜蓉空心菜", "icon": "🥬", "condition": "高血压", "benefit": "富含钾，清淡可口"},
+            {"name": "杂豆饭", "icon": "🍚", "condition": "糖尿病", "benefit": "豆类GI低，增加蛋白质摄入"}
+          ],
+          "dinner": [
+            {"name": "香菇鸡汤（去皮）", "icon": "🍲", "condition": "高脂血症", "benefit": "去皮鸡肉低脂，香菇多糖增强免疫"},
+            {"name": "拌木耳", "icon": "🍄", "condition": "高脂血症", "benefit": "木耳富含膳食纤维，有助降胆固醇"}
+          ]
+        },
+        {
+          "day": "周五",
+          "breakfast": [
+            {"name": "玉米棒", "icon": "🌽", "condition": "糖尿病", "benefit": "粗粮主食，饱腹感强"},
+            {"name": "水煮蛋", "icon": "🥚", "condition": "高脂血症", "benefit": "每日一蛋，营养均衡"}
+          ],
+          "lunch": [
+            {"name": "清蒸带鱼", "icon": "🐟", "condition": "高脂血症", "benefit": "深海鱼富含EPA/DHA"},
+            {"name": "醋溜白菜", "icon": "🥬", "condition": "高血压", "benefit": "用醋调味替代盐，开胃健康"},
+            {"name": "燕麦饭", "icon": "🍚", "condition": "糖尿病", "benefit": "燕麦β-葡聚糖延缓血糖升高"}
+          ],
+          "dinner": [
+            {"name": "丝瓜蛋汤", "icon": "🥒", "condition": "高血压", "benefit": "丝瓜低钠，清热利尿"},
+            {"name": "凉拌海带", "icon": "🥗", "condition": "高血压", "benefit": "海带富含碘和钾"}
+          ]
+        },
+        {
+          "day": "周六",
+          "breakfast": [
+            {"name": "黑米粥", "icon": "🥣", "condition": "糖尿病", "benefit": "黑米营养丰富，GI低于白米"},
+            {"name": "蒸饺（素馅）", "icon": "🥟", "condition": "高脂血症", "benefit": "满足面食偏好，素馅低脂"}
+          ],
+          "lunch": [
+            {"name": "宫保鸡丁（少油版）", "icon": "🍗", "condition": "高脂血症", "benefit": "少油烹饪，花生提供不饱和脂肪酸"},
+            {"name": "清炒苦瓜", "icon": "🥒", "condition": "糖尿病", "benefit": "苦瓜含苦瓜素，辅助降糖"},
+            {"name": "薏米饭", "icon": "🍚", "condition": "高血压", "benefit": "薏米利水消肿"}
+          ],
+          "dinner": [
+            {"name": "山药排骨汤", "icon": "🍲", "condition": "糖尿病", "benefit": "山药健脾益胃，升糖缓慢"},
+            {"name": "芝麻菠菜", "icon": "🥬", "condition": "高血压", "benefit": "菠菜+芝麻=钾镁双补"}
+          ]
+        },
+        {
+          "day": "周日",
+          "breakfast": [
+            {"name": "杂粮煎饼", "icon": "🥞", "condition": "糖尿病", "benefit": "杂粮面糊做的煎饼，满足面食爱好"},
+            {"name": "豆腐脑（无糖）", "icon": "🥣", "condition": "高脂血症", "benefit": "优质植物蛋白，低脂低糖"}
+          ],
+          "lunch": [
+            {"name": "番茄牛腩（瘦肉）", "icon": "🍖", "condition": "高脂血症", "benefit": "瘦牛肉补铁，番茄抗氧化"},
+            {"name": "蒜蓉油麦菜", "icon": "🥬", "condition": "高血压", "benefit": "油麦菜含钾丰富，清淡爽口"},
+            {"name": "红豆薏米饭", "icon": "🍚", "condition": "糖尿病", "benefit": "红豆低GI，薏米利水"}
+          ],
+          "dinner": [
+            {"name": "鲫鱼豆腐汤", "icon": "🐟", "condition": "高脂血症", "benefit": "低脂鱼汤，优质蛋白双拼"},
+            {"name": "蒜泥茄子", "icon": "🍆", "condition": "高血压", "benefit": "茄子含维生素P，保护血管"}
+          ]
+        }
+      ],
+      "diet_tips": [
+        {"icon": "🧂", "title": "控盐妙招", "detail": "炒菜出锅前再放盐，用量减半味道不减。可以用醋、姜、葱、蒜来提味。"},
+        {"icon": "🍚", "title": "主食替换", "detail": "把白米白面换成杂粮，血糖升得慢，肚子也更饱。荞麦面条是不错的选择！"},
+        {"icon": "🥗", "title": "蔬菜先行", "detail": "每顿饭先吃蔬菜，再吃肉和主食，这样血糖更平稳。"},
+        {"icon": "💧", "title": "少量多餐", "detail": "每顿吃七八分饱，饿了可以吃点坚果或水果当加餐。"}
+      ],
+      "reasoning": "王叔叔整体身体状况尚可，但血压152/92mmHg偏高，需要关注。活动量近期下降至日均1200步，低于建议量。血糖6.8mmol/L控制在可接受范围。综合评估为'需要关注'级别。",
+      "guardrail": "本报告由 AI 健康管家自动生成，仅供日常健康参考。如果您感到不舒服，请及时联系家人或拨打医生电话。所有用药和治疗请以医生的建议为准。"
+    }
+  }
+}

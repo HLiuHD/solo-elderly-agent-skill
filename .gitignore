@@ -22,6 +22,9 @@ webpage_example/
 .venv/
 __pycache__/
 
+# Orchestrator output (regenerate with orchestrator.py)
+output/
+
 # Verification output (regenerate with verify.py)
 skill-dev-kit/skill-dev-kit/*-output.html
 
