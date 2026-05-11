@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{report_title}</title>
+<script src="https://cdn.tailwindcss.com"></script>
+{maps_script}
+<style>
+  body {{ font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }}
+  .meal-card {{ transition: all .2s; }}
+  .meal-card:hover {{ transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.08); }}
+</style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+<div class="max-w-2xl mx-auto px-4 py-6">
+
+  <!-- Header -->
+  <div class="bg-gradient-to-br from-emerald-600 to-teal-700 text-white rounded-2xl p-6 mb-4 shadow-lg">
+    <h1 class="text-xl font-bold">{header_greeting}</h1>
+    <p class="text-emerald-100 text-sm mt-1">Your personal health report · {current_time}</p>
+    <div class="flex items-center gap-2 mt-3">
+      <span class="inline-flex items-center gap-1 {status_badge_class} px-3 py-1 rounded-full text-xs font-semibold">{status_icon} {status_text}</span>
+      {condition_badges}
+    </div>
+  </div>
+
+  <!-- AI Message -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
+    <div class="flex items-center gap-2 mb-3 pb-3 border-b border-slate-100">
+      <span class="text-lg">🤖</span>
+      <h2 class="text-sm font-bold text-slate-800">AI health companion</h2>
+    </div>
+    <p class="text-sm text-slate-700 leading-relaxed">{ai_message}</p>
+  </div>
+
+  <!-- Vitals -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
+    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+      <span class="text-lg">📊</span>
+      <h2 class="text-sm font-bold text-slate-800">Today’s health data</h2>
+    </div>
+    <div class="grid grid-cols-3 sm:grid-cols-5 gap-2">
+      {vitals_html}
+    </div>
+  </div>
+
+  <!-- Risk Tags & Recommendations -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
+    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+      <span class="text-lg">💡</span>
+      <h2 class="text-sm font-bold text-slate-800">Suggestions</h2>
+    </div>
+    <div class="flex flex-wrap gap-2 mb-4">{risk_tags_html}</div>
+    <div class="space-y-2">{recommendations_html}</div>
+    {reasoning_html}
+  </div>
+
+  <!-- Adherence -->
+  {adherence_html}
+
+  <!-- Nutrition Advice -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
+    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+      <span class="text-lg">🥗</span>
+      <h2 class="text-sm font-bold text-slate-800">Nutrition</h2>
+    </div>
+    <div class="text-sm text-slate-700 bg-emerald-50 rounded-lg p-3 leading-relaxed" style="border-left:3px solid #10b981">{nutrition_advice}</div>
+  </div>
+
+  <!-- Diet Table -->
+  {diet_table_html}
+
+  <!-- Weekly Meal Plan -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
+    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+      <span class="text-lg">📅</span>
+      <h2 class="text-sm font-bold text-slate-800">Weekly meal ideas</h2>
+    </div>
+    <div class="flex gap-2 mb-4 overflow-x-auto pb-2" id="dayTabs"></div>
+    <div id="mealContent"></div>
+  </div>
+
+  <!-- Diet Tips -->
+  {diet_tips_html}
+
+  <!-- Map -->
+  {map_html}
+
+  <!-- Guardrail -->
+  <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
+    <p class="text-xs text-amber-800 leading-relaxed">{guardrail}</p>
+  </div>
+
+  <div class="text-center text-xs text-slate-400 pb-6">AI health companion · informational only; follow your clinician’s advice</div>
+</div>
+
+<script>
+const DAYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const MEAL_LABELS = {{"breakfast":"Breakfast","lunch":"Lunch","dinner":"Dinner"}};
+const rawMeals = {meal_data_json};
+const meals = DAYS.map((d, i) => ({{ ...rawMeals[i % rawMeals.length], day: d }}));
+let activeDay = 0;
+
+function renderTabs() {{
+  const container = document.getElementById("dayTabs");
+  container.innerHTML = DAYS.map((d, i) =>
+    `<button onclick="switchDay(${{i}})" class="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${{i === activeDay ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}}">${{d}}</button>`
+  ).join("");
+}}
+
+function switchDay(i) {{
+  activeDay = i;
+  renderTabs();
+  renderMeals();
+}}
+
+function renderMeals() {{
+  const day = meals[activeDay];
+  if (!day) {{ document.getElementById("mealContent").innerHTML = '<p class="text-sm text-slate-400">No data</p>'; return; }}
+  let html = "";
+  for (const [key, label] of Object.entries(MEAL_LABELS)) {{
+    const items = day[key] || [];
+    if (!items.length) continue;
+    html += `<div class="mb-4"><div class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">${{label}}</div><div class="grid grid-cols-1 sm:grid-cols-2 gap-2">`;
+    for (const it of items) {{
+      html += `<div class="meal-card flex items-start gap-3 bg-slate-50 rounded-lg p-3 border border-slate-100">
+        <span class="text-2xl mt-0.5">${{it.icon || "🍽️"}}</span>
+        <div class="flex-1 min-w-0">
+          <div class="text-sm font-semibold text-slate-800">${{it.name}}</div>
+          <div class="text-[11px] text-emerald-600 font-medium">${{it.condition || ""}}</div>
+          <div class="text-xs text-slate-500 mt-0.5 leading-relaxed">${{it.benefit || ""}}</div>
+        </div>
+      </div>`;
+    }}
+    html += "</div></div>";
+  }}
+  document.getElementById("mealContent").innerHTML = html;
+}}
+
+renderTabs();
+renderMeals();
+</script>
+</body>
+</html>
