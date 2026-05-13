@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{report_title}</title>
+<script src="https://cdn.tailwindcss.com"></script>
+{maps_script}
+<style>
+  body {{ font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }}
+</style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+<div class="max-w-2xl mx-auto px-4 py-6">
+
+  <!-- Header -->
+  <div class="{header_gradient} text-white rounded-2xl p-6 mb-4 shadow-lg">
+    <div class="flex items-center gap-3 mb-2">
+      <span class="text-2xl">{status_icon}</span>
+      <h1 class="text-xl font-bold">{report_title}</h1>
+    </div>
+    <p class="text-sm opacity-80">{current_time}</p>
+    <div class="flex items-center gap-2 mt-3">
+      <span class="inline-flex items-center gap-1 {status_badge_class} px-3 py-1 rounded-full text-xs font-semibold">{status_icon} {status_text}</span>
+      {condition_badges}
+    </div>
+  </div>
+
+  <!-- Situation Summary -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
+    <div class="flex items-center gap-2 mb-3 pb-3 border-b border-slate-100">
+      <span class="text-lg">📋</span>
+      <h2 class="text-sm font-bold text-slate-800">What is happening</h2>
+    </div>
+    <p class="text-sm text-slate-700 leading-relaxed">{situation_summary}</p>
+  </div>
+
+  <!-- Physician Status -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
+    <div class="flex items-center gap-2 mb-3 pb-3 border-b border-slate-100">
+      <span class="text-lg">👨‍⚕️</span>
+      <h2 class="text-sm font-bold text-slate-800">Your doctor's response</h2>
+    </div>
+    {physician_status_html}
+  </div>
+
+  <!-- Current Vitals -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
+    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+      <span class="text-lg">📊</span>
+      <h2 class="text-sm font-bold text-slate-800">Your current readings</h2>
+    </div>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">{vitals_html}</div>
+  </div>
+
+  <!-- Immediate Actions -->
+  <div class="bg-white rounded-xl shadow-sm border border-rose-200 p-5 mb-3">
+    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-rose-100">
+      <span class="text-lg">🚨</span>
+      <h2 class="text-sm font-bold text-rose-700">What to do right now</h2>
+    </div>
+    <div class="space-y-2">{actions_html}</div>
+  </div>
+
+  <!-- Monitoring Plan -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
+    <div class="flex items-center gap-2 mb-3 pb-3 border-b border-slate-100">
+      <span class="text-lg">⏱️</span>
+      <h2 class="text-sm font-bold text-slate-800">Monitoring plan</h2>
+    </div>
+    {monitoring_html}
+  </div>
+
+  <!-- Nearest Care + Map -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
+    <div class="flex items-center gap-2 mb-3 pb-3 border-b border-slate-100">
+      <span class="text-lg">🏥</span>
+      <h2 class="text-sm font-bold text-slate-800">Getting to care</h2>
+    </div>
+    <p class="text-sm text-slate-700 leading-relaxed mb-3">{nearest_care_text}</p>
+  </div>
+  {map_html}
+
+  <!-- Guardrail -->
+  <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
+    <p class="text-xs text-amber-800 leading-relaxed">{guardrail}</p>
+  </div>
+
+  <div class="text-center text-xs text-slate-400 pb-6">AI health companion · emergency guidance only; follow your clinician's advice</div>
+</div>
+</body>
+</html>

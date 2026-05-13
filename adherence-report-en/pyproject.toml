@@ -1,0 +1,6 @@
+[project]
+name = "adherence-report-en"
+version = "0.1.0"
+description = "post_llm script for patient-facing adherence health report rendering"
+requires-python = ">=3.11"
+dependencies = []
