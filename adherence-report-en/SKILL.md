@@ -24,12 +24,19 @@ This report is for the **patient** (solo older adult)—warm, readable, moderate
   1. `latest_health` — latest vitals (BP, HR, SpO2, glucose, steps)
   2. `memory.patient_long_term_profile` — demographics, history, medications
   3. `memory.recent_health_dynamics` — recent health trends
-  4. `adherence_analysis` — medication / diet / exercise / monitoring adherence
-  5. `signals` — device signals, anomaly labels
-  6. `outlier_analysis` — outlier analysis
-  7. `location` — location context
+  4. `memory.key_events` — timestamped events (surgeries, recurring symptoms, alerts)
+  5. `adherence_analysis` — medication / diet / exercise / monitoring adherence
+  6. `signals` — device signals, anomaly labels
+  7. `outlier_analysis` — outlier analysis
+  8. `location` — location context
+  9. `user_preference` (optional) — patient's stated preferences collected from prior sessions:
+     - `cuisine_preferences`: array of cuisine names (e.g. `["Cantonese", "Italian"]`) — use to guide `weekly_meal_plan` food choices
+     - `liked`: items the patient previously marked as helpful/enjoyable — prefer similar recommendations
+     - `disliked`: items the patient rejected + reason — avoid similar recommendations
+  10. `doctor_feedback` (optional) — latest physician notes and medication changes
 - If `latest_health` is empty or all null, infer the latest values from `memory.recent_health_dynamics` or `signals.summary_text` and fill `latest_health_summary` accordingly.
 - When a dimension has no data, use empty strings or empty arrays—do not fabricate.
+- When `user_preference.cuisine_preferences` is present, the `weekly_meal_plan` **must** reflect those cuisines (e.g., if patient prefers Cantonese, suggest congee, steamed fish, bok choy stir-fry instead of oatmeal and salmon).
 
 ## Output format
 
@@ -46,7 +53,7 @@ Strict JSON, top-level keys:
     - `appetite`: object `{ "status": "...", "cause_if_known": "...", "suggestions": "..." }`
     - `exercise`: object `{ "status": "...", "barriers": "...", "plan": "..." }`
     - `monitoring`: object `{ "status": "...", "gaps": "..." }`
-  - `recommendations`: string array, ~5 concrete actionable items (**English**)
+  - `recommendations`: array of ~5-6 items. Each item is either a plain string OR an object `{"text": "...", "reason": "...", "category": "medication|diet|exercise|monitoring|lifestyle"}`. When using object form, `reason` explains **why** this is recommended for this specific patient (referencing their conditions, history, or recent events). Prefer object form.
   - `nutrition_advice`: one paragraph (**English**, ~50-100 words)
   - `latest_health_summary`: object with `blood_pressure`, `heart_rate`, `blood_oxygen`, `blood_glucose`, `steps_today` — each a string with units
   - `conditions`: string array, e.g. `["Hypertension", "Type 2 diabetes", "Hyperlipidemia"]`

@@ -129,6 +129,66 @@ def _render_physician_status(status: str, note: str) -> str:
     return html
 
 
+def _render_doctor_notes(doctor_feedback: dict) -> str:
+    if not doctor_feedback:
+        return ""
+
+    doctor_name = doctor_feedback.get("doctor_name") or "Your doctor"
+    timestamp = doctor_feedback.get("timestamp") or ""
+    message = doctor_feedback.get("message") or ""
+    med_changes = doctor_feedback.get("medication_changes") or []
+
+    if not message and not med_changes:
+        return ""
+
+    time_display = ""
+    if timestamp:
+        time_display = _format_time(timestamp)
+
+    html = (
+        '<div class="bg-white rounded-xl shadow-sm border border-blue-100 p-5 mb-3">'
+        '<div class="flex items-center gap-2 mb-3 pb-3 border-b border-blue-50">'
+        '<span class="text-lg">📋</span>'
+        '<div class="flex-1">'
+        f'<h2 class="text-sm font-bold text-slate-800">{escape(doctor_name)} — detailed notes</h2>'
+    )
+    if time_display:
+        html += f'<div class="text-[10px] text-slate-400">{escape(time_display)}</div>'
+    html += '</div></div>'
+
+    if message:
+        html += (
+            '<div class="text-sm text-slate-700 bg-blue-50 rounded-lg p-3 leading-relaxed '
+            f'border border-blue-100 mb-3" style="border-left:3px solid #3b82f6">{escape(message)}</div>'
+        )
+
+    if med_changes:
+        html += (
+            '<div class="mt-2">'
+            '<div class="text-[11px] text-slate-400 uppercase tracking-wide font-medium mb-2">'
+            'Medication changes</div>'
+        )
+        for change in med_changes:
+            action = change.get("action", "").capitalize()
+            from_med = change.get("from", "")
+            to_med = change.get("to", "")
+            html += (
+                '<div class="flex items-start gap-2 bg-rose-50 rounded-lg p-3 border border-rose-100">'
+                '<span class="text-sm mt-0.5">💊</span>'
+                '<div class="text-xs text-slate-700 leading-relaxed">'
+                f'<span class="font-semibold text-rose-700">{escape(action)}:</span> '
+            )
+            if from_med:
+                html += f'<span class="line-through text-slate-400">{escape(from_med)}</span> → '
+            if to_med:
+                html += f'<span class="font-medium text-emerald-700">{escape(to_med)}</span>'
+            html += '</div></div>'
+        html += '</div>'
+
+    html += '</div>'
+    return html
+
+
 def _render_monitoring(plan: dict) -> str:
     what = plan.get("what_to_monitor") or "Follow your doctor's guidance"
     freq = plan.get("frequency") or "As directed by your doctor"
@@ -360,6 +420,7 @@ def main() -> None:
     payload = data.get("payload") or {}
     llm = data.get("llm_result") or {}
     so = llm.get("structured_output") or {}
+    doctor_feedback = payload.get("doctor_feedback") or {}
 
     try:
         template = _TEMPLATE_PATH.read_text(encoding="utf-8")
@@ -418,6 +479,7 @@ def main() -> None:
             so.get("physician_status") or "notified",
             so.get("physician_note") or "",
         ),
+        doctor_notes_html=_render_doctor_notes(doctor_feedback),
         vitals_html=_render_vitals(so.get("latest_vitals") or {}),
         actions_html=_render_actions(so.get("immediate_actions") or []),
         monitoring_html=_render_monitoring(so.get("monitoring_plan") or {}),

@@ -25,6 +25,14 @@
       "status": "reviewed",
       "note": "BP is dangerously high. Patient should rest, retake BP in 15 minutes. If still above 180/120 or symptoms worsen, call 911. I am adjusting medication—adding losartan 50mg. Will follow up within the hour."
     },
+    "doctor_feedback": {
+      "doctor_name": "Dr. Robert Chen",
+      "timestamp": "2026-05-13T10:20:00",
+      "message": "I've reviewed James's readings and this is a hypertensive urgency. Adding losartan 50mg to his regimen immediately. He should NOT take an extra dose of amlodipine. If BP remains above 180/120 after 30 minutes of rest, he needs to go to the ER. I will call him in 45 minutes.",
+      "medication_changes": [
+        {"action": "add", "to": "Losartan 50mg once daily, starting now"}
+      ]
+    },
     "location": {
       "current": {
         "lat": 42.3601,

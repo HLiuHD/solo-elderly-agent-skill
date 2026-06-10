@@ -1,0 +1,21 @@
+{
+  "patient_id": "P-20260513-002",
+  "report_time": "May 13, 2026 14:00",
+  "exported_at": "2026-06-09T21:40:00.000Z",
+  "total_feedback": 7,
+  "preferences": {
+    "cuisine_preferences": [
+      {"cuisine": "Cantonese (粤菜)", "selected_at": "2026-06-09T21:35:00.000Z"},
+      {"cuisine": "Italian", "selected_at": "2026-06-09T21:35:05.000Z"}
+    ],
+    "liked": [
+      {"item_key": "0-breakfast-Warm oatmeal with banana", "sentiment": "like", "reason": null, "timestamp": "2026-06-09T21:36:00.000Z"},
+      {"item_key": "-1-rec-Take a short 5-minute walk around your home when you feel up to it", "sentiment": "like", "reason": null, "timestamp": "2026-06-09T21:37:00.000Z"},
+      {"item_key": "-1-tip-Small & frequent", "sentiment": "like", "reason": null, "timestamp": "2026-06-09T21:37:30.000Z"}
+    ],
+    "disliked": [
+      {"item_key": "0-lunch-Whole wheat crackers", "sentiment": "dislike", "reason": "Can't find this ingredient", "timestamp": "2026-06-09T21:36:30.000Z"},
+      {"item_key": "-1-rec-Do 10 minutes of seated leg exercises twice a day to keep your muscles active", "sentiment": "dislike", "reason": "Too difficult to do", "timestamp": "2026-06-09T21:38:00.000Z"}
+    ]
+  }
+}

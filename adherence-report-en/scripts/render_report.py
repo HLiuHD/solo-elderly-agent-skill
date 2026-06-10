@@ -63,6 +63,123 @@ _ADHERENCE_DIMENSIONS = [
     ("monitoring", "📋", "Health monitoring"),
 ]
 
+# ─── Escalation Rules ───────────────────────────────────────────────
+# When a symptom keyword appears >= THRESHOLD times in key_events,
+# the report escalates from "stable"/"at_risk" display to a warning banner.
+_ESCALATION_RULES = [
+    {
+        "keywords": ["headache", "head pain", "migraine"],
+        "threshold": 3,
+        "level": "escalated",
+        "title": "Recurring headache — escalated to attention",
+        "message": (
+            "You have reported headaches {count} times in recent records. "
+            "Because this symptom keeps coming back, we are flagging this for "
+            "closer monitoring and your doctor will be notified."
+        ),
+        "recommendation": "Please note the time, severity (1-10), and any triggers each time it happens.",
+    },
+    {
+        "keywords": ["dizzy", "dizziness", "lightheaded", "vertigo"],
+        "threshold": 3,
+        "level": "escalated",
+        "title": "Recurring dizziness — escalated to attention",
+        "message": (
+            "Dizziness has been reported {count} times recently. "
+            "This pattern may indicate blood pressure fluctuation or medication side effects."
+        ),
+        "recommendation": "Sit or lie down when dizzy. Note whether it happens after standing up or taking medication.",
+    },
+    {
+        "keywords": ["chest pain", "chest tightness", "chest discomfort"],
+        "threshold": 2,
+        "level": "critical",
+        "title": "Recurring chest symptoms — urgent",
+        "message": (
+            "Chest-related symptoms reported {count} times. "
+            "This requires immediate medical attention."
+        ),
+        "recommendation": "If you experience chest pain right now, call 911 immediately.",
+    },
+    {
+        "keywords": ["fall", "fell down", "lost balance"],
+        "threshold": 2,
+        "level": "escalated",
+        "title": "Multiple falls detected",
+        "message": (
+            "You have had {count} fall-related events. "
+            "This increases injury risk and your care team will review your mobility."
+        ),
+        "recommendation": "Avoid walking without support. Remove tripping hazards at home.",
+    },
+]
+
+
+def _check_escalations(key_events: list[dict]) -> list[dict]:
+    """Scan key_events for recurring symptoms that trigger escalation rules."""
+    if not key_events:
+        return []
+
+    triggered = []
+    event_texts = [
+        ev.get("description", "").lower() for ev in key_events
+        if ev.get("type") in ("symptom", "alert", "complaint")
+    ]
+
+    for rule in _ESCALATION_RULES:
+        count = sum(
+            1 for text in event_texts
+            if any(kw in text for kw in rule["keywords"])
+        )
+        if count >= rule["threshold"]:
+            triggered.append({
+                "level": rule["level"],
+                "title": rule["title"],
+                "message": rule["message"].format(count=count),
+                "recommendation": rule["recommendation"],
+                "count": count,
+                "threshold": rule["threshold"],
+            })
+    return triggered
+
+
+def _render_escalation_banner(escalations: list[dict]) -> str:
+    """Render prominent warning banners for triggered escalation rules."""
+    if not escalations:
+        return ""
+
+    html = ""
+    for esc in escalations:
+        if esc["level"] == "critical":
+            banner_cls = "bg-gradient-to-r from-rose-50 to-red-50 border-rose-300"
+            icon = "🚨"
+            title_cls = "text-rose-800"
+            badge_cls = "bg-rose-600 text-white"
+            badge_text = "URGENT"
+        else:
+            banner_cls = "bg-gradient-to-r from-amber-50 to-orange-50 border-amber-300"
+            icon = "⚠️"
+            title_cls = "text-amber-800"
+            badge_cls = "bg-amber-500 text-white"
+            badge_text = "ESCALATED"
+
+        html += (
+            f'<div class="rounded-xl border-2 {banner_cls} p-5 mb-3">'
+            f'<div class="flex items-center gap-2 mb-2">'
+            f'<span class="text-xl">{icon}</span>'
+            f'<span class="text-sm font-bold {title_cls} flex-1">{escape(esc["title"])}</span>'
+            f'<span class="px-2 py-0.5 rounded-full text-[10px] font-bold {badge_cls}">{badge_text}</span>'
+            f'</div>'
+            f'<p class="text-sm text-slate-700 leading-relaxed mb-3">{escape(esc["message"])}</p>'
+            f'<div class="flex items-start gap-2 bg-white/70 rounded-lg p-3 border border-slate-200">'
+            f'<span class="text-sm mt-0.5">💡</span>'
+            f'<div class="text-xs text-slate-600 leading-relaxed">'
+            f'<span class="font-semibold">What to do:</span> {escape(esc["recommendation"])}'
+            f'</div></div>'
+            f'</div>'
+        )
+    return html
+
 
 def _load_env() -> None:
     if _ENV_PATH.is_file():
@@ -129,18 +246,54 @@ def _render_risk_tags(tags: list[str]) -> str:
     return "\n".join(parts)
 
 
-def _render_recommendations(recs: list[str]) -> str:
+_CATEGORY_ICONS = {
+    "medication": "💊",
+    "diet": "🥗",
+    "exercise": "🏃",
+    "monitoring": "📋",
+    "lifestyle": "🏠",
+}
+
+
+def _render_recommendations(recs: list) -> str:
     if not recs:
         return '<div class="text-sm text-slate-400">No specific recommendations yet</div>'
     parts = []
     for i, r in enumerate(recs):
-        icon = _REC_ICONS[i % len(_REC_ICONS)]
+        if isinstance(r, dict):
+            text = r.get("text", "")
+            reason = r.get("reason", "")
+            category = r.get("category", "")
+            icon = _CATEGORY_ICONS.get(category, _REC_ICONS[i % len(_REC_ICONS)])
+        else:
+            text = str(r)
+            reason = ""
+            category = ""
+            icon = _REC_ICONS[i % len(_REC_ICONS)]
+
+        safe_text = escape(text).replace("'", "&#39;")
+        reason_html = ""
+        if reason:
+            reason_html = (
+                f'<div class="text-xs text-emerald-700 mt-1.5 leading-relaxed italic '
+                f'bg-emerald-50 rounded px-2 py-1 border-l-2 border-emerald-300">'
+                f'💬 {escape(reason)}</div>'
+            )
+
         parts.append(
-            f'<div class="flex items-start gap-3 bg-emerald-50 rounded-lg p-3 '
-            f'border border-emerald-100">'
+            f'<div class="bg-emerald-50 rounded-lg p-3 '
+            f'border border-emerald-100 meal-card">'
+            f'<div class="flex items-start gap-3">'
             f'<span class="text-base mt-0.5">{icon}</span>'
-            f'<div class="text-sm text-slate-700 leading-relaxed">{escape(r)}</div>'
-            f'</div>'
+            f'<div class="flex-1 min-w-0">'
+            f'<div class="text-sm text-slate-700 leading-relaxed font-medium">{escape(text)}</div>'
+            f'{reason_html}</div>'
+            f'<div class="flex flex-col gap-1 flex-shrink-0">'
+            f'<button class="feedback-btn like" title="Helpful" '
+            f"onclick=\"saveLike(-1,'rec','{safe_text}')\">👍</button>"
+            f'<button class="feedback-btn" title="Not helpful" '
+            f"onclick=\"showFeedbackModal(-1,'rec','{safe_text}')\">👎</button>"
+            f'</div></div></div>'
         )
     return "\n".join(parts)
 
@@ -232,6 +385,132 @@ def _render_adherence(adh: dict) -> str:
     return inner
 
 
+def _render_memory(memory: dict) -> str:
+    if not memory:
+        return ""
+
+    profile = memory.get("patient_long_term_profile") or ""
+    dynamics = memory.get("recent_health_dynamics") or ""
+    events = memory.get("key_events") or []
+
+    if not profile and not dynamics and not events:
+        return ""
+
+    html = (
+        '<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">'
+        '<div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">'
+        '<span class="text-lg">📝</span>'
+        '<h2 class="text-sm font-bold text-slate-800">Health history</h2>'
+        '</div>'
+    )
+
+    if profile:
+        html += (
+            '<div class="text-sm text-slate-700 bg-slate-50 rounded-lg p-3 leading-relaxed '
+            f'border border-slate-100 mb-3">{escape(profile)}</div>'
+        )
+
+    if dynamics:
+        html += (
+            '<div class="flex items-start gap-2 mb-3">'
+            '<span class="text-base mt-0.5">📈</span>'
+            '<div>'
+            '<div class="text-[11px] text-slate-400 uppercase tracking-wide font-medium mb-1">Recent trends</div>'
+            f'<div class="text-sm text-slate-600 leading-relaxed">{escape(dynamics)}</div>'
+            '</div></div>'
+        )
+
+    if events:
+        _EVENT_ICONS = {"surgery": "🔪", "symptom": "⚠️", "alert": "🚨", "medication": "💊", "visit": "🏥"}
+        html += (
+            '<div class="mt-3 pt-3 border-t border-slate-100">'
+            '<div class="text-[11px] text-slate-400 uppercase tracking-wide font-medium mb-2">Key events</div>'
+            '<div class="space-y-2">'
+        )
+        for ev in events:
+            ev_icon = _EVENT_ICONS.get(ev.get("type", ""), "📌")
+            ev_date = ev.get("date", "")
+            ev_desc = ev.get("description", "")
+            ev_type = ev.get("type", "")
+            type_cls = {
+                "surgery": "bg-purple-50 text-purple-700 border-purple-200",
+                "alert": "bg-rose-50 text-rose-700 border-rose-200",
+                "symptom": "bg-amber-50 text-amber-700 border-amber-200",
+                "medication": "bg-blue-50 text-blue-700 border-blue-200",
+            }.get(ev_type, "bg-slate-50 text-slate-600 border-slate-200")
+            html += (
+                f'<div class="flex items-start gap-3 rounded-lg p-2 border {type_cls}">'
+                f'<span class="text-base mt-0.5">{ev_icon}</span>'
+                f'<div class="flex-1 min-w-0">'
+                f'<div class="text-xs font-semibold">{escape(ev_desc)}</div>'
+                f'<div class="text-[10px] text-slate-400 mt-0.5">{escape(ev_date)}</div>'
+                f'</div></div>'
+            )
+        html += '</div></div>'
+
+    html += '</div>'
+    return html
+
+
+def _render_doctor_notes(doctor_feedback: dict) -> str:
+    if not doctor_feedback:
+        return ""
+
+    doctor_name = doctor_feedback.get("doctor_name") or "Your doctor"
+    timestamp = doctor_feedback.get("timestamp") or ""
+    message = doctor_feedback.get("message") or ""
+    med_changes = doctor_feedback.get("medication_changes") or []
+
+    if not message and not med_changes:
+        return ""
+
+    time_display = ""
+    if timestamp:
+        time_display = _format_time(timestamp)
+
+    html = (
+        '<div class="bg-white rounded-xl shadow-sm border border-blue-100 p-5 mb-3">'
+        '<div class="flex items-center gap-2 mb-3 pb-3 border-b border-blue-50">'
+        '<span class="text-lg">👨\u200d⚕️</span>'
+        '<div class="flex-1">'
+        f'<h2 class="text-sm font-bold text-slate-800">{escape(doctor_name)}\'s notes</h2>'
+    )
+    if time_display:
+        html += f'<div class="text-[10px] text-slate-400">{escape(time_display)}</div>'
+    html += '</div></div>'
+
+    if message:
+        html += (
+            '<div class="text-sm text-slate-700 bg-blue-50 rounded-lg p-3 leading-relaxed '
+            f'border border-blue-100 mb-3" style="border-left:3px solid #3b82f6">{escape(message)}</div>'
+        )
+
+    if med_changes:
+        html += (
+            '<div class="mt-2">'
+            '<div class="text-[11px] text-slate-400 uppercase tracking-wide font-medium mb-2">Medication changes</div>'
+        )
+        for change in med_changes:
+            action = change.get("action", "").capitalize()
+            from_med = change.get("from", "")
+            to_med = change.get("to", "")
+            html += (
+                '<div class="flex items-start gap-2 bg-amber-50 rounded-lg p-3 border border-amber-100">'
+                f'<span class="text-sm mt-0.5">💊</span>'
+                '<div class="text-xs text-slate-700 leading-relaxed">'
+                f'<span class="font-semibold text-amber-700">{escape(action)}:</span> '
+            )
+            if from_med:
+                html += f'<span class="line-through text-slate-400">{escape(from_med)}</span> → '
+            if to_med:
+                html += f'<span class="font-medium text-emerald-700">{escape(to_med)}</span>'
+            html += '</div></div>'
+        html += '</div>'
+
+    html += '</div>'
+    return html
+
+
 def _render_diet_table(diet_table: list[dict]) -> str:
     if not diet_table:
         return ""
@@ -269,11 +548,17 @@ def _render_diet_tips(tips: list[dict]) -> str:
         return ""
     inner = ""
     for tip in tips:
+        title = tip.get("title", "")
+        safe_title = escape(title).replace("'", "&#39;")
         inner += (
-            f'<div class="bg-slate-50 rounded-lg p-3 border border-slate-100">'
+            f'<div class="bg-slate-50 rounded-lg p-3 border border-slate-100 meal-card">'
             f'<div class="flex items-center gap-2 mb-1">'
             f'<span class="text-base">{tip.get("icon", "💡")}</span>'
-            f'<span class="text-xs font-semibold text-slate-700">{escape(tip.get("title", ""))}</span>'
+            f'<span class="text-xs font-semibold text-slate-700 flex-1">{escape(title)}</span>'
+            f'<button class="feedback-btn like" title="Helpful" '
+            f"onclick=\"saveLike(-1,'tip','{safe_title}')\">👍</button>"
+            f'<button class="feedback-btn" title="Not helpful" '
+            f"onclick=\"showFeedbackModal(-1,'tip','{safe_title}')\">👎</button>"
             f'</div>'
             f'<div class="text-xs text-slate-600 leading-relaxed">{escape(tip.get("detail", ""))}</div>'
             f'</div>'
@@ -534,6 +819,8 @@ def main() -> None:
     payload = data.get("payload") or {}
     llm = data.get("llm_result") or {}
     so = llm.get("structured_output") or {}
+    memory = payload.get("memory") or {}
+    doctor_feedback = payload.get("doctor_feedback") or {}
 
     try:
         template = _TEMPLATE_PATH.read_text(encoding="utf-8")
@@ -541,7 +828,16 @@ def main() -> None:
         print(f"Template not found: {_TEMPLATE_PATH}", file=sys.stderr)
         sys.exit(1)
 
+    # Check for symptom escalation based on memory events
+    key_events = memory.get("key_events") or []
+    escalations = _check_escalations(key_events)
+
     status = so.get("patient_status") or "stable"
+    # Override status if critical escalation is triggered
+    if any(e["level"] == "critical" for e in escalations):
+        status = "at_risk"
+    elif escalations and status == "stable":
+        status = "at_risk"
     if status not in _STATUS_MAP:
         status = "stable"
     badge_class, status_icon, status_text = _STATUS_MAP[status]
@@ -587,15 +883,21 @@ def main() -> None:
 
     meal_json = json.dumps(so.get("weekly_meal_plan") or [], ensure_ascii=False)
 
+    patient_id = meta.get("user_id") or "unknown"
+
     html = template.format(
         report_title="Adherence report",
         header_greeting="Hello!",
+        patient_id=patient_id,
         current_time=current_time,
         status_badge_class=badge_class,
         status_icon=status_icon,
         status_text=status_text,
         condition_badges=_render_condition_badges(conditions),
+        escalation_html=_render_escalation_banner(escalations),
         ai_message=escape(so.get("assistant_message_patient") or ""),
+        memory_html=_render_memory(memory),
+        doctor_notes_html=_render_doctor_notes(doctor_feedback),
         vitals_html=_render_vitals(so.get("latest_health_summary") or {}),
         risk_tags_html=_render_risk_tags(so.get("risk_tags") or []),
         recommendations_html=_render_recommendations(so.get("recommendations") or []),
@@ -619,10 +921,22 @@ def main() -> None:
         ),
     )
 
+    escalation_records = []
+    for esc in escalations:
+        escalation_records.append({
+            "level": esc["level"],
+            "title": esc["title"],
+            "message": esc["message"],
+            "count": esc["count"],
+            "threshold": esc["threshold"],
+            "detected_at": meta.get("current_time") or datetime.now().isoformat(),
+        })
+
     result = {
         "structured_output": {
             "html": html,
             "detail": so,
+            "escalations": escalation_records,
         },
     }
 

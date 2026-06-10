@@ -7,7 +7,25 @@
     },
     "memory": {
       "patient_long_term_profile": "Margaret Chen, female, 71 years old. Diagnosed with hypertension (8 years), type 2 diabetes (4 years), hyperlipidemia. Post-surgery recovery (knee replacement, 6 weeks ago). Medications: amlodipine 5mg qd, metformin 500mg bid, atorvastatin 20mg qn. Lives alone, daughter visits weekly.",
-      "recent_health_dynamics": "Over the past 14 days: appetite noticeably decreased, likely related to metformin side effects and post-surgery discomfort. Steps dropped from average 4,000/day to about 1,500/day. Blood pressure stable around 138/85. Blood glucose slightly elevated at 7.0-7.4 fasting. Reports feeling tired and not wanting to eat much."
+      "recent_health_dynamics": "Over the past 14 days: appetite noticeably decreased, likely related to metformin side effects and post-surgery discomfort. Steps dropped from average 4,000/day to about 1,500/day. Blood pressure stable around 138/85. Blood glucose slightly elevated at 7.0-7.4 fasting. Reports feeling tired and not wanting to eat much.",
+      "key_events": [
+        {"date": "2026-03-28", "type": "surgery", "description": "Right knee replacement surgery (total arthroplasty)"},
+        {"date": "2026-04-15", "type": "symptom", "description": "Post-op follow-up: healing well, cleared for light walking"},
+        {"date": "2026-04-22", "type": "symptom", "description": "Reported headache in the morning, mild intensity"},
+        {"date": "2026-05-01", "type": "symptom", "description": "Reported recurring nausea after taking metformin"},
+        {"date": "2026-05-03", "type": "symptom", "description": "Headache again, moderate intensity, lasted 2 hours"},
+        {"date": "2026-05-05", "type": "symptom", "description": "Appetite decreased noticeably, skipping lunch"},
+        {"date": "2026-05-09", "type": "symptom", "description": "Headache reported third time, took paracetamol"},
+        {"date": "2026-05-10", "type": "alert", "description": "Activity level dropped below 2000 steps for 5 consecutive days"}
+      ]
+    },
+    "doctor_feedback": {
+      "doctor_name": "Dr. Sarah Liu",
+      "timestamp": "2026-05-12T16:30:00",
+      "message": "Margaret's recovery is progressing but I'm concerned about her decreased appetite and nausea. Let's try switching metformin to the extended-release version to reduce GI side effects. Keep encouraging small, frequent meals. Her knee rehab is on track — she can start gentle outdoor walks (10 min) when she feels ready. Please continue monitoring blood glucose daily.",
+      "medication_changes": [
+        {"action": "switch", "from": "Metformin 500mg bid (immediate-release)", "to": "Metformin XR 1000mg once daily with dinner"}
+      ]
     },
     "signals": {
       "start_ts": "2026-04-29 00:00",
@@ -65,11 +83,36 @@
         }
       },
       "recommendations": [
-        "Take metformin right in the middle of a meal (not before or after) to reduce nausea",
-        "Try eating 5-6 small meals instead of 3 big ones — even a few bites count",
-        "Do 10 minutes of seated leg exercises twice a day to maintain strength while your knee heals",
-        "Set a daily alarm for glucose checking — consistency helps your doctor adjust your plan",
-        "Ask your daughter to help prep some easy grab-and-go snacks for the week"
+        {
+          "text": "Take metformin right in the middle of a meal (not before or after) to reduce nausea",
+          "reason": "You've reported nausea twice after taking metformin on an empty stomach. Mid-meal timing significantly reduces GI side effects during post-surgery recovery.",
+          "category": "medication"
+        },
+        {
+          "text": "Try eating 5-6 small meals instead of 3 big ones — even a few bites count",
+          "reason": "Your appetite has decreased since surgery. Smaller, frequent meals are easier to tolerate and help maintain blood glucose stability with your diabetes.",
+          "category": "diet"
+        },
+        {
+          "text": "Do 10 minutes of seated leg exercises twice a day to keep your muscles active",
+          "reason": "After your knee replacement 6 weeks ago, gentle movement prevents muscle atrophy and improves circulation, which supports healing and glucose regulation.",
+          "category": "exercise"
+        },
+        {
+          "text": "Take a short 5-minute walk around your home when you feel up to it",
+          "reason": "Light walking — even indoors — promotes knee recovery, reduces blood pressure, and helps counter the low activity pattern we've noticed over the past 5 days.",
+          "category": "exercise"
+        },
+        {
+          "text": "Set a daily alarm for glucose checking — consistency helps your doctor adjust your plan",
+          "reason": "You missed glucose checks on 3 days this period. Regular data helps your doctor decide if your metformin dosage needs adjustment.",
+          "category": "monitoring"
+        },
+        {
+          "text": "Ask your daughter to help prep some easy grab-and-go snacks for the week",
+          "reason": "Since you live alone and haven't been going out, having pre-made nutritious snacks removes the barrier of cooking when you're fatigued.",
+          "category": "lifestyle"
+        }
       ],
       "nutrition_advice": "Margaret, since your appetite is lower right now, focus on nutrient-dense foods in smaller portions. Warm oatmeal, soft-boiled eggs, and broth-based soups are gentle on the stomach. Add a handful of nuts or a small piece of fruit as snacks between meals to keep your energy up.",
       "latest_health_summary": {

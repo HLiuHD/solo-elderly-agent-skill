@@ -1,0 +1,290 @@
+{
+  "structured_output": {
+    "html": "(omitted, see test_report.html)",
+    "detail": {
+      "patient_status": "at_risk",
+      "risk_tags": [
+        "Appetite decreased",
+        "Low activity level",
+        "Glucose monitoring gaps"
+      ],
+      "assistant_message_patient": "Hello Margaret! We've been keeping an eye on how you've been doing over the past two weeks, and we want to share a few observations with you. First, the good news: your blood pressure has been pretty steady, and you've been taking most of your medications on time — great job! However, we've noticed your appetite has been lower than usual, and you mentioned feeling nauseous sometimes. This might be related to your metformin — your doctor is aware and may adjust the timing or dosage. Your walking has also slowed down since your knee surgery, which is understandable. We've put together some gentle suggestions and a meal plan that focuses on easy-to-digest, nutrient-rich foods to help you get your strength back. Small steps count!",
+      "adherence_analysis": {
+        "period": "Past 14 days",
+        "medication": {
+          "status": "Mostly on track",
+          "issues": "Skipped metformin twice due to nausea after meals",
+          "adjustments": "Consider taking metformin with food or asking your doctor about extended-release formulation"
+        },
+        "appetite": {
+          "status": "Decreased",
+          "cause_if_known": "Likely metformin-related nausea combined with post-surgery fatigue and reduced activity",
+          "suggestions": "Try smaller, more frequent meals. Warm soups and soft foods may be easier to tolerate."
+        },
+        "exercise": {
+          "status": "Below target",
+          "barriers": "Knee pain from recent surgery limits walking distance and duration",
+          "plan": "Start with 10-minute seated exercises twice daily. Add short walks (5 min) as tolerated."
+        },
+        "monitoring": {
+          "status": "Needs improvement",
+          "gaps": "Missed glucose checks on 3 days. Blood pressure monitoring is consistent."
+        }
+      },
+      "recommendations": [
+        {
+          "text": "Take metformin right in the middle of a meal (not before or after) to reduce nausea",
+          "reason": "You've reported nausea twice after taking metformin on an empty stomach. Mid-meal timing significantly reduces GI side effects during post-surgery recovery.",
+          "category": "medication"
+        },
+        {
+          "text": "Try eating 5-6 small meals instead of 3 big ones — even a few bites count",
+          "reason": "Your appetite has decreased since surgery. Smaller, frequent meals are easier to tolerate and help maintain blood glucose stability with your diabetes.",
+          "category": "diet"
+        },
+        {
+          "text": "Do 10 minutes of seated leg exercises twice a day to keep your muscles active",
+          "reason": "After your knee replacement 6 weeks ago, gentle movement prevents muscle atrophy and improves circulation, which supports healing and glucose regulation.",
+          "category": "exercise"
+        },
+        {
+          "text": "Take a short 5-minute walk around your home when you feel up to it",
+          "reason": "Light walking — even indoors — promotes knee recovery, reduces blood pressure, and helps counter the low activity pattern we've noticed over the past 5 days.",
+          "category": "exercise"
+        },
+        {
+          "text": "Set a daily alarm for glucose checking — consistency helps your doctor adjust your plan",
+          "reason": "You missed glucose checks on 3 days this period. Regular data helps your doctor decide if your metformin dosage needs adjustment.",
+          "category": "monitoring"
+        },
+        {
+          "text": "Ask your daughter to help prep some easy grab-and-go snacks for the week",
+          "reason": "Since you live alone and haven't been going out, having pre-made nutritious snacks removes the barrier of cooking when you're fatigued.",
+          "category": "lifestyle"
+        }
+      ],
+      "nutrition_advice": "Margaret, since your appetite is lower right now, focus on nutrient-dense foods in smaller portions. Warm oatmeal, soft-boiled eggs, and broth-based soups are gentle on the stomach. Add a handful of nuts or a small piece of fruit as snacks between meals to keep your energy up.",
+      "latest_health_summary": {
+        "blood_pressure": "138/85",
+        "heart_rate": "74",
+        "blood_oxygen": "97",
+        "blood_glucose": "7.2",
+        "steps_today": "1,500"
+      },
+      "conditions": [
+        "Hypertension",
+        "Type 2 diabetes",
+        "Hyperlipidemia"
+      ],
+      "diet_table": [
+        {
+          "condition": "Hypertension",
+          "principle": "Low sodium, high potassium",
+          "recommend": "Leafy greens, bananas, sweet potatoes, fish",
+          "avoid": "Canned soups, deli meats, soy sauce, pickles"
+        },
+        {
+          "condition": "Type 2 diabetes",
+          "principle": "Low GI, controlled portions",
+          "recommend": "Oatmeal, lentils, non-starchy vegetables, nuts",
+          "avoid": "White bread, sugary drinks, pastries, white rice"
+        },
+        {
+          "condition": "Hyperlipidemia",
+          "principle": "Low saturated fat, high fiber",
+          "recommend": "Salmon, olive oil, oats, almonds",
+          "avoid": "Fried foods, butter, fatty meats, full-fat dairy"
+        }
+      ],
+      "weekly_meal_plan": [
+        {
+          "day": "Day 1",
+          "breakfast": [
+            {
+              "name": "Warm oatmeal with banana",
+              "icon": "🥣",
+              "condition": "Diabetes",
+              "benefit": "Low GI, gentle on stomach"
+            },
+            {
+              "name": "Soft-boiled egg",
+              "icon": "🥚",
+              "condition": "Hyperlipidemia",
+              "benefit": "Lean protein boost"
+            }
+          ],
+          "lunch": [
+            {
+              "name": "Chicken broth with vegetables",
+              "icon": "🍲",
+              "condition": "Hypertension",
+              "benefit": "Low sodium, hydrating"
+            },
+            {
+              "name": "Whole wheat crackers",
+              "icon": "🍞",
+              "condition": "Diabetes",
+              "benefit": "Slow-release carbs"
+            }
+          ],
+          "dinner": [
+            {
+              "name": "Baked salmon fillet",
+              "icon": "🐟",
+              "condition": "Hyperlipidemia",
+              "benefit": "Heart-healthy omega-3"
+            },
+            {
+              "name": "Steamed broccoli",
+              "icon": "🥦",
+              "condition": "Hypertension",
+              "benefit": "Potassium-rich"
+            },
+            {
+              "name": "Brown rice (small portion)",
+              "icon": "🍚",
+              "condition": "Diabetes",
+              "benefit": "High fiber whole grain"
+            }
+          ]
+        },
+        {
+          "day": "Day 2",
+          "breakfast": [
+            {
+              "name": "Greek yogurt with berries",
+              "icon": "🫐",
+              "condition": "Diabetes",
+              "benefit": "Protein + low GI fruit"
+            },
+            {
+              "name": "Handful of almonds",
+              "icon": "🥜",
+              "condition": "Hyperlipidemia",
+              "benefit": "Healthy fats, fiber"
+            }
+          ],
+          "lunch": [
+            {
+              "name": "Lentil soup",
+              "icon": "🍲",
+              "condition": "Diabetes",
+              "benefit": "Low GI, high protein"
+            },
+            {
+              "name": "Side salad with olive oil",
+              "icon": "🥗",
+              "condition": "Hyperlipidemia",
+              "benefit": "Heart-healthy fats"
+            }
+          ],
+          "dinner": [
+            {
+              "name": "Grilled chicken breast",
+              "icon": "🍗",
+              "condition": "Hyperlipidemia",
+              "benefit": "Lean protein"
+            },
+            {
+              "name": "Roasted sweet potato",
+              "icon": "🍠",
+              "condition": "Hypertension",
+              "benefit": "Potassium-rich"
+            },
+            {
+              "name": "Sauteed spinach",
+              "icon": "🥬",
+              "condition": "Hypertension",
+              "benefit": "Magnesium + potassium"
+            }
+          ]
+        },
+        {
+          "day": "Day 3",
+          "breakfast": [
+            {
+              "name": "Scrambled eggs on toast",
+              "icon": "🍳",
+              "condition": "Diabetes",
+              "benefit": "Protein-rich start"
+            },
+            {
+              "name": "Sliced avocado",
+              "icon": "🥑",
+              "condition": "Hyperlipidemia",
+              "benefit": "Healthy monounsaturated fat"
+            }
+          ],
+          "lunch": [
+            {
+              "name": "Tuna salad (light mayo)",
+              "icon": "🐟",
+              "condition": "Hyperlipidemia",
+              "benefit": "Omega-3 fatty acids"
+            },
+            {
+              "name": "Apple slices",
+              "icon": "🍎",
+              "condition": "Diabetes",
+              "benefit": "Fiber-rich, low GI snack"
+            }
+          ],
+          "dinner": [
+            {
+              "name": "Turkey meatballs",
+              "icon": "🍖",
+              "condition": "Hyperlipidemia",
+              "benefit": "Low-fat protein"
+            },
+            {
+              "name": "Quinoa pilaf",
+              "icon": "🍚",
+              "condition": "Diabetes",
+              "benefit": "Complete protein grain"
+            },
+            {
+              "name": "Steamed green beans",
+              "icon": "🥬",
+              "condition": "Hypertension",
+              "benefit": "Low sodium, high fiber"
+            }
+          ]
+        }
+      ],
+      "diet_tips": [
+        {
+          "icon": "🍽️",
+          "title": "Small & frequent",
+          "detail": "When appetite is low, eat 5-6 small meals rather than 3 large ones. Even a few bites help."
+        },
+        {
+          "icon": "💊",
+          "title": "Medication timing",
+          "detail": "Take metformin in the middle of eating (not on an empty stomach) to reduce nausea."
+        },
+        {
+          "icon": "🥣",
+          "title": "Gentle foods first",
+          "detail": "Start with warm, soft foods like oatmeal, soups, and eggs when your stomach feels sensitive."
+        },
+        {
+          "icon": "🥤",
+          "title": "Stay hydrated",
+          "detail": "Sip water throughout the day. Warm herbal tea can also help with appetite and digestion."
+        }
+      ],
+      "reasoning": "Margaret's adherence data over 14 days shows a clear pattern: medication compliance is good except for metformin-related nausea, appetite is reduced likely due to the combination of metformin side effects and post-surgery recovery, and activity levels have dropped significantly due to knee pain. The meal plan focuses on easy-to-digest, nutrient-dense options that address all three conditions while being gentle on her stomach.",
+      "guardrail": "This report was generated by an AI health assistant for information only. It is not medical advice. If you feel unwell, please contact your doctor or call emergency services. Always follow your clinician's instructions regarding medications and treatment."
+    },
+    "escalations": [
+      {
+        "level": "escalated",
+        "title": "Recurring headache — escalated to attention",
+        "message": "You have reported headaches 3 times in recent records. Because this symptom keeps coming back, we are flagging this for closer monitoring and your doctor will be notified.",
+        "count": 3,
+        "threshold": 3,
+        "detected_at": "2026-05-13T14:00:00"
+      }
+    ]
+  }
+}

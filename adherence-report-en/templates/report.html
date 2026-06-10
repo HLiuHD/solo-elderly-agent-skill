@@ -10,6 +10,22 @@
   body {{ font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }}
   .meal-card {{ transition: all .2s; }}
   .meal-card:hover {{ transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.08); }}
+  .feedback-btn {{ opacity:0; transition: opacity .2s; cursor:pointer; border:none; background:transparent; font-size:0.9em; padding:2px 4px; border-radius:4px; }}
+  .meal-card:hover .feedback-btn {{ opacity:1; }}
+  .feedback-btn:hover {{ background:#fee2e2; }}
+  .feedback-btn.like:hover {{ background:#dcfce7; }}
+  .feedback-btn.liked {{ opacity:1; background:#dcfce7; }}
+  .feedback-btn.disliked {{ opacity:1; background:#fef3c7; }}
+  .feedback-modal {{ position:fixed; inset:0; background:rgba(0,0,0,.4); display:flex; align-items:center; justify-content:center; z-index:9999; }}
+  .feedback-modal-box {{ background:#fff; border-radius:16px; padding:24px; max-width:320px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,.2); }}
+  .feedback-reason {{ display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0; border:1px solid #e2e8f0; border-radius:10px; background:#f8fafc; font-size:0.85em; cursor:pointer; transition:all .15s; }}
+  .feedback-reason:hover {{ background:#eff6ff; border-color:#93c5fd; }}
+  .cuisine-chip {{ display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:20px; font-size:0.8em; font-weight:500; cursor:pointer; border:2px solid #e2e8f0; background:#f8fafc; color:#475569; transition:all 0.2s; user-select:none; }}
+  .cuisine-chip:hover {{ border-color:#a7f3d0; background:#ecfdf5; }}
+  .cuisine-chip.selected {{ border-color:#10b981; background:#d1fae5; color:#065f46; }}
+  .cuisine-chip .chip-x {{ font-size:0.75em; opacity:0; padding:2px; border-radius:50%; }}
+  .cuisine-chip.selected .chip-x {{ opacity:0.6; }}
+  .cuisine-chip.selected .chip-x:hover {{ opacity:1; background:#fecaca; color:#991b1b; }}
 </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
@@ -25,6 +41,9 @@
     </div>
   </div>
 
+  <!-- Escalation Banners (triggered by recurring symptoms) -->
+  {escalation_html}
+
   <!-- AI Message -->
   <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
     <div class="flex items-center gap-2 mb-3 pb-3 border-b border-slate-100">
@@ -33,6 +52,12 @@
     </div>
     <p class="text-sm text-slate-700 leading-relaxed">{ai_message}</p>
   </div>
+
+  <!-- Health History (Memory) -->
+  {memory_html}
+
+  <!-- Doctor's Notes -->
+  {doctor_notes_html}
 
   <!-- Vitals -->
   <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
@@ -71,6 +96,21 @@
   <!-- Diet Table -->
   {diet_table_html}
 
+  <!-- Cuisine Preference -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
+    <div class="flex items-center gap-2 mb-3 pb-3 border-b border-slate-100">
+      <span class="text-lg">🍜</span>
+      <h2 class="text-sm font-bold text-slate-800">Your cuisine preferences</h2>
+    </div>
+    <p class="text-xs text-slate-500 mb-3">Select cuisines you enjoy — we'll tailor future meal plans to your taste.</p>
+    <div class="flex flex-wrap gap-2 mb-3" id="cuisineChips"></div>
+    <div class="flex items-center gap-2">
+      <input id="customCuisineInput" type="text" placeholder="Add another cuisine..."
+        class="flex-1 text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-200">
+      <button onclick="addCustomCuisine()" class="px-3 py-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium hover:bg-emerald-100">+ Add</button>
+    </div>
+  </div>
+
   <!-- Weekly Meal Plan -->
   <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
     <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
@@ -87,6 +127,14 @@
   <!-- Map -->
   {map_html}
 
+  <!-- Export Feedback -->
+  <div class="text-center mb-4">
+    <button id="exportFeedbackBtn" onclick="exportFeedbackJSON()" style="display:none"
+      class="px-4 py-2 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition-all">
+      📤 Export feedback
+    </button>
+  </div>
+
   <!-- Guardrail -->
   <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
     <p class="text-xs text-amber-800 leading-relaxed">{guardrail}</p>
@@ -101,6 +149,110 @@ const MEAL_LABELS = {{"breakfast":"Breakfast","lunch":"Lunch","dinner":"Dinner"}
 const rawMeals = {meal_data_json};
 const meals = DAYS.map((d, i) => ({{ ...rawMeals[i % rawMeals.length], day: d }}));
 let activeDay = 0;
+
+const MEAL_FEEDBACK_REASONS = [
+  "Don't like the taste",
+  "Allergic / intolerant",
+  "Can't find this ingredient",
+  "Too difficult to prepare",
+  "Other"
+];
+const GENERAL_FEEDBACK_REASONS = [
+  "Not applicable to me",
+  "Too difficult to do",
+  "Already doing this",
+  "Don't agree with this",
+  "Other"
+];
+let feedbackStore = JSON.parse(localStorage.getItem("mealFeedback") || "{{}}");
+
+function saveFeedback(dayIdx, mealType, itemName, reason) {{
+  const key = `${{dayIdx}}-${{mealType}}-${{itemName}}`;
+  feedbackStore[key] = {{ sentiment: "dislike", reason, timestamp: new Date().toISOString() }};
+  localStorage.setItem("mealFeedback", JSON.stringify(feedbackStore));
+  updateExportBadge();
+}}
+
+function saveLike(dayIdx, mealType, itemName) {{
+  const key = `${{dayIdx}}-${{mealType}}-${{itemName}}`;
+  feedbackStore[key] = {{ sentiment: "like", reason: null, timestamp: new Date().toISOString() }};
+  localStorage.setItem("mealFeedback", JSON.stringify(feedbackStore));
+  renderMeals();
+  updateExportBadge();
+}}
+
+function getFeedback(dayIdx, mealType, itemName) {{
+  return feedbackStore[`${{dayIdx}}-${{mealType}}-${{itemName}}`];
+}}
+
+function exportFeedbackJSON() {{
+  const likes = [];
+  const dislikes = [];
+  for (const [key, val] of Object.entries(feedbackStore)) {{
+    const entry = {{ item_key: key, ...val }};
+    if (val.sentiment === "like") likes.push(entry);
+    else dislikes.push(entry);
+  }}
+  const selectedCuisines = Object.entries(cuisinePrefs).map(([name, meta]) => ({{
+    cuisine: name, ...meta
+  }}));
+  const payload = {{
+    patient_id: "{patient_id}",
+    report_time: "{current_time}",
+    exported_at: new Date().toISOString(),
+    total_feedback: likes.length + dislikes.length,
+    preferences: {{
+      cuisine_preferences: selectedCuisines,
+      liked: likes,
+      disliked: dislikes
+    }}
+  }};
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {{ type: "application/json" }});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "patient_preferences_" + new Date().toISOString().slice(0,10) + ".json";
+  a.click();
+  URL.revokeObjectURL(url);
+}}
+
+function updateExportBadge() {{
+  const btn = document.getElementById("exportFeedbackBtn");
+  if (!btn) return;
+  const fbCount = Object.keys(feedbackStore).length;
+  const cuisineCount = Object.keys(cuisinePrefs).length;
+  const total = fbCount + cuisineCount;
+  btn.textContent = total > 0 ? "📤 Export preferences (" + total + " items)" : "📤 Export preferences";
+  btn.style.display = total > 0 ? "inline-block" : "none";
+}}
+
+function showFeedbackModal(dayIdx, mealType, itemName) {{
+  const existing = document.querySelector('.feedback-modal');
+  if (existing) existing.remove();
+  const isMeal = dayIdx >= 0;
+  const reasons = isMeal ? MEAL_FEEDBACK_REASONS : GENERAL_FEEDBACK_REASONS;
+  const title = isMeal ? "Why don't you want this food?" : "Why doesn't this work for you?";
+  const displayName = itemName.length > 60 ? itemName.substring(0, 57) + "..." : itemName;
+  const modal = document.createElement('div');
+  modal.className = 'feedback-modal';
+  modal.innerHTML = `
+    <div class="feedback-modal-box">
+      <div class="text-sm font-bold text-slate-800 mb-1">${{title}}</div>
+      <div class="text-xs text-slate-500 mb-3">${{displayName}}</div>
+      ${{reasons.map(r => `<button class="feedback-reason" data-reason="${{r}}">${{r}}</button>`).join('')}}
+      <button class="feedback-reason" style="color:#94a3b8;border-color:#e2e8f0;margin-top:8px" data-reason="__cancel__">Cancel</button>
+    </div>`;
+  modal.addEventListener('click', function(e) {{
+    const reason = e.target.dataset.reason;
+    if (!reason) return;
+    if (reason === '__cancel__') {{ modal.remove(); return; }}
+    saveFeedback(dayIdx, mealType, itemName, reason);
+    modal.remove();
+    if (isMeal) renderMeals();
+    e.target.closest('.feedback-modal').remove();
+  }});
+  document.body.appendChild(modal);
+}}
 
 function renderTabs() {{
   const container = document.getElementById("dayTabs");
@@ -124,12 +276,22 @@ function renderMeals() {{
     if (!items.length) continue;
     html += `<div class="mb-4"><div class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">${{label}}</div><div class="grid grid-cols-1 sm:grid-cols-2 gap-2">`;
     for (const it of items) {{
+      const fb = getFeedback(activeDay, key, it.name);
+      const likeClass = fb && fb.sentiment === "like" ? "liked" : "";
+      const dislikeClass = fb && fb.sentiment === "dislike" ? "disliked" : "";
+      const safeName = it.name.replace(/'/g, "&#39;");
+      const reason = it.condition && it.benefit
+        ? "For your " + it.condition.toLowerCase() + ": " + it.benefit.toLowerCase()
+        : (it.benefit || "");
       html += `<div class="meal-card flex items-start gap-3 bg-slate-50 rounded-lg p-3 border border-slate-100">
         <span class="text-2xl mt-0.5">${{it.icon || "🍽️"}}</span>
         <div class="flex-1 min-w-0">
           <div class="text-sm font-semibold text-slate-800">${{it.name}}</div>
-          <div class="text-[11px] text-emerald-600 font-medium">${{it.condition || ""}}</div>
-          <div class="text-xs text-slate-500 mt-0.5 leading-relaxed">${{it.benefit || ""}}</div>
+          <div class="text-xs text-emerald-600 mt-0.5 leading-relaxed italic">${{reason}}</div>
+        </div>
+        <div class="flex flex-col gap-1">
+          <button class="feedback-btn like ${{likeClass}}" title="I like this" onclick="saveLike(${{activeDay}},'${{key}}','${{safeName}}')">👍</button>
+          <button class="feedback-btn ${{dislikeClass}}" title="I don't want this" onclick="showFeedbackModal(${{activeDay}},'${{key}}','${{safeName}}')">👎</button>
         </div>
       </div>`;
     }}
@@ -138,8 +300,90 @@ function renderMeals() {{
   document.getElementById("mealContent").innerHTML = html;
 }}
 
+// ─── Cuisine Preferences ───
+const DEFAULT_CUISINES = [
+  {{ name: "American", icon: "🍔" }},
+  {{ name: "Italian", icon: "🍝" }},
+  {{ name: "Japanese", icon: "🍣" }},
+  {{ name: "Korean", icon: "🥘" }},
+  {{ name: "Mexican", icon: "🌮" }},
+  {{ name: "Indian", icon: "🍛" }},
+  {{ name: "Mediterranean", icon: "🫒" }},
+  {{ name: "Sichuan (川菜)", icon: "🌶️" }},
+  {{ name: "Cantonese (粤菜)", icon: "🥡" }},
+  {{ name: "Thai", icon: "🍜" }},
+  {{ name: "French", icon: "🥐" }},
+  {{ name: "Vietnamese", icon: "🍲" }},
+];
+
+let cuisinePrefs = JSON.parse(localStorage.getItem("cuisinePrefs") || "{{}}");
+
+function renderCuisineChips() {{
+  const container = document.getElementById("cuisineChips");
+  if (!container) return;
+  const allCuisines = [...DEFAULT_CUISINES];
+  const customNames = Object.keys(cuisinePrefs).filter(n => !DEFAULT_CUISINES.some(d => d.name === n));
+  for (const cn of customNames) {{
+    allCuisines.push({{ name: cn, icon: "🍽️" }});
+  }}
+  container.innerHTML = allCuisines.map(c => {{
+    const sel = cuisinePrefs[c.name] ? "selected" : "";
+    return `<span class="cuisine-chip ${{sel}}" onclick="toggleCuisine('${{c.name.replace(/'/g,"&#39;")}}')">${{c.icon}} ${{c.name}}<span class="chip-x" onclick="event.stopPropagation();removeCuisine('${{c.name.replace(/'/g,"&#39;")}}')">✕</span></span>`;
+  }}).join("");
+  updateExportBadge();
+}}
+
+function toggleCuisine(name) {{
+  if (cuisinePrefs[name]) {{
+    delete cuisinePrefs[name];
+  }} else {{
+    cuisinePrefs[name] = {{ selected_at: new Date().toISOString() }};
+  }}
+  localStorage.setItem("cuisinePrefs", JSON.stringify(cuisinePrefs));
+  renderCuisineChips();
+  showCuisineToast();
+}}
+
+function showCuisineToast() {{
+  const selected = Object.keys(cuisinePrefs);
+  if (!selected.length) return;
+  let existing = document.getElementById("cuisineToast");
+  if (!existing) {{
+    existing = document.createElement("div");
+    existing.id = "cuisineToast";
+    existing.style.cssText = "position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#065f46;color:#fff;padding:10px 20px;border-radius:12px;font-size:0.8em;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,0.2);z-index:9999;transition:opacity 0.3s;max-width:90%;text-align:center";
+    document.body.appendChild(existing);
+  }}
+  existing.textContent = "✓ Saved! Next report will include " + selected.join(", ") + " recipes.";
+  existing.style.opacity = "1";
+  clearTimeout(existing._timer);
+  existing._timer = setTimeout(() => {{ existing.style.opacity = "0"; }}, 3000);
+}}
+
+function removeCuisine(name) {{
+  delete cuisinePrefs[name];
+  localStorage.setItem("cuisinePrefs", JSON.stringify(cuisinePrefs));
+  renderCuisineChips();
+}}
+
+function addCustomCuisine() {{
+  const input = document.getElementById("customCuisineInput");
+  const name = (input.value || "").trim();
+  if (!name) return;
+  cuisinePrefs[name] = {{ selected_at: new Date().toISOString(), custom: true }};
+  localStorage.setItem("cuisinePrefs", JSON.stringify(cuisinePrefs));
+  input.value = "";
+  renderCuisineChips();
+}}
+
+document.getElementById("customCuisineInput").addEventListener("keydown", function(e) {{
+  if (e.key === "Enter") {{ e.preventDefault(); addCustomCuisine(); }}
+}});
+
+renderCuisineChips();
 renderTabs();
 renderMeals();
+updateExportBadge();
 </script>
 </body>
 </html>
