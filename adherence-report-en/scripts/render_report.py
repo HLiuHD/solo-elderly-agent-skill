@@ -271,7 +271,8 @@ def _render_recommendations(recs: list) -> str:
             category = ""
             icon = _REC_ICONS[i % len(_REC_ICONS)]
 
-        safe_text = escape(text).replace("'", "&#39;")
+        safe_text = escape(text, quote=True)
+        feedback_key = escape(f"-1-rec-{text}", quote=True)
         reason_html = ""
         if reason:
             reason_html = (
@@ -289,10 +290,16 @@ def _render_recommendations(recs: list) -> str:
             f'<div class="text-sm text-slate-700 leading-relaxed font-medium">{escape(text)}</div>'
             f'{reason_html}</div>'
             f'<div class="flex flex-col gap-1 flex-shrink-0">'
-            f'<button class="feedback-btn like" title="Helpful" '
-            f"onclick=\"saveLike(-1,'rec','{safe_text}')\">👍</button>"
-            f'<button class="feedback-btn" title="Not helpful" '
-            f"onclick=\"showFeedbackModal(-1,'rec','{safe_text}')\">👎</button>"
+            f'<button class="feedback-btn feedback-action feedback-action-positive like" title="Helpful" '
+            f'data-day-idx="-1" data-meal-type="rec" data-item-name="{safe_text}" '
+            f'data-feedback-key="{feedback_key}" data-feedback-type="like" aria-pressed="false" '
+            f'onclick="saveLikeFromButton(this)">'
+            f'<span class="feedback-action-dot">✓</span>Works for me</button>'
+            f'<button class="feedback-btn feedback-action feedback-action-negative" title="Not helpful" '
+            f'data-day-idx="-1" data-meal-type="rec" data-item-name="{safe_text}" '
+            f'data-feedback-key="{feedback_key}" data-feedback-type="dislike" aria-pressed="false" '
+            f'onclick="showFeedbackModalFromButton(this)">'
+            f'<span class="feedback-action-dot">−</span>Not for me</button>'
             f'</div></div></div>'
         )
     return "\n".join(parts)
@@ -613,16 +620,23 @@ def _render_diet_tips(tips: list[dict]) -> str:
     inner = ""
     for tip in tips:
         title = tip.get("title", "")
-        safe_title = escape(title).replace("'", "&#39;")
+        safe_title = escape(title, quote=True)
+        feedback_key = escape(f"-1-tip-{title}", quote=True)
         inner += (
             f'<div class="bg-slate-50 rounded-lg p-3 border border-slate-100 meal-card">'
             f'<div class="flex items-center gap-2 mb-1">'
             f'<span class="text-base">{tip.get("icon", "💡")}</span>'
             f'<span class="text-xs font-semibold text-slate-700 flex-1">{escape(title)}</span>'
-            f'<button class="feedback-btn like" title="Helpful" '
-            f"onclick=\"saveLike(-1,'tip','{safe_title}')\">👍</button>"
-            f'<button class="feedback-btn" title="Not helpful" '
-            f"onclick=\"showFeedbackModal(-1,'tip','{safe_title}')\">👎</button>"
+            f'<button class="feedback-btn feedback-action feedback-action-positive like" title="Helpful" '
+            f'data-day-idx="-1" data-meal-type="tip" data-item-name="{safe_title}" '
+            f'data-feedback-key="{feedback_key}" data-feedback-type="like" aria-pressed="false" '
+            f'onclick="saveLikeFromButton(this)">'
+            f'<span class="feedback-action-dot">✓</span>Useful</button>'
+            f'<button class="feedback-btn feedback-action feedback-action-negative" title="Not helpful" '
+            f'data-day-idx="-1" data-meal-type="tip" data-item-name="{safe_title}" '
+            f'data-feedback-key="{feedback_key}" data-feedback-type="dislike" aria-pressed="false" '
+            f'onclick="showFeedbackModalFromButton(this)">'
+            f'<span class="feedback-action-dot">−</span>Skip</button>'
             f'</div>'
             f'<div class="text-xs text-slate-600 leading-relaxed">{escape(tip.get("detail", ""))}</div>'
             f'</div>'
@@ -947,16 +961,13 @@ def main() -> None:
 
     meal_json = json.dumps(so.get("weekly_meal_plan") or [], ensure_ascii=False)
 
-    patient_id = meta.get("user_id") or "unknown"
-    memory_api_url = os.environ.get("MEMORY_API_URL", "").strip()
-    memory_api_token = os.environ.get("MEMORY_API_TOKEN", "").strip()
+    patient_id = meta.get("user_id") or payload.get("user_id") or payload.get("patient_id") or "unknown"
 
+    report_title = "Adherence report"
     html = template.format(
-        report_title="Adherence report",
+        report_title=report_title,
         header_greeting="Hello!",
         patient_id=patient_id,
-        memory_api_url=memory_api_url,
-        memory_api_token=memory_api_token,
         current_time=current_time,
         status_badge_class=badge_class,
         status_icon=status_icon,
@@ -994,6 +1005,8 @@ def main() -> None:
 
     result = {
         "structured_output": {
+            "title": report_title,
+            "category": "adherence",
             "html": html,
         },
     }

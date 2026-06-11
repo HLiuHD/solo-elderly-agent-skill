@@ -208,7 +208,8 @@ def _render_recommendations(recs: list) -> str:
             text = str(r)
             reason = ""
             icon = _REC_ICONS[i % len(_REC_ICONS)]
-        safe_text = escape(text).replace("'", "&#39;")
+        safe_text = escape(text, quote=True)
+        feedback_key = escape(f"-1-rec-{text}", quote=True)
         reason_html = ""
         if reason:
             reason_html = (
@@ -224,8 +225,16 @@ def _render_recommendations(recs: list) -> str:
             f'<div class="text-sm text-slate-700 leading-relaxed font-medium">{escape(text)}</div>'
             f'{reason_html}</div>'
             f'<div class="flex flex-col gap-1 flex-shrink-0">'
-            f"<button class=\"feedback-btn like\" title=\"喜欢\" onclick=\"saveLike(-1,'rec','{safe_text}')\">👍</button>"
-            f"<button class=\"feedback-btn\" title=\"不适合\" onclick=\"showFeedbackModal(-1,'rec','{safe_text}')\">👎</button>"
+            f'<button class="feedback-btn feedback-action feedback-action-positive like" title="喜欢" '
+            f'data-day-idx="-1" data-meal-type="rec" data-item-name="{safe_text}" '
+            f'data-feedback-key="{feedback_key}" data-feedback-type="like" aria-pressed="false" '
+            f'onclick="saveLikeFromButton(this)">'
+            f"<span class=\"feedback-action-dot\">✓</span>适合我</button>"
+            f'<button class="feedback-btn feedback-action feedback-action-negative" title="不适合" '
+            f'data-day-idx="-1" data-meal-type="rec" data-item-name="{safe_text}" '
+            f'data-feedback-key="{feedback_key}" data-feedback-type="dislike" aria-pressed="false" '
+            f'onclick="showFeedbackModalFromButton(this)">'
+            f"<span class=\"feedback-action-dot\">−</span>不适合</button>"
             f'</div></div></div>'
         )
     return "\n".join(parts)
@@ -766,8 +775,6 @@ def main() -> None:
         diet_tips_html=_render_diet_tips(so.get("diet_tips") or []),
         meal_data_json=meal_json,
         doctor_notes_html=_render_doctor_notes(doctor_feedback),
-        memory_api_url=os.environ.get("MEMORY_API_URL", ""),
-        memory_api_token=os.environ.get("MEMORY_API_TOKEN", os.environ.get("MEMO_API_TOKEN", "")),
         patient_id=meta.get("user_id") or payload.get("user_id") or payload.get("patient_id") or "",
         map_html=map_section,
         baidu_map_ak=baidu_map_ak,

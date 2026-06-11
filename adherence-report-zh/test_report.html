@@ -3,19 +3,75 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>2026年06月11日 遵从报告</title>
+<title>2026年06月12日 遵从报告</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script type="text/javascript" src="https://api.map.baidu.com/api?v=3.0&ak=6zXfgKZZiCdrL3MZBH7DGpjemq5IRxRC"></script>
 <style>
-  body { font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; }
-  .meal-card { transition: all .2s; }
-  .meal-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.08); }
-  .feedback-btn { opacity:0; transition: opacity .2s; cursor:pointer; border:none; background:transparent; font-size:0.9em; padding:2px 4px; border-radius:4px; }
+  * { box-sizing:border-box; }
+  html, body { width:100%; max-width:100%; overflow-x:hidden !important; }
+  body { font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background:#f5f4fa !important; color:#17151f; letter-spacing:0; }
+  p, span, div, button, td, th { overflow-wrap:anywhere; }
+  .max-w-2xl { max-width:720px; }
+  .flex-1, .meal-card, .bg-white, table { min-width:0; }
+  .bg-white.rounded-xl {
+    border-radius:20px !important;
+    border-color:#e5e2ef !important;
+    box-shadow:0 10px 26px rgba(35,31,60,.075) !important;
+  }
+  .bg-gradient-to-br {
+    background:#ffffff !important;
+    color:#17151f !important;
+    border:1px solid #e4def7;
+    border-top:5px solid #5b3fd6;
+    box-shadow:0 12px 28px rgba(75,46,191,.11) !important;
+  }
+  .bg-gradient-to-br p { color:#6b5bbd !important; }
+  .bg-gradient-to-br > .flex { flex-wrap:wrap; }
+  h1, h2 { color:#17151f; font-weight:800; }
+  .text-emerald-700, .text-emerald-800, .text-emerald-600 { color:#5b3fd6 !important; }
+  .bg-emerald-600 { background:#5b3fd6 !important; }
+  .hover\:bg-emerald-700:hover { background:#4b32bc !important; }
+  .bg-emerald-50 { background:#f4f1ff !important; }
+  .border-emerald-100, .border-emerald-200 { border-color:#ded6ff !important; }
+  .border-l-4, [style*="border-left:3px solid #10b981"] { border-left-color:#5b3fd6 !important; }
+  .bg-white.rounded-xl > .flex.items-center.gap-2 > span.text-lg:first-child {
+    width:44px; height:44px; border-radius:50%;
+    display:inline-flex; align-items:center; justify-content:center;
+    background:#eee9ff; color:#5b3fd6; flex-shrink:0;
+  }
+  .bg-white.rounded-xl > .flex.items-center.gap-2 {
+    border-bottom-color:#ece8f4 !important;
+  }
+  .meal-period-label { color:#5f5870 !important; letter-spacing:.02em !important; font-weight:850 !important; }
+  .meal-card { position:relative; background:#fff !important; border:1px solid #e7e3f0 !important; border-radius:18px !important; padding:14px !important; transition:all .18s ease; box-shadow:0 7px 18px rgba(35,31,60,.055); }
+  .meal-card:hover { transform:translateY(-2px); border-color:#d5ccff !important; box-shadow:0 12px 24px rgba(35,31,60,.09); }
+  .meal-icon-bubble { width:50px; height:50px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#dcfbff 0%,#eee9ff 100%); box-shadow:inset 0 0 0 1px rgba(91,63,214,.08); flex-shrink:0; }
+  .meal-title { color:#17151f !important; font-size:.96rem !important; line-height:1.32; font-weight:850 !important; }
+  .meal-reason { color:#6557bc !important; font-size:.78rem !important; line-height:1.45; font-style:normal !important; margin-top:5px !important; }
+  .feedback-actions { align-self:stretch; }
+  .feedback-btn { opacity:1; transition:transform .18s ease, filter .18s ease, box-shadow .18s ease; cursor:pointer; border:1px solid #ded6ff; background:#fff; color:#5b3fd6; font-size:0.76rem; line-height:1; padding:9px 12px; border-radius:14px; min-height:40px; min-width:108px; display:inline-flex; align-items:center; justify-content:center; gap:7px; flex-shrink:0; font-weight:850; box-shadow:0 5px 13px rgba(91,63,214,.08); white-space:nowrap; }
   .meal-card:hover .feedback-btn { opacity:1; }
-  .feedback-btn:hover { background:#fee2e2; }
-  .feedback-btn.like:hover { background:#dcfce7; }
-  .feedback-btn.liked { opacity:1; background:#dcfce7; }
-  .feedback-btn.disliked { opacity:1; background:#fef3c7; }
+  .feedback-btn:hover { transform:translateY(-1px); border-color:#b9aaff; background:#f7f4ff; }
+  .feedback-btn.liked, .feedback-action-positive.liked {
+    background-color:#5b3fd6 !important;
+    background-image:none !important;
+    color:#fff !important;
+    border-color:#5b3fd6 !important;
+    box-shadow:0 0 0 3px rgba(91,63,214,.18), 0 8px 18px rgba(91,63,214,.22) !important;
+  }
+  .feedback-btn.disliked, .feedback-action-negative.disliked {
+    background-color:#b5472b !important;
+    background-image:none !important;
+    color:#fff !important;
+    border-color:#b5472b !important;
+    box-shadow:0 0 0 3px rgba(181,71,43,.18), 0 8px 18px rgba(181,71,43,.18) !important;
+  }
+  .feedback-btn.liked:hover, .feedback-btn.disliked:hover { filter:brightness(.98); }
+  .feedback-action-negative { color:#655f73; border-color:#e3dfeb; box-shadow:none; }
+  .feedback-action-dot { width:18px; height:18px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; background:#eee9ff; color:#5b3fd6; font-size:.72rem; font-weight:900; flex-shrink:0; }
+  .feedback-action-negative .feedback-action-dot { background:#f5f2f0; color:#7b7285; }
+  .feedback-btn.liked .feedback-action-dot { background:rgba(255,255,255,.22); color:#fff; }
+  .feedback-btn.disliked .feedback-action-dot { background:rgba(255,255,255,.22); color:#fff; }
   .feedback-modal { position:fixed; inset:0; background:rgba(0,0,0,.4); display:flex; align-items:center; justify-content:center; z-index:9999; }
   .feedback-modal-box { background:#fff; border-radius:16px; padding:24px; max-width:320px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,.2); }
   .feedback-reason { display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0; border:1px solid #e2e8f0; border-radius:10px; background:#f8fafc; font-size:0.85em; cursor:pointer; transition:all .15s; }
@@ -28,12 +84,41 @@
   .cuisine-chip.selected .chip-x:hover { opacity:1; background:#fecaca; color:#991b1b; }
 
   @media (max-width: 640px) {
-    .feedback-btn { opacity:1 !important; font-size:1.2em !important; padding:6px 8px !important; min-width:36px; min-height:36px; }
+    .feedback-btn { opacity:1 !important; font-size:0.82em !important; padding:9px 12px !important; min-height:40px; }
     .cuisine-chip { padding:10px 16px; font-size:0.9em; }
     .feedback-modal-box { padding:28px; max-width:92%; }
     .feedback-reason { padding:14px 16px; font-size:1em; margin:8px 0; }
-    #exportFeedbackBtn { padding:12px 20px !important; font-size:0.9em !important; }
+    #exportFeedbackBtn { padding:12px 20px !important; font-size:0.9em !important; white-space:normal; max-width:100%; }
     #customCuisineInput { font-size:1em !important; padding:10px 14px !important; }
+  }
+  @media (max-width: 640px) {
+    body { font-size:16px; line-height:1.58; }
+    .max-w-2xl { max-width:100%; padding-left:14px !important; padding-right:14px !important; }
+    .p-5 { padding:16px !important; }
+    .p-6 { padding:18px !important; }
+    .rounded-xl, .rounded-2xl { border-radius:18px !important; }
+    .grid-cols-3, .grid-cols-5, .sm\:grid-cols-4, .sm\:grid-cols-5 { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+    .sm\:grid-cols-2 { grid-template-columns:1fr !important; }
+    .meal-card { max-width:100%; overflow:hidden; }
+    .meal-item-card { display:grid !important; grid-template-columns:auto minmax(0,1fr); align-items:start; }
+    .meal-card > .flex { flex-wrap:wrap; min-width:0; }
+    .meal-card > div:last-child, .meal-card .feedback-actions, .meal-card .flex-shrink-0 { grid-column:1 / -1; width:100%; min-width:0; flex:0 0 100%; flex-direction:row !important; justify-content:flex-start; margin-top:8px; }
+    .feedback-actions, .meal-card > .flex > div.flex-shrink-0 { display:grid !important; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px !important; }
+    .feedback-btn { opacity:1 !important; font-size:.92rem !important; padding:8px 10px !important; min-width:0; width:100%; }
+    .overflow-x-auto { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+    table { min-width:620px; }
+    #dayTabs { flex-wrap:wrap; overflow-x:visible; gap:6px !important; padding-bottom:0 !important; }
+    #dayTabs button { white-space:normal !important; min-width:44px; }
+    #customCuisineInput { min-width:0; }
+    #cuisineChips { gap:8px; }
+    .cuisine-chip { max-width:100%; white-space:normal; }
+  }
+  @media (max-width: 380px) {
+    .grid-cols-3, .grid-cols-5, .sm\:grid-cols-4, .sm\:grid-cols-5 { grid-template-columns:1fr !important; }
+    .max-w-2xl { padding-left:10px !important; padding-right:10px !important; }
+    .text-xl { font-size:1.1rem !important; }
+    .meal-icon-bubble { width:44px; height:44px; }
+    .feedback-btn { font-size:.86rem !important; }
   }
 </style>
 </head>
@@ -94,11 +179,11 @@
     <div class="flex flex-wrap gap-2 mb-4"><span class="inline-block px-3 py-1 rounded-full text-xs font-medium border bg-orange-50 text-orange-700 border-orange-200">Appetite decreased</span>
 <span class="inline-block px-3 py-1 rounded-full text-xs font-medium border bg-sky-50 text-sky-700 border-sky-200">Low activity level</span>
 <span class="inline-block px-3 py-1 rounded-full text-xs font-medium border bg-amber-50 text-amber-700 border-amber-200">Glucose monitoring gaps</span></div>
-    <div class="space-y-2"><div class="bg-emerald-50 rounded-lg p-3 border border-emerald-100 meal-card"><div class="flex items-start gap-3"><span class="text-base mt-0.5">💊</span><div class="flex-1 min-w-0"><div class="text-sm text-slate-700 leading-relaxed font-medium">把二甲双胍放在吃饭中途服用，不要空腹服药</div><div class="text-xs text-emerald-700 mt-1.5 leading-relaxed italic bg-emerald-50 rounded px-2 py-1 border-l-2 border-emerald-300">💬 您最近多次在服药后恶心，随餐中途服用通常能减少胃肠道不适。</div></div><div class="flex flex-col gap-1 flex-shrink-0"><button class="feedback-btn like" title="喜欢" onclick="saveLike(-1,'rec','把二甲双胍放在吃饭中途服用，不要空腹服药')">👍</button><button class="feedback-btn" title="不适合" onclick="showFeedbackModal(-1,'rec','把二甲双胍放在吃饭中途服用，不要空腹服药')">👎</button></div></div></div>
-<div class="bg-emerald-50 rounded-lg p-3 border border-emerald-100 meal-card"><div class="flex items-start gap-3"><span class="text-base mt-0.5">🥗</span><div class="flex-1 min-w-0"><div class="text-sm text-slate-700 leading-relaxed font-medium">把三餐拆成 5 到 6 次小餐，哪怕只吃几口也算进步</div><div class="text-xs text-emerald-700 mt-1.5 leading-relaxed italic bg-emerald-50 rounded px-2 py-1 border-l-2 border-emerald-300">💬 术后恢复期食欲下降时，小餐更容易入口，也有助于糖尿病血糖稳定。</div></div><div class="flex flex-col gap-1 flex-shrink-0"><button class="feedback-btn like" title="喜欢" onclick="saveLike(-1,'rec','把三餐拆成 5 到 6 次小餐，哪怕只吃几口也算进步')">👍</button><button class="feedback-btn" title="不适合" onclick="showFeedbackModal(-1,'rec','把三餐拆成 5 到 6 次小餐，哪怕只吃几口也算进步')">👎</button></div></div></div>
-<div class="bg-emerald-50 rounded-lg p-3 border border-emerald-100 meal-card"><div class="flex items-start gap-3"><span class="text-base mt-0.5">🏃</span><div class="flex-1 min-w-0"><div class="text-sm text-slate-700 leading-relaxed font-medium">每天做两次 10 分钟坐姿腿部练习</div><div class="text-xs text-emerald-700 mt-1.5 leading-relaxed italic bg-emerald-50 rounded px-2 py-1 border-l-2 border-emerald-300">💬 膝关节置换术后 6 周，温和活动可以减少僵硬并维持肌力。</div></div><div class="flex flex-col gap-1 flex-shrink-0"><button class="feedback-btn like" title="喜欢" onclick="saveLike(-1,'rec','每天做两次 10 分钟坐姿腿部练习')">👍</button><button class="feedback-btn" title="不适合" onclick="showFeedbackModal(-1,'rec','每天做两次 10 分钟坐姿腿部练习')">👎</button></div></div></div>
-<div class="bg-emerald-50 rounded-lg p-3 border border-emerald-100 meal-card"><div class="flex items-start gap-3"><span class="text-base mt-0.5">🏃</span><div class="flex-1 min-w-0"><div class="text-sm text-slate-700 leading-relaxed font-medium">状态允许时，在家附近走 5 分钟短距离</div><div class="text-xs text-emerald-700 mt-1.5 leading-relaxed italic bg-emerald-50 rounded px-2 py-1 border-l-2 border-emerald-300">💬 轻度步行有助于康复、血压控制和血糖代谢。</div></div><div class="flex flex-col gap-1 flex-shrink-0"><button class="feedback-btn like" title="喜欢" onclick="saveLike(-1,'rec','状态允许时，在家附近走 5 分钟短距离')">👍</button><button class="feedback-btn" title="不适合" onclick="showFeedbackModal(-1,'rec','状态允许时，在家附近走 5 分钟短距离')">👎</button></div></div></div>
-<div class="bg-emerald-50 rounded-lg p-3 border border-emerald-100 meal-card"><div class="flex items-start gap-3"><span class="text-base mt-0.5">📋</span><div class="flex-1 min-w-0"><div class="text-sm text-slate-700 leading-relaxed font-medium">设置每日血糖测量提醒</div><div class="text-xs text-emerald-700 mt-1.5 leading-relaxed italic bg-emerald-50 rounded px-2 py-1 border-l-2 border-emerald-300">💬 近期漏测血糖会影响医生判断二甲双胍调整后的效果。</div></div><div class="flex flex-col gap-1 flex-shrink-0"><button class="feedback-btn like" title="喜欢" onclick="saveLike(-1,'rec','设置每日血糖测量提醒')">👍</button><button class="feedback-btn" title="不适合" onclick="showFeedbackModal(-1,'rec','设置每日血糖测量提醒')">👎</button></div></div></div></div>
+    <div class="space-y-2"><div class="bg-emerald-50 rounded-lg p-3 border border-emerald-100 meal-card"><div class="flex items-start gap-3"><span class="text-base mt-0.5">💊</span><div class="flex-1 min-w-0"><div class="text-sm text-slate-700 leading-relaxed font-medium">把二甲双胍放在吃饭中途服用，不要空腹服药</div><div class="text-xs text-emerald-700 mt-1.5 leading-relaxed italic bg-emerald-50 rounded px-2 py-1 border-l-2 border-emerald-300">💬 您最近多次在服药后恶心，随餐中途服用通常能减少胃肠道不适。</div></div><div class="flex flex-col gap-1 flex-shrink-0"><button class="feedback-btn feedback-action feedback-action-positive like" title="喜欢" data-day-idx="-1" data-meal-type="rec" data-item-name="把二甲双胍放在吃饭中途服用，不要空腹服药" data-feedback-key="-1-rec-把二甲双胍放在吃饭中途服用，不要空腹服药" data-feedback-type="like" aria-pressed="false" onclick="saveLikeFromButton(this)"><span class="feedback-action-dot">✓</span>适合我</button><button class="feedback-btn feedback-action feedback-action-negative" title="不适合" data-day-idx="-1" data-meal-type="rec" data-item-name="把二甲双胍放在吃饭中途服用，不要空腹服药" data-feedback-key="-1-rec-把二甲双胍放在吃饭中途服用，不要空腹服药" data-feedback-type="dislike" aria-pressed="false" onclick="showFeedbackModalFromButton(this)"><span class="feedback-action-dot">−</span>不适合</button></div></div></div>
+<div class="bg-emerald-50 rounded-lg p-3 border border-emerald-100 meal-card"><div class="flex items-start gap-3"><span class="text-base mt-0.5">🥗</span><div class="flex-1 min-w-0"><div class="text-sm text-slate-700 leading-relaxed font-medium">把三餐拆成 5 到 6 次小餐，哪怕只吃几口也算进步</div><div class="text-xs text-emerald-700 mt-1.5 leading-relaxed italic bg-emerald-50 rounded px-2 py-1 border-l-2 border-emerald-300">💬 术后恢复期食欲下降时，小餐更容易入口，也有助于糖尿病血糖稳定。</div></div><div class="flex flex-col gap-1 flex-shrink-0"><button class="feedback-btn feedback-action feedback-action-positive like" title="喜欢" data-day-idx="-1" data-meal-type="rec" data-item-name="把三餐拆成 5 到 6 次小餐，哪怕只吃几口也算进步" data-feedback-key="-1-rec-把三餐拆成 5 到 6 次小餐，哪怕只吃几口也算进步" data-feedback-type="like" aria-pressed="false" onclick="saveLikeFromButton(this)"><span class="feedback-action-dot">✓</span>适合我</button><button class="feedback-btn feedback-action feedback-action-negative" title="不适合" data-day-idx="-1" data-meal-type="rec" data-item-name="把三餐拆成 5 到 6 次小餐，哪怕只吃几口也算进步" data-feedback-key="-1-rec-把三餐拆成 5 到 6 次小餐，哪怕只吃几口也算进步" data-feedback-type="dislike" aria-pressed="false" onclick="showFeedbackModalFromButton(this)"><span class="feedback-action-dot">−</span>不适合</button></div></div></div>
+<div class="bg-emerald-50 rounded-lg p-3 border border-emerald-100 meal-card"><div class="flex items-start gap-3"><span class="text-base mt-0.5">🏃</span><div class="flex-1 min-w-0"><div class="text-sm text-slate-700 leading-relaxed font-medium">每天做两次 10 分钟坐姿腿部练习</div><div class="text-xs text-emerald-700 mt-1.5 leading-relaxed italic bg-emerald-50 rounded px-2 py-1 border-l-2 border-emerald-300">💬 膝关节置换术后 6 周，温和活动可以减少僵硬并维持肌力。</div></div><div class="flex flex-col gap-1 flex-shrink-0"><button class="feedback-btn feedback-action feedback-action-positive like" title="喜欢" data-day-idx="-1" data-meal-type="rec" data-item-name="每天做两次 10 分钟坐姿腿部练习" data-feedback-key="-1-rec-每天做两次 10 分钟坐姿腿部练习" data-feedback-type="like" aria-pressed="false" onclick="saveLikeFromButton(this)"><span class="feedback-action-dot">✓</span>适合我</button><button class="feedback-btn feedback-action feedback-action-negative" title="不适合" data-day-idx="-1" data-meal-type="rec" data-item-name="每天做两次 10 分钟坐姿腿部练习" data-feedback-key="-1-rec-每天做两次 10 分钟坐姿腿部练习" data-feedback-type="dislike" aria-pressed="false" onclick="showFeedbackModalFromButton(this)"><span class="feedback-action-dot">−</span>不适合</button></div></div></div>
+<div class="bg-emerald-50 rounded-lg p-3 border border-emerald-100 meal-card"><div class="flex items-start gap-3"><span class="text-base mt-0.5">🏃</span><div class="flex-1 min-w-0"><div class="text-sm text-slate-700 leading-relaxed font-medium">状态允许时，在家附近走 5 分钟短距离</div><div class="text-xs text-emerald-700 mt-1.5 leading-relaxed italic bg-emerald-50 rounded px-2 py-1 border-l-2 border-emerald-300">💬 轻度步行有助于康复、血压控制和血糖代谢。</div></div><div class="flex flex-col gap-1 flex-shrink-0"><button class="feedback-btn feedback-action feedback-action-positive like" title="喜欢" data-day-idx="-1" data-meal-type="rec" data-item-name="状态允许时，在家附近走 5 分钟短距离" data-feedback-key="-1-rec-状态允许时，在家附近走 5 分钟短距离" data-feedback-type="like" aria-pressed="false" onclick="saveLikeFromButton(this)"><span class="feedback-action-dot">✓</span>适合我</button><button class="feedback-btn feedback-action feedback-action-negative" title="不适合" data-day-idx="-1" data-meal-type="rec" data-item-name="状态允许时，在家附近走 5 分钟短距离" data-feedback-key="-1-rec-状态允许时，在家附近走 5 分钟短距离" data-feedback-type="dislike" aria-pressed="false" onclick="showFeedbackModalFromButton(this)"><span class="feedback-action-dot">−</span>不适合</button></div></div></div>
+<div class="bg-emerald-50 rounded-lg p-3 border border-emerald-100 meal-card"><div class="flex items-start gap-3"><span class="text-base mt-0.5">📋</span><div class="flex-1 min-w-0"><div class="text-sm text-slate-700 leading-relaxed font-medium">设置每日血糖测量提醒</div><div class="text-xs text-emerald-700 mt-1.5 leading-relaxed italic bg-emerald-50 rounded px-2 py-1 border-l-2 border-emerald-300">💬 近期漏测血糖会影响医生判断二甲双胍调整后的效果。</div></div><div class="flex flex-col gap-1 flex-shrink-0"><button class="feedback-btn feedback-action feedback-action-positive like" title="喜欢" data-day-idx="-1" data-meal-type="rec" data-item-name="设置每日血糖测量提醒" data-feedback-key="-1-rec-设置每日血糖测量提醒" data-feedback-type="like" aria-pressed="false" onclick="saveLikeFromButton(this)"><span class="feedback-action-dot">✓</span>适合我</button><button class="feedback-btn feedback-action feedback-action-negative" title="不适合" data-day-idx="-1" data-meal-type="rec" data-item-name="设置每日血糖测量提醒" data-feedback-key="-1-rec-设置每日血糖测量提醒" data-feedback-type="dislike" aria-pressed="false" onclick="showFeedbackModalFromButton(this)"><span class="feedback-action-dot">−</span>不适合</button></div></div></div></div>
     <div class="mt-4 pt-3 border-t border-slate-100"><div class="text-[11px] text-slate-400 uppercase tracking-wide font-medium mb-1.5">评估依据</div><div class="text-xs text-slate-600 bg-slate-50 rounded-lg p-3 leading-relaxed">Margaret&#x27;s adherence data over 14 days shows a clear pattern: medication compliance is good except for metformin-related nausea, appetite is reduced likely due to the combination of metformin side effects and post-surgery recovery, and activity levels have dropped significantly due to knee pain. The meal plan focuses on easy-to-digest, nutrient-dense options that address all three conditions while being gentle on her stomach.</div></div>
   </div>
 
@@ -308,6 +393,15 @@
 })();
 </script>
 
+  <!-- Submit Preferences -->
+  <div class="text-center mb-4">
+    <button id="exportFeedbackBtn" onclick="exportFeedbackJSON()" style="display:none"
+      class="px-6 py-3 rounded-full text-sm font-bold bg-emerald-600 text-white shadow-md hover:bg-emerald-700 active:scale-95 transition-all">
+      ✓ 提交我的偏好
+    </button>
+    <p class="text-xs text-slate-400 mt-2" id="submitHint" style="display:none">您的选择会先保存在本地，等待后续接入</p>
+  </div>
+
   <!-- Guardrail -->
   <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
     <p class="text-xs text-amber-800 leading-relaxed">This report was generated by an AI health assistant for information only. It is not medical advice. If you feel unwell, please contact your doctor or call emergency services. Always follow your clinician&#x27;s instructions regarding medications and treatment.</p>
@@ -327,27 +421,48 @@ const MEAL_FEEDBACK_REASONS = ["不喜欢口味", "过敏/不耐受", "买不到
 const GENERAL_FEEDBACK_REASONS = ["不适合我", "做起来太难", "我已经在做", "不同意这个建议", "其他"];
 let feedbackStore = JSON.parse(localStorage.getItem("mealFeedback") || "{}");
 
+function feedbackKey(dayIdx, mealType, itemName) {
+  return `${dayIdx}-${mealType}-${itemName}`;
+}
+
+function saveLikeFromButton(btn) {
+  saveLike(Number(btn.dataset.dayIdx), btn.dataset.mealType, btn.dataset.itemName);
+}
+
+function showFeedbackModalFromButton(btn) {
+  showFeedbackModal(Number(btn.dataset.dayIdx), btn.dataset.mealType, btn.dataset.itemName);
+}
+
+function refreshStaticFeedbackButtons() {
+  document.querySelectorAll("[data-feedback-key][data-feedback-type]").forEach((btn) => {
+    const fb = feedbackStore[btn.dataset.feedbackKey];
+    const selected = Boolean(fb && fb.sentiment === btn.dataset.feedbackType);
+    btn.classList.toggle("liked", selected && btn.dataset.feedbackType === "like");
+    btn.classList.toggle("disliked", selected && btn.dataset.feedbackType === "dislike");
+    btn.setAttribute("aria-pressed", selected ? "true" : "false");
+  });
+}
+
 function saveFeedback(dayIdx, mealType, itemName, reason) {
-  const key = `${dayIdx}-${mealType}-${itemName}`;
+  const key = feedbackKey(dayIdx, mealType, itemName);
   feedbackStore[key] = { sentiment: "dislike", reason, timestamp: new Date().toISOString() };
   localStorage.setItem("mealFeedback", JSON.stringify(feedbackStore));
+  refreshStaticFeedbackButtons();
   updateExportBadge();
 }
 
 function saveLike(dayIdx, mealType, itemName) {
-  const key = `${dayIdx}-${mealType}-${itemName}`;
+  const key = feedbackKey(dayIdx, mealType, itemName);
   feedbackStore[key] = { sentiment: "like", reason: null, timestamp: new Date().toISOString() };
   localStorage.setItem("mealFeedback", JSON.stringify(feedbackStore));
-  renderMeals();
+  if (dayIdx >= 0) renderMeals();
+  refreshStaticFeedbackButtons();
   updateExportBadge();
 }
 
 function getFeedback(dayIdx, mealType, itemName) {
-  return feedbackStore[`${dayIdx}-${mealType}-${itemName}`];
+  return feedbackStore[feedbackKey(dayIdx, mealType, itemName)];
 }
-
-const MEMORY_API_URL = "";
-const MEMORY_API_TOKEN = "";
 
 function buildPreferencePayload() {
   const likes = [];
@@ -376,46 +491,18 @@ function buildPreferencePayload() {
   };
 }
 
-async function exportFeedbackJSON() {
+function exportFeedbackJSON() {
   const payload = buildPreferencePayload();
-  if (MEMORY_API_URL && !MEMORY_API_URL.includes("{")) {
-    const btn = document.getElementById("exportFeedbackBtn");
-    const origText = btn.textContent;
-    btn.textContent = "⏳ 保存中...";
-    btn.disabled = true;
-    try {
-      const resp = await fetch(MEMORY_API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "X-API-Token": MEMORY_API_TOKEN },
-        body: JSON.stringify(payload)
-      });
-      if (resp.ok) {
-        btn.textContent = "✅ 已保存";
-        setTimeout(() => { btn.textContent = origText; btn.disabled = false; }, 2500);
-      } else {
-        btn.textContent = "❌ 保存失败 (" + resp.status + ")";
-        console.error("Memory API error:", await resp.text());
-        setTimeout(() => { btn.textContent = origText; btn.disabled = false; }, 3000);
-      }
-    } catch (err) {
-      console.error("Memory API unreachable:", err);
-      btn.textContent = "❌ 网络错误";
-      setTimeout(() => { btn.textContent = origText; btn.disabled = false; }, 3000);
-      downloadPayload(payload);
-    }
-  } else {
-    downloadPayload(payload);
-  }
-}
-
-function downloadPayload(payload) {
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "patient_preferences_" + new Date().toISOString().slice(0,10) + ".json";
-  a.click();
-  URL.revokeObjectURL(url);
+  const btn = document.getElementById("exportFeedbackBtn");
+  if (!btn) return;
+  const origText = btn.textContent;
+  localStorage.setItem("pendingPreferencePayload", JSON.stringify(payload));
+  btn.textContent = "✓ 偏好已在本地记录";
+  btn.disabled = true;
+  setTimeout(() => {
+    btn.textContent = origText;
+    btn.disabled = false;
+  }, 2500);
 }
 
 function updateExportBadge() {
@@ -456,6 +543,7 @@ function showFeedbackModal(dayIdx, mealType, itemName) {
     saveFeedback(dayIdx, mealType, itemName, reason);
     modal.remove();
     if (isMeal) renderMeals();
+    else refreshStaticFeedbackButtons();
   });
   document.body.appendChild(modal);
 }
@@ -481,22 +569,22 @@ function renderMeals() {
   for (const [key, label] of Object.entries(MEAL_LABELS)) {
     const items = day[key] || [];
     if (!items.length) continue;
-    html += `<div class="mb-4"><div class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">${label}</div><div class="grid grid-cols-1 sm:grid-cols-2 gap-2">`;
+    html += `<div class="mb-4"><div class="meal-period-label text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">${label}</div><div class="grid grid-cols-1 sm:grid-cols-2 gap-2">`;
     for (const it of items) {
       const fb = getFeedback(activeDay, key, it.name);
       const likeClass = fb && fb.sentiment === "like" ? "liked" : "";
       const dislikeClass = fb && fb.sentiment === "dislike" ? "disliked" : "";
       const safeName = it.name.replace(/'/g, "&#39;");
       const reason = it.condition && it.benefit ? "适合" + it.condition + "：" + it.benefit : (it.benefit || "");
-      html += `<div class="meal-card flex items-start gap-3 bg-slate-50 rounded-lg p-3 border border-slate-100">
-        <span class="text-2xl mt-0.5">${it.icon || "🍽️"}</span>
+      html += `<div class="meal-card meal-item-card flex items-start gap-3 bg-slate-50 rounded-lg p-3 border border-slate-100">
+        <span class="meal-icon-bubble text-2xl mt-0.5">${it.icon || "🍽️"}</span>
         <div class="flex-1 min-w-0">
-          <div class="text-sm font-semibold text-slate-800">${it.name}</div>
-          <div class="text-xs text-emerald-600 mt-0.5 leading-relaxed italic">${reason}</div>
+          <div class="meal-title text-sm font-semibold text-slate-800">${it.name}</div>
+          <div class="meal-reason text-xs text-emerald-600 mt-0.5 leading-relaxed italic">${reason}</div>
         </div>
-        <div class="flex flex-col gap-1">
-          <button class="feedback-btn like ${likeClass}" title="喜欢" onclick="saveLike(${activeDay},'${key}','${safeName}')">👍</button>
-          <button class="feedback-btn ${dislikeClass}" title="不想要" onclick="showFeedbackModal(${activeDay},'${key}','${safeName}')">👎</button>
+        <div class="feedback-actions flex flex-col gap-1">
+          <button class="feedback-btn feedback-action feedback-action-positive like ${likeClass}" title="喜欢" onclick="saveLike(${activeDay},'${key}','${safeName}')"><span class="feedback-action-dot">✓</span>适合我</button>
+          <button class="feedback-btn feedback-action feedback-action-negative ${dislikeClass}" title="不想要" onclick="showFeedbackModal(${activeDay},'${key}','${safeName}')"><span class="feedback-action-dot">−</span>不适合</button>
         </div>
       </div>`;
     }
@@ -579,6 +667,7 @@ document.getElementById("customCuisineInput").addEventListener("keydown", functi
 renderCuisineChips();
 renderTabs();
 renderMeals();
+refreshStaticFeedbackButtons();
 updateExportBadge();
 </script>
 </body>
