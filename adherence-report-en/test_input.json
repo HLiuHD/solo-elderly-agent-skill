@@ -114,6 +114,36 @@
           "category": "lifestyle"
         }
       ],
+      "health_guidance": {
+        "summary": "Margaret, you're recovering from knee surgery while managing hypertension and diabetes. Right now, your body needs extra protein to heal the surgical site, and stable blood sugar to support your energy. We've tailored everything below specifically for your situation — please trust the process, even when your appetite is low.",
+        "tips": [
+          {
+            "text": "Prioritize protein at every meal — even a few bites count",
+            "why": "Your knee is still healing. Protein repairs tissue and prevents muscle loss while you're less active.",
+            "category": "protein"
+          },
+          {
+            "text": "Keep meals low in salt — aim for less than 5g per day",
+            "why": "With your blood pressure at 138/85, reducing salt helps your medication work better and protects your heart.",
+            "category": "low_salt"
+          },
+          {
+            "text": "Choose steamed, boiled, or baked over fried",
+            "why": "Your cholesterol levels benefit from less oil. Steaming also keeps food soft and easy to eat when appetite is low.",
+            "category": "low_oil"
+          },
+          {
+            "text": "Drink warm water or herbal tea throughout the day",
+            "why": "Hydration helps your kidneys process medication (metformin) and reduces the nausea you've been experiencing.",
+            "category": "hydration"
+          },
+          {
+            "text": "Even a 5-minute walk counts as progress",
+            "why": "After knee surgery, any gentle movement prevents stiffness and helps blood glucose come down naturally.",
+            "category": "exercise"
+          }
+        ]
+      },
       "nutrition_advice": "Margaret, since your appetite is lower right now, focus on nutrient-dense foods in smaller portions. Warm oatmeal, soft-boiled eggs, and broth-based soups are gentle on the stomach. Add a handful of nuts or a small piece of fruit as snacks between meals to keep your energy up.",
       "latest_health_summary": {
         "blood_pressure": "138/85",

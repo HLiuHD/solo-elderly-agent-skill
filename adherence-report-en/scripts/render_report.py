@@ -511,6 +511,70 @@ def _render_doctor_notes(doctor_feedback: dict) -> str:
     return html
 
 
+def _render_health_guidance(guidance: dict, conditions: list[str]) -> str:
+    """Render a persuasive health guidance section based on patient conditions."""
+    if not guidance and not conditions:
+        return ""
+
+    summary = ""
+    tips = []
+
+    if isinstance(guidance, dict):
+        summary = guidance.get("summary") or ""
+        tips = guidance.get("tips") or []
+    elif isinstance(guidance, str):
+        summary = guidance
+
+    if not summary and not tips and not conditions:
+        return ""
+
+    html = (
+        '<div class="bg-white rounded-xl shadow-sm border-2 border-emerald-200 p-5 mb-3">'
+        '<div class="flex items-center gap-2 mb-3 pb-3 border-b border-emerald-100">'
+        '<span class="text-lg">💚</span>'
+        '<h2 class="text-sm font-bold text-emerald-800">Why this matters for you</h2>'
+        '</div>'
+    )
+
+    if summary:
+        html += (
+            '<div class="text-sm text-slate-700 leading-relaxed mb-4 bg-emerald-50 '
+            'rounded-lg p-4 border-l-4 border-emerald-400">'
+            f'{escape(summary)}</div>'
+        )
+
+    if tips:
+        html += '<div class="space-y-2">'
+        _GUIDANCE_ICONS = {"protein": "🥩", "low_salt": "🧂", "low_oil": "🫒",
+                           "hydration": "💧", "fiber": "🌾", "exercise": "🚶",
+                           "rest": "😴", "monitoring": "📋"}
+        for tip in tips:
+            if isinstance(tip, dict):
+                icon = _GUIDANCE_ICONS.get(tip.get("category", ""), "💡")
+                text = tip.get("text", "")
+                why = tip.get("why", "")
+            else:
+                icon = "💡"
+                text = str(tip)
+                why = ""
+            html += (
+                f'<div class="flex items-start gap-3 bg-slate-50 rounded-lg p-3 border border-slate-100">'
+                f'<span class="text-xl mt-0.5">{icon}</span>'
+                f'<div class="flex-1">'
+                f'<div class="text-sm font-medium text-slate-800">{escape(text)}</div>'
+            )
+            if why:
+                html += (
+                    f'<div class="text-xs text-emerald-700 mt-1 italic">'
+                    f'→ {escape(why)}</div>'
+                )
+            html += '</div></div>'
+        html += '</div>'
+
+    html += '</div>'
+    return html
+
+
 def _render_diet_table(diet_table: list[dict]) -> str:
     if not diet_table:
         return ""
@@ -884,11 +948,15 @@ def main() -> None:
     meal_json = json.dumps(so.get("weekly_meal_plan") or [], ensure_ascii=False)
 
     patient_id = meta.get("user_id") or "unknown"
+    memory_api_url = os.environ.get("MEMORY_API_URL", "").strip()
+    memory_api_token = os.environ.get("MEMORY_API_TOKEN", "").strip()
 
     html = template.format(
         report_title="Adherence report",
         header_greeting="Hello!",
         patient_id=patient_id,
+        memory_api_url=memory_api_url,
+        memory_api_token=memory_api_token,
         current_time=current_time,
         status_badge_class=badge_class,
         status_icon=status_icon,
@@ -898,6 +966,9 @@ def main() -> None:
         ai_message=escape(so.get("assistant_message_patient") or ""),
         memory_html=_render_memory(memory),
         doctor_notes_html=_render_doctor_notes(doctor_feedback),
+        health_guidance_html=_render_health_guidance(
+            so.get("health_guidance") or {}, conditions
+        ),
         vitals_html=_render_vitals(so.get("latest_health_summary") or {}),
         risk_tags_html=_render_risk_tags(so.get("risk_tags") or []),
         recommendations_html=_render_recommendations(so.get("recommendations") or []),

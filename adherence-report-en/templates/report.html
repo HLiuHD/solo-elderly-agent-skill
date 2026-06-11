@@ -26,6 +26,55 @@
   .cuisine-chip .chip-x {{ font-size:0.75em; opacity:0; padding:2px; border-radius:50%; }}
   .cuisine-chip.selected .chip-x {{ opacity:0.6; }}
   .cuisine-chip.selected .chip-x:hover {{ opacity:1; background:#fecaca; color:#991b1b; }}
+
+  /* ─── Mobile / Senior-Friendly Overrides ─── */
+  @media (max-width: 640px) {{
+    body {{ font-size: 17px; line-height: 1.6; }}
+    .max-w-2xl {{ max-width: 100%; padding-left: 12px; padding-right: 12px; }}
+
+    /* Larger headings */
+    h1 {{ font-size: 1.4em !important; }}
+    h2 {{ font-size: 1em !important; }}
+
+    /* Bigger vitals */
+    .grid-cols-3 {{ grid-template-columns: repeat(2, 1fr) !important; }}
+    .grid-cols-5 {{ grid-template-columns: repeat(2, 1fr) !important; }}
+
+    /* Feedback buttons always visible on touch */
+    .feedback-btn {{ opacity: 1 !important; font-size: 1.2em !important; padding: 6px 8px !important; min-width: 36px; min-height: 36px; }}
+
+    /* Larger touch targets for tabs */
+    #dayTabs button {{ padding: 8px 14px !important; font-size: 0.85em !important; }}
+
+    /* Cuisine chips bigger */
+    .cuisine-chip {{ padding: 10px 16px; font-size: 0.9em; }}
+
+    /* Feedback modal bigger text */
+    .feedback-modal-box {{ padding: 28px; max-width: 92%; }}
+    .feedback-modal-box .text-sm {{ font-size: 1em !important; }}
+    .feedback-reason {{ padding: 14px 16px; font-size: 1em; margin: 8px 0; }}
+
+    /* Cards stack single column */
+    .sm\:grid-cols-2 {{ grid-template-columns: 1fr !important; }}
+    .sm\:grid-cols-4 {{ grid-template-columns: repeat(2, 1fr) !important; }}
+    .sm\:grid-cols-5 {{ grid-template-columns: repeat(2, 1fr) !important; }}
+
+    /* Meal card text bigger */
+    .meal-card .text-sm {{ font-size: 0.95em !important; }}
+    .meal-card .text-xs {{ font-size: 0.85em !important; }}
+
+    /* Recommendations text bigger */
+    .bg-emerald-50 .text-sm {{ font-size: 0.95em !important; }}
+
+    /* Section padding */
+    .rounded-xl {{ padding-left: 16px !important; padding-right: 16px !important; }}
+
+    /* Export button bigger */
+    #exportFeedbackBtn {{ padding: 12px 20px !important; font-size: 0.9em !important; }}
+
+    /* Custom cuisine input bigger */
+    #customCuisineInput {{ font-size: 1em !important; padding: 10px 14px !important; }}
+  }}
 </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
@@ -58,6 +107,9 @@
 
   <!-- Doctor's Notes -->
   {doctor_notes_html}
+
+  <!-- Health Guidance (Persuasive) -->
+  {health_guidance_html}
 
   <!-- Vitals -->
   <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
@@ -127,12 +179,13 @@
   <!-- Map -->
   {map_html}
 
-  <!-- Export Feedback -->
+  <!-- Submit Preferences -->
   <div class="text-center mb-4">
     <button id="exportFeedbackBtn" onclick="exportFeedbackJSON()" style="display:none"
-      class="px-4 py-2 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition-all">
-      📤 Export feedback
+      class="px-6 py-3 rounded-full text-sm font-bold bg-emerald-600 text-white shadow-md hover:bg-emerald-700 active:scale-95 transition-all">
+      ✓ Submit my preferences
     </button>
+    <p class="text-xs text-slate-400 mt-2" id="submitHint" style="display:none">Your choices will be remembered for next time</p>
   </div>
 
   <!-- Guardrail -->
@@ -185,7 +238,10 @@ function getFeedback(dayIdx, mealType, itemName) {{
   return feedbackStore[`${{dayIdx}}-${{mealType}}-${{itemName}}`];
 }}
 
-function exportFeedbackJSON() {{
+const MEMORY_API_URL = "{memory_api_url}";
+const MEMORY_API_TOKEN = "{memory_api_token}";
+
+function buildPreferencePayload() {{
   const likes = [];
   const dislikes = [];
   for (const [key, val] of Object.entries(feedbackStore)) {{
@@ -196,17 +252,65 @@ function exportFeedbackJSON() {{
   const selectedCuisines = Object.entries(cuisinePrefs).map(([name, meta]) => ({{
     cuisine: name, ...meta
   }}));
-  const payload = {{
-    patient_id: "{patient_id}",
-    report_time: "{current_time}",
-    exported_at: new Date().toISOString(),
-    total_feedback: likes.length + dislikes.length,
-    preferences: {{
-      cuisine_preferences: selectedCuisines,
-      liked: likes,
-      disliked: dislikes
+  return {{
+    user_id: "{patient_id}",
+    data_type: "scenario",
+    language: "en",
+    timestamp: new Date().toISOString(),
+    data: {{
+      bundle: {{
+        type: "user_preference",
+        report_time: "{current_time}",
+        total_feedback: likes.length + dislikes.length,
+        cuisine_preferences: selectedCuisines,
+        liked: likes,
+        disliked: dislikes
+      }}
     }}
   }};
+}}
+
+async function exportFeedbackJSON() {{
+  const payload = buildPreferencePayload();
+
+  if (MEMORY_API_URL && !MEMORY_API_URL.includes("{{")) {{
+    // POST to memory API
+    const btn = document.getElementById("exportFeedbackBtn");
+    const origText = btn.textContent;
+    btn.textContent = "⏳ Saving...";
+    btn.disabled = true;
+    try {{
+      const resp = await fetch(MEMORY_API_URL, {{
+        method: "POST",
+        headers: {{
+          "Content-Type": "application/json",
+          "X-API-Token": MEMORY_API_TOKEN
+        }},
+        body: JSON.stringify(payload)
+      }});
+      if (resp.ok) {{
+        btn.textContent = "✅ Saved to memory!";
+        setTimeout(() => {{ btn.textContent = origText; btn.disabled = false; }}, 2500);
+      }} else {{
+        const errText = await resp.text();
+        btn.textContent = "❌ Failed (" + resp.status + ")";
+        console.error("Memory API error:", errText);
+        setTimeout(() => {{ btn.textContent = origText; btn.disabled = false; }}, 3000);
+      }}
+    }} catch (err) {{
+      console.error("Memory API unreachable:", err);
+      btn.textContent = "❌ Network error";
+      setTimeout(() => {{ btn.textContent = origText; btn.disabled = false; }}, 3000);
+      // Fallback: download file
+      downloadPayload(payload);
+    }}
+  }} else {{
+    // No API configured — fallback to file download
+    downloadPayload(payload);
+  }}
+}}
+
+function downloadPayload(payload) {{
   const blob = new Blob([JSON.stringify(payload, null, 2)], {{ type: "application/json" }});
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -218,12 +322,19 @@ function exportFeedbackJSON() {{
 
 function updateExportBadge() {{
   const btn = document.getElementById("exportFeedbackBtn");
+  const hint = document.getElementById("submitHint");
   if (!btn) return;
   const fbCount = Object.keys(feedbackStore).length;
   const cuisineCount = Object.keys(cuisinePrefs).length;
   const total = fbCount + cuisineCount;
-  btn.textContent = total > 0 ? "📤 Export preferences (" + total + " items)" : "📤 Export preferences";
-  btn.style.display = total > 0 ? "inline-block" : "none";
+  if (total > 0) {{
+    btn.textContent = "✓ Submit my preferences (" + total + ")";
+    btn.style.display = "inline-block";
+    if (hint) hint.style.display = "block";
+  }} else {{
+    btn.style.display = "none";
+    if (hint) hint.style.display = "none";
+  }}
 }}
 
 function showFeedbackModal(dayIdx, mealType, itemName) {{

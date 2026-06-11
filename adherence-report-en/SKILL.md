@@ -53,6 +53,9 @@ Strict JSON, top-level keys:
     - `appetite`: object `{ "status": "...", "cause_if_known": "...", "suggestions": "..." }`
     - `exercise`: object `{ "status": "...", "barriers": "...", "plan": "..." }`
     - `monitoring`: object `{ "status": "...", "gaps": "..." }`
+  - `health_guidance`: object with persuasive, condition-specific guidance:
+    - `summary`: 2-3 sentences addressing the patient directly, explaining their current situation and why the recommendations matter (warm but firm tone, like a caring family member)
+    - `tips`: array of `{"text": "...", "why": "...", "category": "protein|low_salt|low_oil|hydration|fiber|exercise|rest|monitoring"}` — each tip has actionable advice + a personal `why` that connects to the patient's specific conditions/history
   - `recommendations`: array of ~5-6 items. Each item is either a plain string OR an object `{"text": "...", "reason": "...", "category": "medication|diet|exercise|monitoring|lifestyle"}`. When using object form, `reason` explains **why** this is recommended for this specific patient (referencing their conditions, history, or recent events). Prefer object form.
   - `nutrition_advice`: one paragraph (**English**, ~50-100 words)
   - `latest_health_summary`: object with `blood_pressure`, `heart_rate`, `blood_oxygen`, `blood_glucose`, `steps_today` — each a string with units

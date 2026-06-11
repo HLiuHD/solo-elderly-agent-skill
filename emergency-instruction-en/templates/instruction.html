@@ -8,6 +8,38 @@
 {maps_script}
 <style>
   body {{ font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }}
+
+  /* ─── Mobile / Senior-Friendly ─── */
+  @media (max-width: 640px) {{
+    body {{ font-size: 18px; line-height: 1.7; }}
+    .max-w-2xl {{ max-width: 100%; padding-left: 12px; padding-right: 12px; }}
+    h1 {{ font-size: 1.3em !important; }}
+    h2 {{ font-size: 1.05em !important; }}
+
+    /* Emergency actions: bigger numbered steps */
+    .bg-rose-50 {{ padding: 14px !important; }}
+    .bg-rose-50 .text-sm {{ font-size: 1em !important; line-height: 1.6 !important; }}
+    .w-6 {{ width: 28px !important; height: 28px !important; font-size: 0.85em !important; }}
+
+    /* Vitals grid 2 columns on mobile */
+    .grid-cols-2 {{ grid-template-columns: repeat(2, 1fr) !important; }}
+    .sm\:grid-cols-4 {{ grid-template-columns: repeat(2, 1fr) !important; }}
+
+    /* Bigger vital numbers */
+    .text-xl {{ font-size: 1.4em !important; }}
+
+    /* Monitoring plan bigger */
+    .bg-slate-50 .text-sm {{ font-size: 0.95em !important; }}
+
+    /* Doctor notes bigger */
+    .bg-blue-50 {{ font-size: 1em !important; }}
+
+    /* Section cards more padding */
+    .rounded-xl {{ padding-left: 16px !important; padding-right: 16px !important; }}
+
+    /* Status badge bigger */
+    .rounded-full.text-xs {{ font-size: 0.8em !important; padding: 6px 12px !important; }}
+  }}
 </style>
 </head>
 <body class="bg-slate-50 text-slate-800">

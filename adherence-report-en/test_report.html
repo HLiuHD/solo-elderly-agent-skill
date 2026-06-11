@@ -26,6 +26,55 @@
   .cuisine-chip .chip-x { font-size:0.75em; opacity:0; padding:2px; border-radius:50%; }
   .cuisine-chip.selected .chip-x { opacity:0.6; }
   .cuisine-chip.selected .chip-x:hover { opacity:1; background:#fecaca; color:#991b1b; }
+
+  /* ─── Mobile / Senior-Friendly Overrides ─── */
+  @media (max-width: 640px) {
+    body { font-size: 17px; line-height: 1.6; }
+    .max-w-2xl { max-width: 100%; padding-left: 12px; padding-right: 12px; }
+
+    /* Larger headings */
+    h1 { font-size: 1.4em !important; }
+    h2 { font-size: 1em !important; }
+
+    /* Bigger vitals */
+    .grid-cols-3 { grid-template-columns: repeat(2, 1fr) !important; }
+    .grid-cols-5 { grid-template-columns: repeat(2, 1fr) !important; }
+
+    /* Feedback buttons always visible on touch */
+    .feedback-btn { opacity: 1 !important; font-size: 1.2em !important; padding: 6px 8px !important; min-width: 36px; min-height: 36px; }
+
+    /* Larger touch targets for tabs */
+    #dayTabs button { padding: 8px 14px !important; font-size: 0.85em !important; }
+
+    /* Cuisine chips bigger */
+    .cuisine-chip { padding: 10px 16px; font-size: 0.9em; }
+
+    /* Feedback modal bigger text */
+    .feedback-modal-box { padding: 28px; max-width: 92%; }
+    .feedback-modal-box .text-sm { font-size: 1em !important; }
+    .feedback-reason { padding: 14px 16px; font-size: 1em; margin: 8px 0; }
+
+    /* Cards stack single column */
+    .sm\:grid-cols-2 { grid-template-columns: 1fr !important; }
+    .sm\:grid-cols-4 { grid-template-columns: repeat(2, 1fr) !important; }
+    .sm\:grid-cols-5 { grid-template-columns: repeat(2, 1fr) !important; }
+
+    /* Meal card text bigger */
+    .meal-card .text-sm { font-size: 0.95em !important; }
+    .meal-card .text-xs { font-size: 0.85em !important; }
+
+    /* Recommendations text bigger */
+    .bg-emerald-50 .text-sm { font-size: 0.95em !important; }
+
+    /* Section padding */
+    .rounded-xl { padding-left: 16px !important; padding-right: 16px !important; }
+
+    /* Export button bigger */
+    #exportFeedbackBtn { padding: 12px 20px !important; font-size: 0.9em !important; }
+
+    /* Custom cuisine input bigger */
+    #customCuisineInput { font-size: 1em !important; padding: 10px 14px !important; }
+  }
 </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
@@ -60,6 +109,9 @@
 
   <!-- Doctor's Notes -->
   <div class="bg-white rounded-xl shadow-sm border border-blue-100 p-5 mb-3"><div class="flex items-center gap-2 mb-3 pb-3 border-b border-blue-50"><span class="text-lg">👨‍⚕️</span><div class="flex-1"><h2 class="text-sm font-bold text-slate-800">Dr. Sarah Liu's notes</h2><div class="text-[10px] text-slate-400">May 12, 2026 16:30</div></div></div><div class="text-sm text-slate-700 bg-blue-50 rounded-lg p-3 leading-relaxed border border-blue-100 mb-3" style="border-left:3px solid #3b82f6">Margaret&#x27;s recovery is progressing but I&#x27;m concerned about her decreased appetite and nausea. Let&#x27;s try switching metformin to the extended-release version to reduce GI side effects. Keep encouraging small, frequent meals. Her knee rehab is on track — she can start gentle outdoor walks (10 min) when she feels ready. Please continue monitoring blood glucose daily.</div><div class="mt-2"><div class="text-[11px] text-slate-400 uppercase tracking-wide font-medium mb-2">Medication changes</div><div class="flex items-start gap-2 bg-amber-50 rounded-lg p-3 border border-amber-100"><span class="text-sm mt-0.5">💊</span><div class="text-xs text-slate-700 leading-relaxed"><span class="font-semibold text-amber-700">Switch:</span> <span class="line-through text-slate-400">Metformin 500mg bid (immediate-release)</span> → <span class="font-medium text-emerald-700">Metformin XR 1000mg once daily with dinner</span></div></div></div></div>
+
+  <!-- Health Guidance (Persuasive) -->
+  <div class="bg-white rounded-xl shadow-sm border-2 border-emerald-200 p-5 mb-3"><div class="flex items-center gap-2 mb-3 pb-3 border-b border-emerald-100"><span class="text-lg">💚</span><h2 class="text-sm font-bold text-emerald-800">Why this matters for you</h2></div><div class="text-sm text-slate-700 leading-relaxed mb-4 bg-emerald-50 rounded-lg p-4 border-l-4 border-emerald-400">Margaret, you&#x27;re recovering from knee surgery while managing hypertension and diabetes. Right now, your body needs extra protein to heal the surgical site, and stable blood sugar to support your energy. We&#x27;ve tailored everything below specifically for your situation — please trust the process, even when your appetite is low.</div><div class="space-y-2"><div class="flex items-start gap-3 bg-slate-50 rounded-lg p-3 border border-slate-100"><span class="text-xl mt-0.5">🥩</span><div class="flex-1"><div class="text-sm font-medium text-slate-800">Prioritize protein at every meal — even a few bites count</div><div class="text-xs text-emerald-700 mt-1 italic">→ Your knee is still healing. Protein repairs tissue and prevents muscle loss while you&#x27;re less active.</div></div></div><div class="flex items-start gap-3 bg-slate-50 rounded-lg p-3 border border-slate-100"><span class="text-xl mt-0.5">🧂</span><div class="flex-1"><div class="text-sm font-medium text-slate-800">Keep meals low in salt — aim for less than 5g per day</div><div class="text-xs text-emerald-700 mt-1 italic">→ With your blood pressure at 138/85, reducing salt helps your medication work better and protects your heart.</div></div></div><div class="flex items-start gap-3 bg-slate-50 rounded-lg p-3 border border-slate-100"><span class="text-xl mt-0.5">🫒</span><div class="flex-1"><div class="text-sm font-medium text-slate-800">Choose steamed, boiled, or baked over fried</div><div class="text-xs text-emerald-700 mt-1 italic">→ Your cholesterol levels benefit from less oil. Steaming also keeps food soft and easy to eat when appetite is low.</div></div></div><div class="flex items-start gap-3 bg-slate-50 rounded-lg p-3 border border-slate-100"><span class="text-xl mt-0.5">💧</span><div class="flex-1"><div class="text-sm font-medium text-slate-800">Drink warm water or herbal tea throughout the day</div><div class="text-xs text-emerald-700 mt-1 italic">→ Hydration helps your kidneys process medication (metformin) and reduces the nausea you&#x27;ve been experiencing.</div></div></div><div class="flex items-start gap-3 bg-slate-50 rounded-lg p-3 border border-slate-100"><span class="text-xl mt-0.5">🚶</span><div class="flex-1"><div class="text-sm font-medium text-slate-800">Even a 5-minute walk counts as progress</div><div class="text-xs text-emerald-700 mt-1 italic">→ After knee surgery, any gentle movement prevents stiffness and helps blood glucose come down naturally.</div></div></div></div></div>
 
   <!-- Vitals -->
   <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
@@ -140,12 +192,13 @@
   <!-- Map -->
   <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3"><div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100"><span class="text-lg">📍</span><h2 class="text-sm font-bold text-slate-800">Nearby picks</h2></div><p class="text-sm text-slate-600 mb-3">Your recent activity looks a bit low. On a nice day, a gentle walk in a nearby park can help.</p><div class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 mb-3">Set GOOGLE_MAPS_API_KEY to render the interactive map.</div><div class="grid grid-cols-1 sm:grid-cols-2 gap-2"><a class="block rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm font-semibold text-slate-700 hover:bg-slate-100 text-center" href="https://www.google.com/maps/search/hospitals/@42.2766632,-71.8079906,14z" target="_blank" rel="noopener">🏥 Nearby hospitals</a><a class="block rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm font-semibold text-slate-700 hover:bg-slate-100 text-center" href="https://www.google.com/maps/search/parks/@42.2766632,-71.8079906,14z" target="_blank" rel="noopener">🌳 Nearby parks</a></div></div>
 
-  <!-- Export Feedback -->
+  <!-- Submit Preferences -->
   <div class="text-center mb-4">
     <button id="exportFeedbackBtn" onclick="exportFeedbackJSON()" style="display:none"
-      class="px-4 py-2 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition-all">
-      📤 Export feedback
+      class="px-6 py-3 rounded-full text-sm font-bold bg-emerald-600 text-white shadow-md hover:bg-emerald-700 active:scale-95 transition-all">
+      ✓ Submit my preferences
     </button>
+    <p class="text-xs text-slate-400 mt-2" id="submitHint" style="display:none">Your choices will be remembered for next time</p>
   </div>
 
   <!-- Guardrail -->
@@ -198,7 +251,10 @@ function getFeedback(dayIdx, mealType, itemName) {
   return feedbackStore[`${dayIdx}-${mealType}-${itemName}`];
 }
 
-function exportFeedbackJSON() {
+const MEMORY_API_URL = "";
+const MEMORY_API_TOKEN = "";
+
+function buildPreferencePayload() {
   const likes = [];
   const dislikes = [];
   for (const [key, val] of Object.entries(feedbackStore)) {
@@ -209,17 +265,65 @@ function exportFeedbackJSON() {
   const selectedCuisines = Object.entries(cuisinePrefs).map(([name, meta]) => ({
     cuisine: name, ...meta
   }));
-  const payload = {
-    patient_id: "P-20260513-002",
-    report_time: "May 13, 2026 14:00",
-    exported_at: new Date().toISOString(),
-    total_feedback: likes.length + dislikes.length,
-    preferences: {
-      cuisine_preferences: selectedCuisines,
-      liked: likes,
-      disliked: dislikes
+  return {
+    user_id: "P-20260513-002",
+    data_type: "scenario",
+    language: "en",
+    timestamp: new Date().toISOString(),
+    data: {
+      bundle: {
+        type: "user_preference",
+        report_time: "May 13, 2026 14:00",
+        total_feedback: likes.length + dislikes.length,
+        cuisine_preferences: selectedCuisines,
+        liked: likes,
+        disliked: dislikes
+      }
     }
   };
+}
+
+async function exportFeedbackJSON() {
+  const payload = buildPreferencePayload();
+
+  if (MEMORY_API_URL && !MEMORY_API_URL.includes("{")) {
+    // POST to memory API
+    const btn = document.getElementById("exportFeedbackBtn");
+    const origText = btn.textContent;
+    btn.textContent = "⏳ Saving...";
+    btn.disabled = true;
+    try {
+      const resp = await fetch(MEMORY_API_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-Token": MEMORY_API_TOKEN
+        },
+        body: JSON.stringify(payload)
+      });
+      if (resp.ok) {
+        btn.textContent = "✅ Saved to memory!";
+        setTimeout(() => { btn.textContent = origText; btn.disabled = false; }, 2500);
+      } else {
+        const errText = await resp.text();
+        btn.textContent = "❌ Failed (" + resp.status + ")";
+        console.error("Memory API error:", errText);
+        setTimeout(() => { btn.textContent = origText; btn.disabled = false; }, 3000);
+      }
+    } catch (err) {
+      console.error("Memory API unreachable:", err);
+      btn.textContent = "❌ Network error";
+      setTimeout(() => { btn.textContent = origText; btn.disabled = false; }, 3000);
+      // Fallback: download file
+      downloadPayload(payload);
+    }
+  } else {
+    // No API configured — fallback to file download
+    downloadPayload(payload);
+  }
+}
+
+function downloadPayload(payload) {
   const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -231,12 +335,19 @@ function exportFeedbackJSON() {
 
 function updateExportBadge() {
   const btn = document.getElementById("exportFeedbackBtn");
+  const hint = document.getElementById("submitHint");
   if (!btn) return;
   const fbCount = Object.keys(feedbackStore).length;
   const cuisineCount = Object.keys(cuisinePrefs).length;
   const total = fbCount + cuisineCount;
-  btn.textContent = total > 0 ? "📤 Export preferences (" + total + " items)" : "📤 Export preferences";
-  btn.style.display = total > 0 ? "inline-block" : "none";
+  if (total > 0) {
+    btn.textContent = "✓ Submit my preferences (" + total + ")";
+    btn.style.display = "inline-block";
+    if (hint) hint.style.display = "block";
+  } else {
+    btn.style.display = "none";
+    if (hint) hint.style.display = "none";
+  }
 }
 
 function showFeedbackModal(dayIdx, mealType, itemName) {
