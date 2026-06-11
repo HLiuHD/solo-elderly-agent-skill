@@ -992,22 +992,9 @@ def main() -> None:
         ),
     )
 
-    escalation_records = []
-    for esc in escalations:
-        escalation_records.append({
-            "level": esc["level"],
-            "title": esc["title"],
-            "message": esc["message"],
-            "count": esc["count"],
-            "threshold": esc["threshold"],
-            "detected_at": meta.get("current_time") or datetime.now().isoformat(),
-        })
-
     result = {
         "structured_output": {
             "html": html,
-            "detail": so,
-            "escalations": escalation_records,
         },
     }
 

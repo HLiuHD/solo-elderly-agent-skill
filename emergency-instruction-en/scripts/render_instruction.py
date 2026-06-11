@@ -466,8 +466,9 @@ def main() -> None:
         ai_map_msg, patient_lat, patient_lon, google_maps_api_key,
     )
 
+    report_title = "Emergency instructions"
     html = template.format(
-        report_title="Emergency instructions",
+        report_title=report_title,
         header_gradient=header_gradient,
         current_time=current_time,
         status_badge_class=badge_class,
@@ -500,8 +501,9 @@ def main() -> None:
 
     result = {
         "structured_output": {
+            "title": report_title,
+            "category": "outlier",
             "html": html,
-            "detail": so,
         },
     }
 
