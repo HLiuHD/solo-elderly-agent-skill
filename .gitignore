@@ -31,3 +31,26 @@ skill-dev-kit/skill-dev-kit/*-output.html
 # OS files
 Thumbs.db
 .DS_Store
+
+# Local environment files
+.env
+.env.*
+!.env.example
+!.env.sample
+
+# Python virtual environments and caches
+venv/
+env/
+ENV/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Build/package artifacts
+build/
+dist/
+*.egg-info/

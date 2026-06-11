@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{report_title}</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script type="text/javascript" src="https://api.map.baidu.com/api?v=3.0&ak={baidu_map_ak}"></script>
+<style>
+  body {{ font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; }}
+  .meal-card {{ transition: all .2s; }}
+  .meal-card:hover {{ transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.08); }}
+  .feedback-btn {{ opacity:0; transition: opacity .2s; cursor:pointer; border:none; background:transparent; font-size:0.9em; padding:2px 4px; border-radius:4px; }}
+  .meal-card:hover .feedback-btn {{ opacity:1; }}
+  .feedback-btn:hover {{ background:#fee2e2; }}
+  .feedback-btn.like:hover {{ background:#dcfce7; }}
+  .feedback-btn.liked {{ opacity:1; background:#dcfce7; }}
+  .feedback-btn.disliked {{ opacity:1; background:#fef3c7; }}
+  .feedback-modal {{ position:fixed; inset:0; background:rgba(0,0,0,.4); display:flex; align-items:center; justify-content:center; z-index:9999; }}
+  .feedback-modal-box {{ background:#fff; border-radius:16px; padding:24px; max-width:320px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,.2); }}
+  .feedback-reason {{ display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0; border:1px solid #e2e8f0; border-radius:10px; background:#f8fafc; font-size:0.85em; cursor:pointer; transition:all .15s; }}
+  .feedback-reason:hover {{ background:#eff6ff; border-color:#93c5fd; }}
+  .cuisine-chip {{ display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:20px; font-size:0.8em; font-weight:500; cursor:pointer; border:2px solid #e2e8f0; background:#f8fafc; color:#475569; transition:all 0.2s; user-select:none; }}
+  .cuisine-chip:hover {{ border-color:#a7f3d0; background:#ecfdf5; }}
+  .cuisine-chip.selected {{ border-color:#10b981; background:#d1fae5; color:#065f46; }}
+  .cuisine-chip .chip-x {{ font-size:0.75em; opacity:0; padding:2px; border-radius:50%; }}
+  .cuisine-chip.selected .chip-x {{ opacity:0.6; }}
+  .cuisine-chip.selected .chip-x:hover {{ opacity:1; background:#fecaca; color:#991b1b; }}
+
+  @media (max-width: 640px) {{
+    .feedback-btn {{ opacity:1 !important; font-size:1.2em !important; padding:6px 8px !important; min-width:36px; min-height:36px; }}
+    .cuisine-chip {{ padding:10px 16px; font-size:0.9em; }}
+    .feedback-modal-box {{ padding:28px; max-width:92%; }}
+    .feedback-reason {{ padding:14px 16px; font-size:1em; margin:8px 0; }}
+    #exportFeedbackBtn {{ padding:12px 20px !important; font-size:0.9em !important; }}
+    #customCuisineInput {{ font-size:1em !important; padding:10px 14px !important; }}
+  }}
+</style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+<div class="max-w-2xl mx-auto px-4 py-6">
+
+  <!-- Header -->
+  <div class="bg-gradient-to-br from-emerald-600 to-teal-700 text-white rounded-2xl p-6 mb-4 shadow-lg">
+    <h1 class="text-xl font-bold">{header_greeting}</h1>
+    <p class="text-emerald-100 text-sm mt-1">您的依从性报告 · {current_time}</p>
+    <div class="flex items-center gap-2 mt-3">
+      <span class="inline-flex items-center gap-1 {status_badge_class} px-3 py-1 rounded-full text-xs font-semibold">{status_icon} {status_text}</span>
+      {condition_badges}
+    </div>
+  </div>
+
+  <!-- AI Message -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
+    <div class="flex items-center gap-2 mb-3 pb-3 border-b border-slate-100">
+      <span class="text-lg">🤖</span>
+      <h2 class="text-sm font-bold text-slate-800">AI 健康管家</h2>
+    </div>
+    <p class="text-sm text-slate-700 leading-relaxed">{ai_message}</p>
+  </div>
+
+  <!-- Doctor Notes -->
+  {doctor_notes_html}
+
+  <!-- Health Guidance -->
+  {health_guidance_html}
+
+  <!-- Vitals -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
+    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+      <span class="text-lg">📊</span>
+      <h2 class="text-sm font-bold text-slate-800">最新健康数据</h2>
+    </div>
+    <div class="grid grid-cols-3 sm:grid-cols-5 gap-2">
+      {vitals_html}
+    </div>
+  </div>
+
+  <!-- Adherence Analysis -->
+  {adherence_html}
+
+  <!-- Risk Tags & Recommendations -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
+    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+      <span class="text-lg">💡</span>
+      <h2 class="text-sm font-bold text-slate-800">健康建议</h2>
+    </div>
+    <div class="flex flex-wrap gap-2 mb-4">{risk_tags_html}</div>
+    <div class="space-y-2">{recommendations_html}</div>
+    {reasoning_html}
+  </div>
+
+  <!-- Nutrition Advice -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
+    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+      <span class="text-lg">🥗</span>
+      <h2 class="text-sm font-bold text-slate-800">营养建议</h2>
+    </div>
+    <div class="text-sm text-slate-700 bg-emerald-50 rounded-lg p-3 leading-relaxed" style="border-left:3px solid #10b981">{nutrition_advice}</div>
+  </div>
+
+  <!-- Diet Table -->
+  {diet_table_html}
+
+  <!-- Cuisine Preference -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
+    <div class="flex items-center gap-2 mb-3 pb-3 border-b border-slate-100">
+      <span class="text-lg">🍜</span>
+      <h2 class="text-sm font-bold text-slate-800">您的口味偏好</h2>
+    </div>
+    <p class="text-xs text-slate-500 mb-3">选择您喜欢的菜系，下次食谱会尽量参考您的口味。</p>
+    <div class="flex flex-wrap gap-2 mb-3" id="cuisineChips"></div>
+    <div class="flex items-center gap-2">
+      <input id="customCuisineInput" type="text" placeholder="添加其他菜系..."
+        class="flex-1 text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-200">
+      <button onclick="addCustomCuisine()" class="px-3 py-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium hover:bg-emerald-100">+ 添加</button>
+    </div>
+  </div>
+
+  <!-- Weekly Meal Plan -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
+    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+      <span class="text-lg">📅</span>
+      <h2 class="text-sm font-bold text-slate-800">一周营养食谱</h2>
+    </div>
+    <div class="flex gap-2 mb-4 overflow-x-auto pb-2" id="dayTabs"></div>
+    <div id="mealContent"></div>
+  </div>
+
+  <!-- Diet Tips -->
+  {diet_tips_html}
+
+  <!-- Map -->
+  {map_html}
+
+  <!-- Guardrail -->
+  <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
+    <p class="text-xs text-amber-800 leading-relaxed">{guardrail}</p>
+  </div>
+
+  <div class="text-center text-xs text-slate-400 pb-6">AI 健康管家 · 仅供参考，请遵医嘱</div>
+</div>
+
+<script>
+const DAYS = ["周一","周二","周三","周四","周五","周六","周日"];
+const MEAL_LABELS = {{"breakfast":"早餐","lunch":"午餐","dinner":"晚餐"}};
+const rawMeals = {meal_data_json};
+const meals = DAYS.map((d, i) => ({{ ...rawMeals[i % rawMeals.length], day: d }}));
+let activeDay = 0;
+
+const MEAL_FEEDBACK_REASONS = ["不喜欢口味", "过敏/不耐受", "买不到食材", "准备起来太麻烦", "其他"];
+const GENERAL_FEEDBACK_REASONS = ["不适合我", "做起来太难", "我已经在做", "不同意这个建议", "其他"];
+let feedbackStore = JSON.parse(localStorage.getItem("mealFeedback") || "{{}}");
+
+function saveFeedback(dayIdx, mealType, itemName, reason) {{
+  const key = `${{dayIdx}}-${{mealType}}-${{itemName}}`;
+  feedbackStore[key] = {{ sentiment: "dislike", reason, timestamp: new Date().toISOString() }};
+  localStorage.setItem("mealFeedback", JSON.stringify(feedbackStore));
+  updateExportBadge();
+}}
+
+function saveLike(dayIdx, mealType, itemName) {{
+  const key = `${{dayIdx}}-${{mealType}}-${{itemName}}`;
+  feedbackStore[key] = {{ sentiment: "like", reason: null, timestamp: new Date().toISOString() }};
+  localStorage.setItem("mealFeedback", JSON.stringify(feedbackStore));
+  renderMeals();
+  updateExportBadge();
+}}
+
+function getFeedback(dayIdx, mealType, itemName) {{
+  return feedbackStore[`${{dayIdx}}-${{mealType}}-${{itemName}}`];
+}}
+
+const MEMORY_API_URL = "{memory_api_url}";
+const MEMORY_API_TOKEN = "{memory_api_token}";
+
+function buildPreferencePayload() {{
+  const likes = [];
+  const dislikes = [];
+  for (const [key, val] of Object.entries(feedbackStore)) {{
+    const entry = {{ item_key: key, ...val }};
+    if (val.sentiment === "like") likes.push(entry);
+    else dislikes.push(entry);
+  }}
+  const selectedCuisines = Object.entries(cuisinePrefs).map(([name, meta]) => ({{ cuisine: name, ...meta }}));
+  return {{
+    user_id: "{patient_id}",
+    data_type: "scenario",
+    language: "zh",
+    timestamp: new Date().toISOString(),
+    data: {{
+      bundle: {{
+        type: "user_preference",
+        report_time: "{current_time}",
+        total_feedback: likes.length + dislikes.length,
+        cuisine_preferences: selectedCuisines,
+        liked: likes,
+        disliked: dislikes
+      }}
+    }}
+  }};
+}}
+
+async function exportFeedbackJSON() {{
+  const payload = buildPreferencePayload();
+  if (MEMORY_API_URL && !MEMORY_API_URL.includes("{{")) {{
+    const btn = document.getElementById("exportFeedbackBtn");
+    const origText = btn.textContent;
+    btn.textContent = "⏳ 保存中...";
+    btn.disabled = true;
+    try {{
+      const resp = await fetch(MEMORY_API_URL, {{
+        method: "POST",
+        headers: {{ "Content-Type": "application/json", "X-API-Token": MEMORY_API_TOKEN }},
+        body: JSON.stringify(payload)
+      }});
+      if (resp.ok) {{
+        btn.textContent = "✅ 已保存";
+        setTimeout(() => {{ btn.textContent = origText; btn.disabled = false; }}, 2500);
+      }} else {{
+        btn.textContent = "❌ 保存失败 (" + resp.status + ")";
+        console.error("Memory API error:", await resp.text());
+        setTimeout(() => {{ btn.textContent = origText; btn.disabled = false; }}, 3000);
+      }}
+    }} catch (err) {{
+      console.error("Memory API unreachable:", err);
+      btn.textContent = "❌ 网络错误";
+      setTimeout(() => {{ btn.textContent = origText; btn.disabled = false; }}, 3000);
+      downloadPayload(payload);
+    }}
+  }} else {{
+    downloadPayload(payload);
+  }}
+}}
+
+function downloadPayload(payload) {{
+  const blob = new Blob([JSON.stringify(payload, null, 2)], {{ type: "application/json" }});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "patient_preferences_" + new Date().toISOString().slice(0,10) + ".json";
+  a.click();
+  URL.revokeObjectURL(url);
+}}
+
+function updateExportBadge() {{
+  const btn = document.getElementById("exportFeedbackBtn");
+  const hint = document.getElementById("submitHint");
+  if (!btn) return;
+  const total = Object.keys(feedbackStore).length + Object.keys(cuisinePrefs || {{}}).length;
+  if (total > 0) {{
+    btn.textContent = "✓ 提交我的偏好 (" + total + ")";
+    btn.style.display = "inline-block";
+    if (hint) hint.style.display = "block";
+  }} else {{
+    btn.style.display = "none";
+    if (hint) hint.style.display = "none";
+  }}
+}}
+
+function showFeedbackModal(dayIdx, mealType, itemName) {{
+  const existing = document.querySelector('.feedback-modal');
+  if (existing) existing.remove();
+  const isMeal = dayIdx >= 0;
+  const reasons = isMeal ? MEAL_FEEDBACK_REASONS : GENERAL_FEEDBACK_REASONS;
+  const title = isMeal ? "为什么不想要这个食物？" : "为什么这个建议不适合您？";
+  const displayName = itemName.length > 60 ? itemName.substring(0, 57) + "..." : itemName;
+  const modal = document.createElement('div');
+  modal.className = 'feedback-modal';
+  modal.innerHTML = `
+    <div class="feedback-modal-box">
+      <div class="text-sm font-bold text-slate-800 mb-1">${{title}}</div>
+      <div class="text-xs text-slate-500 mb-3">${{displayName}}</div>
+      ${{reasons.map(r => `<button class="feedback-reason" data-reason="${{r}}">${{r}}</button>`).join('')}}
+      <button class="feedback-reason" style="color:#94a3b8;border-color:#e2e8f0;margin-top:8px" data-reason="__cancel__">取消</button>
+    </div>`;
+  modal.addEventListener('click', function(e) {{
+    const reason = e.target.dataset.reason;
+    if (!reason) return;
+    if (reason === '__cancel__') {{ modal.remove(); return; }}
+    saveFeedback(dayIdx, mealType, itemName, reason);
+    modal.remove();
+    if (isMeal) renderMeals();
+  }});
+  document.body.appendChild(modal);
+}}
+
+
+function renderTabs() {{
+  const container = document.getElementById("dayTabs");
+  container.innerHTML = DAYS.map((d, i) =>
+    `<button onclick="switchDay(${{i}})" class="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${{i === activeDay ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}}">${{d}}</button>`
+  ).join("");
+}}
+
+function switchDay(i) {{
+  activeDay = i;
+  renderTabs();
+  renderMeals();
+}}
+
+function renderMeals() {{
+  const day = meals[activeDay];
+  if (!day) {{ document.getElementById("mealContent").innerHTML = '<p class="text-sm text-slate-400">暂无数据</p>'; return; }}
+  let html = "";
+  for (const [key, label] of Object.entries(MEAL_LABELS)) {{
+    const items = day[key] || [];
+    if (!items.length) continue;
+    html += `<div class="mb-4"><div class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">${{label}}</div><div class="grid grid-cols-1 sm:grid-cols-2 gap-2">`;
+    for (const it of items) {{
+      const fb = getFeedback(activeDay, key, it.name);
+      const likeClass = fb && fb.sentiment === "like" ? "liked" : "";
+      const dislikeClass = fb && fb.sentiment === "dislike" ? "disliked" : "";
+      const safeName = it.name.replace(/'/g, "&#39;");
+      const reason = it.condition && it.benefit ? "适合" + it.condition + "：" + it.benefit : (it.benefit || "");
+      html += `<div class="meal-card flex items-start gap-3 bg-slate-50 rounded-lg p-3 border border-slate-100">
+        <span class="text-2xl mt-0.5">${{it.icon || "🍽️"}}</span>
+        <div class="flex-1 min-w-0">
+          <div class="text-sm font-semibold text-slate-800">${{it.name}}</div>
+          <div class="text-xs text-emerald-600 mt-0.5 leading-relaxed italic">${{reason}}</div>
+        </div>
+        <div class="flex flex-col gap-1">
+          <button class="feedback-btn like ${{likeClass}}" title="喜欢" onclick="saveLike(${{activeDay}},'${{key}}','${{safeName}}')">👍</button>
+          <button class="feedback-btn ${{dislikeClass}}" title="不想要" onclick="showFeedbackModal(${{activeDay}},'${{key}}','${{safeName}}')">👎</button>
+        </div>
+      </div>`;
+    }}
+    html += "</div></div>";
+  }}
+  document.getElementById("mealContent").innerHTML = html;
+}}
+
+// ─── Cuisine Preferences ───
+const DEFAULT_CUISINES = [
+  {{ name: "家常菜", icon: "🍚" }},
+  {{ name: "粤菜", icon: "🥡" }},
+  {{ name: "川菜", icon: "🌶️" }},
+  {{ name: "江浙菜", icon: "🥢" }},
+  {{ name: "清淡饮食", icon: "🥣" }},
+  {{ name: "地中海饮食", icon: "🫒" }},
+  {{ name: "日式", icon: "🍣" }},
+  {{ name: "意式", icon: "🍝" }},
+];
+
+let cuisinePrefs = JSON.parse(localStorage.getItem("cuisinePrefs") || "{{}}");
+
+function renderCuisineChips() {{
+  const container = document.getElementById("cuisineChips");
+  if (!container) return;
+  const allCuisines = [...DEFAULT_CUISINES];
+  const customNames = Object.keys(cuisinePrefs).filter(n => !DEFAULT_CUISINES.some(d => d.name === n));
+  for (const cn of customNames) allCuisines.push({{ name: cn, icon: "🍽️" }});
+  container.innerHTML = allCuisines.map(c => {{
+    const sel = cuisinePrefs[c.name] ? "selected" : "";
+    return `<span class="cuisine-chip ${{sel}}" onclick="toggleCuisine('${{c.name.replace(/'/g,"&#39;")}}')">${{c.icon}} ${{c.name}}<span class="chip-x" onclick="event.stopPropagation();removeCuisine('${{c.name.replace(/'/g,"&#39;")}}')">✕</span></span>`;
+  }}).join("");
+  updateExportBadge();
+}}
+
+function toggleCuisine(name) {{
+  if (cuisinePrefs[name]) delete cuisinePrefs[name];
+  else cuisinePrefs[name] = {{ selected_at: new Date().toISOString() }};
+  localStorage.setItem("cuisinePrefs", JSON.stringify(cuisinePrefs));
+  renderCuisineChips();
+  showCuisineToast();
+}}
+
+function showCuisineToast() {{
+  const selected = Object.keys(cuisinePrefs);
+  if (!selected.length) return;
+  let existing = document.getElementById("cuisineToast");
+  if (!existing) {{
+    existing = document.createElement("div");
+    existing.id = "cuisineToast";
+    existing.style.cssText = "position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#065f46;color:#fff;padding:10px 20px;border-radius:12px;font-size:0.8em;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,0.2);z-index:9999;transition:opacity 0.3s;max-width:90%;text-align:center";
+    document.body.appendChild(existing);
+  }}
+  existing.textContent = "✓ 已保存！下次报告会参考：" + selected.join("、");
+  existing.style.opacity = "1";
+  clearTimeout(existing._timer);
+  existing._timer = setTimeout(() => {{ existing.style.opacity = "0"; }}, 3000);
+}}
+
+function removeCuisine(name) {{
+  delete cuisinePrefs[name];
+  localStorage.setItem("cuisinePrefs", JSON.stringify(cuisinePrefs));
+  renderCuisineChips();
+}}
+
+function addCustomCuisine() {{
+  const input = document.getElementById("customCuisineInput");
+  const name = (input.value || "").trim();
+  if (!name) return;
+  cuisinePrefs[name] = {{ selected_at: new Date().toISOString(), custom: true }};
+  localStorage.setItem("cuisinePrefs", JSON.stringify(cuisinePrefs));
+  input.value = "";
+  renderCuisineChips();
+}}
+
+document.getElementById("customCuisineInput").addEventListener("keydown", function(e) {{
+  if (e.key === "Enter") {{ e.preventDefault(); addCustomCuisine(); }}
+}});
+
+renderCuisineChips();
+renderTabs();
+renderMeals();
+updateExportBadge();
+</script>
+</body>
+</html>

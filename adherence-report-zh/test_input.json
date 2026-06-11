@@ -1,0 +1,426 @@
+{
+  "payload": {
+    "meta": {
+      "user_id": "P-20260513-002",
+      "lang": "en",
+      "current_time": "2026-05-13T14:00:00"
+    },
+    "memory": {
+      "patient_long_term_profile": "Margaret Chen, female, 71 years old. Diagnosed with hypertension (8 years), type 2 diabetes (4 years), hyperlipidemia. Post-surgery recovery (knee replacement, 6 weeks ago). Medications: amlodipine 5mg qd, metformin 500mg bid, atorvastatin 20mg qn. Lives alone, daughter visits weekly.",
+      "recent_health_dynamics": "Over the past 14 days: appetite noticeably decreased, likely related to metformin side effects and post-surgery discomfort. Steps dropped from average 4,000/day to about 1,500/day. Blood pressure stable around 138/85. Blood glucose slightly elevated at 7.0-7.4 fasting. Reports feeling tired and not wanting to eat much.",
+      "key_events": [
+        {
+          "date": "2026-03-28",
+          "type": "surgery",
+          "description": "右膝关节置换术"
+        },
+        {
+          "date": "2026-04-15",
+          "type": "symptom",
+          "description": "术后复诊恢复良好，可进行轻度步行"
+        },
+        {
+          "date": "2026-04-22",
+          "type": "symptom",
+          "description": "早晨轻度头痛"
+        },
+        {
+          "date": "2026-05-01",
+          "type": "symptom",
+          "description": "服用二甲双胍后反复恶心"
+        },
+        {
+          "date": "2026-05-05",
+          "type": "symptom",
+          "description": "食欲明显下降，经常不吃午餐"
+        },
+        {
+          "date": "2026-05-10",
+          "type": "alert",
+          "description": "连续 5 天步数低于 2000 步"
+        }
+      ]
+    },
+    "signals": {
+      "start_ts": "2026-04-29 00:00",
+      "end_ts": "2026-05-13 14:00",
+      "summary_text": "14-day smartwatch data: average HR 74bpm, SpO2 stable 96-98%, steps declining trend from 4000 to 1500/day. GPS shows patient has not left home in 5 days.",
+      "anomalies": [
+        "Activity level declining",
+        "No home exits in 5 days"
+      ]
+    },
+    "latest_health": {
+      "blood_pressure": "138/85",
+      "heart_rate": 74,
+      "blood_oxygen": 97,
+      "blood_glucose": 7.2,
+      "steps": 1500
+    },
+    "adherence_analysis": {
+      "medication": {
+        "compliance": "mostly compliant",
+        "missed_doses": "skipped metformin twice due to nausea"
+      },
+      "diet": {
+        "quality": "poor",
+        "notes": "eating very little, skipping lunch frequently"
+      },
+      "exercise": {
+        "daily_steps": 1500,
+        "target": 4000,
+        "notes": "knee pain limits walking"
+      },
+      "monitoring": {
+        "bp_checks": "regular",
+        "glucose_checks": "irregular, missed 3 days"
+      }
+    },
+    "location": {
+      "current": {
+        "lat": 42.2766632,
+        "lon": -71.8079906,
+        "address": "Worcester, MA"
+      }
+    },
+    "doctor_feedback": {
+      "doctor_name": "刘医生",
+      "timestamp": "2026-05-12T16:30:00",
+      "message": "Margaret 的术后恢复整体平稳，但食欲下降和恶心需要关注。建议改用二甲双胍缓释片以减少胃肠道反应，同时继续鼓励少量多餐。膝关节康复进展符合预期，感觉合适时可开始 10 分钟轻度户外步行。",
+      "medication_changes": [
+        {
+          "action": "switch",
+          "from": "二甲双胍 500mg 每日两次（普通片）",
+          "to": "二甲双胍缓释片 1000mg 每晚随餐一次"
+        }
+      ]
+    },
+    "user_preference": {
+      "preferences": {
+        "cuisine_preferences": [
+          {
+            "cuisine": "粤菜",
+            "selected_at": "2026-05-12T12:00:00"
+          },
+          {
+            "cuisine": "清淡家常菜",
+            "selected_at": "2026-05-12T12:01:00"
+          }
+        ],
+        "liked": [
+          {
+            "item_key": "0-breakfast-香蕉燕麦粥",
+            "sentiment": "like",
+            "timestamp": "2026-05-12T12:02:00"
+          }
+        ],
+        "disliked": [
+          {
+            "item_key": "1-dinner-烤红薯",
+            "sentiment": "dislike",
+            "reason": "太甜",
+            "timestamp": "2026-05-12T12:03:00"
+          }
+        ]
+      }
+    }
+  },
+  "llm_result": {
+    "message": "Your adherence report is ready.",
+    "structured_output": {
+      "patient_status": "at_risk",
+      "risk_tags": [
+        "Appetite decreased",
+        "Low activity level",
+        "Glucose monitoring gaps"
+      ],
+      "assistant_message_patient": "Hello Margaret! We've been keeping an eye on how you've been doing over the past two weeks, and we want to share a few observations with you. First, the good news: your blood pressure has been pretty steady, and you've been taking most of your medications on time — great job! However, we've noticed your appetite has been lower than usual, and you mentioned feeling nauseous sometimes. This might be related to your metformin — your doctor is aware and may adjust the timing or dosage. Your walking has also slowed down since your knee surgery, which is understandable. We've put together some gentle suggestions and a meal plan that focuses on easy-to-digest, nutrient-rich foods to help you get your strength back. Small steps count!",
+      "adherence_analysis": {
+        "period": "Past 14 days",
+        "medication": {
+          "status": "Mostly on track",
+          "issues": "Skipped metformin twice due to nausea after meals",
+          "adjustments": "Consider taking metformin with food or asking your doctor about extended-release formulation"
+        },
+        "appetite": {
+          "status": "Decreased",
+          "cause_if_known": "Likely metformin-related nausea combined with post-surgery fatigue and reduced activity",
+          "suggestions": "Try smaller, more frequent meals. Warm soups and soft foods may be easier to tolerate."
+        },
+        "exercise": {
+          "status": "Below target",
+          "barriers": "Knee pain from recent surgery limits walking distance and duration",
+          "plan": "Start with 10-minute seated exercises twice daily. Add short walks (5 min) as tolerated."
+        },
+        "monitoring": {
+          "status": "Needs improvement",
+          "gaps": "Missed glucose checks on 3 days. Blood pressure monitoring is consistent."
+        }
+      },
+      "recommendations": [
+        {
+          "text": "把二甲双胍放在吃饭中途服用，不要空腹服药",
+          "reason": "您最近多次在服药后恶心，随餐中途服用通常能减少胃肠道不适。",
+          "category": "medication"
+        },
+        {
+          "text": "把三餐拆成 5 到 6 次小餐，哪怕只吃几口也算进步",
+          "reason": "术后恢复期食欲下降时，小餐更容易入口，也有助于糖尿病血糖稳定。",
+          "category": "diet"
+        },
+        {
+          "text": "每天做两次 10 分钟坐姿腿部练习",
+          "reason": "膝关节置换术后 6 周，温和活动可以减少僵硬并维持肌力。",
+          "category": "exercise"
+        },
+        {
+          "text": "状态允许时，在家附近走 5 分钟短距离",
+          "reason": "轻度步行有助于康复、血压控制和血糖代谢。",
+          "category": "exercise"
+        },
+        {
+          "text": "设置每日血糖测量提醒",
+          "reason": "近期漏测血糖会影响医生判断二甲双胍调整后的效果。",
+          "category": "monitoring"
+        }
+      ],
+      "nutrition_advice": "Margaret, since your appetite is lower right now, focus on nutrient-dense foods in smaller portions. Warm oatmeal, soft-boiled eggs, and broth-based soups are gentle on the stomach. Add a handful of nuts or a small piece of fruit as snacks between meals to keep your energy up.",
+      "latest_health_summary": {
+        "blood_pressure": "138/85",
+        "heart_rate": "74",
+        "blood_oxygen": "97",
+        "blood_glucose": "7.2",
+        "steps_today": "1,500"
+      },
+      "conditions": [
+        "Hypertension",
+        "Type 2 diabetes",
+        "Hyperlipidemia"
+      ],
+      "diet_table": [
+        {
+          "condition": "Hypertension",
+          "principle": "Low sodium, high potassium",
+          "recommend": "Leafy greens, bananas, sweet potatoes, fish",
+          "avoid": "Canned soups, deli meats, soy sauce, pickles"
+        },
+        {
+          "condition": "Type 2 diabetes",
+          "principle": "Low GI, controlled portions",
+          "recommend": "Oatmeal, lentils, non-starchy vegetables, nuts",
+          "avoid": "White bread, sugary drinks, pastries, white rice"
+        },
+        {
+          "condition": "Hyperlipidemia",
+          "principle": "Low saturated fat, high fiber",
+          "recommend": "Salmon, olive oil, oats, almonds",
+          "avoid": "Fried foods, butter, fatty meats, full-fat dairy"
+        }
+      ],
+      "weekly_meal_plan": [
+        {
+          "day": "Day 1",
+          "breakfast": [
+            {
+              "name": "Warm oatmeal with banana",
+              "icon": "🥣",
+              "condition": "Diabetes",
+              "benefit": "Low GI, gentle on stomach"
+            },
+            {
+              "name": "Soft-boiled egg",
+              "icon": "🥚",
+              "condition": "Hyperlipidemia",
+              "benefit": "Lean protein boost"
+            }
+          ],
+          "lunch": [
+            {
+              "name": "Chicken broth with vegetables",
+              "icon": "🍲",
+              "condition": "Hypertension",
+              "benefit": "Low sodium, hydrating"
+            },
+            {
+              "name": "Whole wheat crackers",
+              "icon": "🍞",
+              "condition": "Diabetes",
+              "benefit": "Slow-release carbs"
+            }
+          ],
+          "dinner": [
+            {
+              "name": "Baked salmon fillet",
+              "icon": "🐟",
+              "condition": "Hyperlipidemia",
+              "benefit": "Heart-healthy omega-3"
+            },
+            {
+              "name": "Steamed broccoli",
+              "icon": "🥦",
+              "condition": "Hypertension",
+              "benefit": "Potassium-rich"
+            },
+            {
+              "name": "Brown rice (small portion)",
+              "icon": "🍚",
+              "condition": "Diabetes",
+              "benefit": "High fiber whole grain"
+            }
+          ]
+        },
+        {
+          "day": "Day 2",
+          "breakfast": [
+            {
+              "name": "Greek yogurt with berries",
+              "icon": "🫐",
+              "condition": "Diabetes",
+              "benefit": "Protein + low GI fruit"
+            },
+            {
+              "name": "Handful of almonds",
+              "icon": "🥜",
+              "condition": "Hyperlipidemia",
+              "benefit": "Healthy fats, fiber"
+            }
+          ],
+          "lunch": [
+            {
+              "name": "Lentil soup",
+              "icon": "🍲",
+              "condition": "Diabetes",
+              "benefit": "Low GI, high protein"
+            },
+            {
+              "name": "Side salad with olive oil",
+              "icon": "🥗",
+              "condition": "Hyperlipidemia",
+              "benefit": "Heart-healthy fats"
+            }
+          ],
+          "dinner": [
+            {
+              "name": "Grilled chicken breast",
+              "icon": "🍗",
+              "condition": "Hyperlipidemia",
+              "benefit": "Lean protein"
+            },
+            {
+              "name": "Roasted sweet potato",
+              "icon": "🍠",
+              "condition": "Hypertension",
+              "benefit": "Potassium-rich"
+            },
+            {
+              "name": "Sauteed spinach",
+              "icon": "🥬",
+              "condition": "Hypertension",
+              "benefit": "Magnesium + potassium"
+            }
+          ]
+        },
+        {
+          "day": "Day 3",
+          "breakfast": [
+            {
+              "name": "Scrambled eggs on toast",
+              "icon": "🍳",
+              "condition": "Diabetes",
+              "benefit": "Protein-rich start"
+            },
+            {
+              "name": "Sliced avocado",
+              "icon": "🥑",
+              "condition": "Hyperlipidemia",
+              "benefit": "Healthy monounsaturated fat"
+            }
+          ],
+          "lunch": [
+            {
+              "name": "Tuna salad (light mayo)",
+              "icon": "🐟",
+              "condition": "Hyperlipidemia",
+              "benefit": "Omega-3 fatty acids"
+            },
+            {
+              "name": "Apple slices",
+              "icon": "🍎",
+              "condition": "Diabetes",
+              "benefit": "Fiber-rich, low GI snack"
+            }
+          ],
+          "dinner": [
+            {
+              "name": "Turkey meatballs",
+              "icon": "🍖",
+              "condition": "Hyperlipidemia",
+              "benefit": "Low-fat protein"
+            },
+            {
+              "name": "Quinoa pilaf",
+              "icon": "🍚",
+              "condition": "Diabetes",
+              "benefit": "Complete protein grain"
+            },
+            {
+              "name": "Steamed green beans",
+              "icon": "🥬",
+              "condition": "Hypertension",
+              "benefit": "Low sodium, high fiber"
+            }
+          ]
+        }
+      ],
+      "diet_tips": [
+        {
+          "icon": "🍽️",
+          "title": "Small & frequent",
+          "detail": "When appetite is low, eat 5-6 small meals rather than 3 large ones. Even a few bites help."
+        },
+        {
+          "icon": "💊",
+          "title": "Medication timing",
+          "detail": "Take metformin in the middle of eating (not on an empty stomach) to reduce nausea."
+        },
+        {
+          "icon": "🥣",
+          "title": "Gentle foods first",
+          "detail": "Start with warm, soft foods like oatmeal, soups, and eggs when your stomach feels sensitive."
+        },
+        {
+          "icon": "🥤",
+          "title": "Stay hydrated",
+          "detail": "Sip water throughout the day. Warm herbal tea can also help with appetite and digestion."
+        }
+      ],
+      "reasoning": "Margaret's adherence data over 14 days shows a clear pattern: medication compliance is good except for metformin-related nausea, appetite is reduced likely due to the combination of metformin side effects and post-surgery recovery, and activity levels have dropped significantly due to knee pain. The meal plan focuses on easy-to-digest, nutrient-dense options that address all three conditions while being gentle on her stomach.",
+      "guardrail": "This report was generated by an AI health assistant for information only. It is not medical advice. If you feel unwell, please contact your doctor or call emergency services. Always follow your clinician's instructions regarding medications and treatment.",
+      "health_guidance": {
+        "summary": "Margaret，您正在从膝关节手术中恢复，同时还要管理高血压和糖尿病。现在的重点是减少恶心、保证一点点营养摄入，并用温和活动帮助身体恢复。",
+        "tips": [
+          {
+            "text": "每餐优先吃几口蛋白质食物",
+            "why": "蛋白质能帮助术后组织修复，也能减少活动下降带来的肌肉流失。",
+            "category": "protein"
+          },
+          {
+            "text": "继续保持低盐饮食",
+            "why": "您的血压仍在偏高范围，少盐能帮助降压药发挥作用。",
+            "category": "low_salt"
+          },
+          {
+            "text": "用蒸、煮、炖替代油炸",
+            "why": "清淡软烂的食物更适合恶心和食欲下降时入口，也更有利于血脂控制。",
+            "category": "low_oil"
+          },
+          {
+            "text": "少量多次喝温水",
+            "why": "补水有助于代谢药物，也可能缓解二甲双胍相关的不适。",
+            "category": "hydration"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "cuisine_preferences": [
+    {
+      "cuisine": "粤菜",
+      "selected_at": "2026-05-12T12:00:00"
+    },
+    {
+      "cuisine": "清淡家常菜",
+      "selected_at": "2026-05-12T12:01:00"
+    }
+  ],
+  "liked": [
+    {
+      "item_key": "0-breakfast-香蕉燕麦粥",
+      "sentiment": "like",
+      "timestamp": "2026-05-12T12:02:00"
+    }
+  ],
+  "disliked": [
+    {
+      "item_key": "1-dinner-烤红薯",
+      "sentiment": "dislike",
+      "reason": "太甜",
+      "timestamp": "2026-05-12T12:03:00"
+    }
+  ]
+}
