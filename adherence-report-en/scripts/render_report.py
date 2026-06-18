@@ -143,6 +143,61 @@ def _check_escalations(key_events: list[dict]) -> list[dict]:
     return triggered
 
 
+_AI_MSG_STYLES = {
+    "good_news": {"icon": "🎉", "color": "bg-emerald-50 border-emerald-200", "title_color": "text-emerald-800"},
+    "attention": {"icon": "⚠️", "color": "bg-amber-50 border-amber-200", "title_color": "text-amber-800"},
+    "plan": {"icon": "📝", "color": "bg-blue-50 border-blue-200", "title_color": "text-blue-800"},
+    "encouragement": {"icon": "💪", "color": "bg-purple-50 border-purple-200", "title_color": "text-purple-800"},
+}
+
+
+def _render_ai_message(so: dict) -> str:
+    """Render AI message as sub-cards if structured sections are available."""
+    sections = so.get("assistant_message_sections") or []
+
+    if sections:
+        html = ""
+        for sec in sections:
+            sec_type = sec.get("type", "")
+            title = sec.get("title", "")
+            content = sec.get("content", "")
+            style = _AI_MSG_STYLES.get(sec_type, {"icon": "💬", "color": "bg-slate-50 border-slate-200", "title_color": "text-slate-800"})
+
+            html += (
+                f'<div class="sub-card" style="border-color:transparent">'
+                f'<div class="sub-card-header" style="padding:12px 14px">'
+                f'<span class="sub-card-icon" style="font-size:1.2em">{style["icon"]}</span>'
+                f'<div class="flex-1 min-w-0">'
+                f'<div class="sub-card-value {style["title_color"]}" style="font-size:0.95em">{escape(title)}</div>'
+                f'</div>'
+                f'<span class="sub-card-arrow">▶</span>'
+                f'</div>'
+                f'<div class="sub-card-body">'
+                f'<div class="text-sm text-slate-700 leading-relaxed">{escape(content)}</div>'
+                f'</div></div>'
+            )
+        return html
+
+    # Fallback: plain text (backward compatibility)
+    plain = so.get("assistant_message_patient") or ""
+    if not plain:
+        return ""
+    preview = escape(plain[:70]) + ("..." if len(plain) > 70 else "")
+    return (
+        f'<div class="sub-card" style="border-color:transparent">'
+        f'<div class="sub-card-header" style="padding:12px 14px">'
+        f'<span class="sub-card-icon" style="font-size:1.2em">💬</span>'
+        f'<div class="flex-1 min-w-0">'
+        f'<div class="sub-card-value" style="font-size:0.9em;font-weight:600;color:#334155">{preview}</div>'
+        f'</div>'
+        f'<span class="sub-card-arrow">▶</span>'
+        f'</div>'
+        f'<div class="sub-card-body">'
+        f'<div class="text-sm text-slate-700 leading-relaxed">{escape(plain)}</div>'
+        f'</div></div>'
+    )
+
+
 def _render_escalation_banner(escalations: list[dict]) -> str:
     """Render prominent warning banners for triggered escalation rules."""
     if not escalations:
@@ -271,8 +326,7 @@ def _render_recommendations(recs: list) -> str:
             category = ""
             icon = _REC_ICONS[i % len(_REC_ICONS)]
 
-        safe_text = escape(text, quote=True)
-        feedback_key = escape(f"-1-rec-{text}", quote=True)
+        safe_text = escape(text).replace("'", "&#39;")
         reason_html = ""
         if reason:
             reason_html = (
@@ -290,16 +344,10 @@ def _render_recommendations(recs: list) -> str:
             f'<div class="text-sm text-slate-700 leading-relaxed font-medium">{escape(text)}</div>'
             f'{reason_html}</div>'
             f'<div class="flex flex-col gap-1 flex-shrink-0">'
-            f'<button class="feedback-btn feedback-action feedback-action-positive like" title="Helpful" '
-            f'data-day-idx="-1" data-meal-type="rec" data-item-name="{safe_text}" '
-            f'data-feedback-key="{feedback_key}" data-feedback-type="like" aria-pressed="false" '
-            f'onclick="saveLikeFromButton(this)">'
-            f'<span class="feedback-action-dot">✓</span>Works for me</button>'
-            f'<button class="feedback-btn feedback-action feedback-action-negative" title="Not helpful" '
-            f'data-day-idx="-1" data-meal-type="rec" data-item-name="{safe_text}" '
-            f'data-feedback-key="{feedback_key}" data-feedback-type="dislike" aria-pressed="false" '
-            f'onclick="showFeedbackModalFromButton(this)">'
-            f'<span class="feedback-action-dot">−</span>Not for me</button>'
+            f'<button class="feedback-btn like" title="Helpful" '
+            f"onclick=\"saveLike(-1,'rec','{safe_text}')\">👍</button>"
+            f'<button class="feedback-btn" title="Not helpful" '
+            f"onclick=\"showFeedbackModal(-1,'rec','{safe_text}')\">👎</button>"
             f'</div></div></div>'
         )
     return "\n".join(parts)
@@ -359,6 +407,7 @@ def _render_adherence_dimension(icon: str, title: str, dim: dict) -> str:
 
 
 def _render_adherence(adh: dict) -> str:
+    """Render adherence details (used inside card-details toggle)."""
     if not adh:
         return ""
 
@@ -374,13 +423,7 @@ def _render_adherence(adh: dict) -> str:
     if not cards and not period:
         return ""
 
-    inner = (
-        '<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">'
-        '<div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">'
-        '<span class="text-lg">📊</span>'
-        '<h2 class="text-sm font-bold text-slate-800">Adherence overview</h2>'
-        '</div>'
-    )
+    inner = ""
     if period:
         inner += (
             f'<div class="text-xs text-slate-500 font-medium uppercase tracking-wide mb-3">'
@@ -388,11 +431,11 @@ def _render_adherence(adh: dict) -> str:
         )
     if cards:
         inner += f'<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">{"".join(cards)}</div>'
-    inner += '</div>'
     return inner
 
 
 def _render_memory(memory: dict) -> str:
+    """Render health history as sub-cards: profile, trends, events — each tappable."""
     if not memory:
         return ""
 
@@ -403,37 +446,41 @@ def _render_memory(memory: dict) -> str:
     if not profile and not dynamics and not events:
         return ""
 
-    html = (
-        '<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">'
-        '<div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">'
-        '<span class="text-lg">📝</span>'
-        '<h2 class="text-sm font-bold text-slate-800">Health history</h2>'
-        '</div>'
-    )
+    html = ""
 
     if profile:
         html += (
-            '<div class="text-sm text-slate-700 bg-slate-50 rounded-lg p-3 leading-relaxed '
-            f'border border-slate-100 mb-3">{escape(profile)}</div>'
+            '<div class="sub-card">'
+            '<div class="sub-card-header">'
+            '<span class="sub-card-icon">👤</span>'
+            '<div class="flex-1 min-w-0">'
+            '<div class="sub-card-label">Profile</div>'
+            f'<div class="sub-card-value">{escape(profile[:60])}...</div>'
+            '</div>'
+            '<span class="sub-card-arrow">▶</span>'
+            '</div>'
+            f'<div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">{escape(profile)}</div></div>'
+            '</div>'
         )
 
     if dynamics:
         html += (
-            '<div class="flex items-start gap-2 mb-3">'
-            '<span class="text-base mt-0.5">📈</span>'
-            '<div>'
-            '<div class="text-[11px] text-slate-400 uppercase tracking-wide font-medium mb-1">Recent trends</div>'
-            f'<div class="text-sm text-slate-600 leading-relaxed">{escape(dynamics)}</div>'
-            '</div></div>'
+            '<div class="sub-card">'
+            '<div class="sub-card-header">'
+            '<span class="sub-card-icon">📈</span>'
+            '<div class="flex-1 min-w-0">'
+            '<div class="sub-card-label">Recent trends</div>'
+            f'<div class="sub-card-value">{escape(dynamics[:60])}...</div>'
+            '</div>'
+            '<span class="sub-card-arrow">▶</span>'
+            '</div>'
+            f'<div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">{escape(dynamics)}</div></div>'
+            '</div>'
         )
 
     if events:
         _EVENT_ICONS = {"surgery": "🔪", "symptom": "⚠️", "alert": "🚨", "medication": "💊", "visit": "🏥"}
-        html += (
-            '<div class="mt-3 pt-3 border-t border-slate-100">'
-            '<div class="text-[11px] text-slate-400 uppercase tracking-wide font-medium mb-2">Key events</div>'
-            '<div class="space-y-2">'
-        )
+        events_body = '<div class="space-y-2">'
         for ev in events:
             ev_icon = _EVENT_ICONS.get(ev.get("type", ""), "📌")
             ev_date = ev.get("date", "")
@@ -445,17 +492,30 @@ def _render_memory(memory: dict) -> str:
                 "symptom": "bg-amber-50 text-amber-700 border-amber-200",
                 "medication": "bg-blue-50 text-blue-700 border-blue-200",
             }.get(ev_type, "bg-slate-50 text-slate-600 border-slate-200")
-            html += (
-                f'<div class="flex items-start gap-3 rounded-lg p-2 border {type_cls}">'
+            events_body += (
+                f'<div class="flex items-start gap-3 rounded-lg p-2.5 border {type_cls}">'
                 f'<span class="text-base mt-0.5">{ev_icon}</span>'
                 f'<div class="flex-1 min-w-0">'
-                f'<div class="text-xs font-semibold">{escape(ev_desc)}</div>'
-                f'<div class="text-[10px] text-slate-400 mt-0.5">{escape(ev_date)}</div>'
+                f'<div class="text-sm font-semibold">{escape(ev_desc)}</div>'
+                f'<div class="text-xs text-slate-400 mt-0.5">{escape(ev_date)}</div>'
                 f'</div></div>'
             )
-        html += '</div></div>'
+        events_body += '</div>'
 
-    html += '</div>'
+        html += (
+            '<div class="sub-card">'
+            '<div class="sub-card-header">'
+            '<span class="sub-card-icon">📋</span>'
+            '<div class="flex-1 min-w-0">'
+            '<div class="sub-card-label">Key events</div>'
+            f'<div class="sub-card-value">{len(events)} recorded events</div>'
+            '</div>'
+            '<span class="sub-card-arrow">▶</span>'
+            '</div>'
+            f'<div class="sub-card-body">{events_body}</div>'
+            '</div>'
+        )
+
     return html
 
 
@@ -518,8 +578,110 @@ def _render_doctor_notes(doctor_feedback: dict) -> str:
     return html
 
 
-def _render_health_guidance(guidance: dict, conditions: list[str]) -> str:
-    """Render a persuasive health guidance section based on patient conditions."""
+_CONDITION_CONTEXTS = {
+    "feeling_unwell": {
+        "show_sections": {"header", "escalation", "ai_message", "guidance", "vitals", "meal_plan", "guardrail"},
+        "tone_override": "gentle_patient",
+        "header_greeting": "We're here for you",
+        "guidance_emphasis": "rest",
+    },
+    "post_chemotherapy": {
+        "show_sections": {"header", "escalation", "ai_message", "doctor_notes", "guidance", "vitals", "recommendations", "nutrition", "meal_plan", "cuisine", "diet_tips", "submit", "guardrail"},
+        "tone_override": "gentle_patient",
+        "header_greeting": "You're doing so well",
+        "guidance_emphasis": "nutrition",
+    },
+    "post_surgery_recovering": {
+        "show_sections": {"header", "escalation", "ai_message", "memory", "doctor_notes", "guidance", "vitals", "adherence", "recommendations", "nutrition", "diet_table", "cuisine", "meal_plan", "diet_tips", "map", "submit", "guardrail"},
+        "tone_override": None,
+        "header_greeting": "Hello!",
+        "guidance_emphasis": None,
+    },
+    "chronic_pain_flare": {
+        "show_sections": {"header", "escalation", "ai_message", "guidance", "vitals", "recommendations", "meal_plan", "guardrail"},
+        "tone_override": "gentle_patient",
+        "header_greeting": "We know today is tough",
+        "guidance_emphasis": "rest",
+    },
+    "low_mood_isolated": {
+        "show_sections": {"header", "ai_message", "guidance", "vitals", "recommendations", "nutrition", "meal_plan", "cuisine", "map", "diet_tips", "submit", "guardrail"},
+        "tone_override": "warm_encouraging",
+        "header_greeting": "You're not alone",
+        "guidance_emphasis": "exercise",
+    },
+    "cognitive_decline": {
+        "show_sections": {"header", "ai_message", "guidance", "vitals", "meal_plan", "guardrail"},
+        "tone_override": "gentle_patient",
+        "header_greeting": "Here's what to remember today",
+        "guidance_emphasis": "monitoring",
+    },
+    "caregiver_absent": {
+        "show_sections": {"header", "escalation", "ai_message", "guidance", "vitals", "recommendations", "meal_plan", "map", "guardrail"},
+        "tone_override": "warm_encouraging",
+        "header_greeting": "Your daily check-in",
+        "guidance_emphasis": None,
+    },
+    "medication_adjustment": {
+        "show_sections": {"header", "ai_message", "doctor_notes", "guidance", "vitals", "recommendations", "nutrition", "meal_plan", "diet_tips", "submit", "guardrail"},
+        "tone_override": "authority_based",
+        "header_greeting": "Important update from your care team",
+        "guidance_emphasis": "monitoring",
+    },
+    "high_fall_risk": {
+        "show_sections": {"header", "escalation", "ai_message", "guidance", "vitals", "recommendations", "meal_plan", "map", "guardrail"},
+        "tone_override": "warm_encouraging",
+        "header_greeting": "Let's keep you safe today",
+        "guidance_emphasis": "exercise",
+    },
+    "stable_routine": {
+        "show_sections": {"header", "escalation", "ai_message", "memory", "doctor_notes", "guidance", "vitals", "adherence", "risk_tags", "recommendations", "reasoning", "nutrition", "diet_table", "cuisine", "meal_plan", "diet_tips", "map", "submit", "guardrail"},
+        "tone_override": None,
+        "header_greeting": "Hello!",
+        "guidance_emphasis": None,
+    },
+}
+
+_FULL_SECTIONS = _CONDITION_CONTEXTS["stable_routine"]["show_sections"]
+
+
+_TONE_STYLES = {
+    "warm_encouraging": {
+        "icon": "💚",
+        "title": "Why this matters for you",
+        "border_color": "border-emerald-200",
+        "header_color": "text-emerald-800",
+        "summary_bg": "bg-emerald-50 border-l-4 border-emerald-400",
+        "tip_why_color": "text-emerald-700",
+    },
+    "direct_practical": {
+        "icon": "📋",
+        "title": "Key points for your health",
+        "border_color": "border-blue-200",
+        "header_color": "text-blue-800",
+        "summary_bg": "bg-blue-50 border-l-4 border-blue-400",
+        "tip_why_color": "text-blue-700",
+    },
+    "authority_based": {
+        "icon": "👨\u200d⚕️",
+        "title": "Your care team recommends",
+        "border_color": "border-indigo-200",
+        "header_color": "text-indigo-800",
+        "summary_bg": "bg-indigo-50 border-l-4 border-indigo-400",
+        "tip_why_color": "text-indigo-700",
+    },
+    "gentle_patient": {
+        "icon": "🌸",
+        "title": "A gentle reminder for you",
+        "border_color": "border-rose-200",
+        "header_color": "text-rose-800",
+        "summary_bg": "bg-rose-50 border-l-4 border-rose-300",
+        "tip_why_color": "text-rose-700",
+    },
+}
+
+
+def _render_health_guidance(guidance: dict, conditions: list[str], tone_profile: dict = None) -> str:
+    """Render health guidance as sub-cards: summary always visible, each tip is tappable."""
     if not guidance and not conditions:
         return ""
 
@@ -535,50 +697,58 @@ def _render_health_guidance(guidance: dict, conditions: list[str]) -> str:
     if not summary and not tips and not conditions:
         return ""
 
-    html = (
-        '<div class="bg-white rounded-xl shadow-sm border-2 border-emerald-200 p-5 mb-3">'
-        '<div class="flex items-center gap-2 mb-3 pb-3 border-b border-emerald-100">'
-        '<span class="text-lg">💚</span>'
-        '<h2 class="text-sm font-bold text-emerald-800">Why this matters for you</h2>'
-        '</div>'
-    )
+    tone_type = (tone_profile or {}).get("style") or "warm_encouraging"
+    style = _TONE_STYLES.get(tone_type, _TONE_STYLES["warm_encouraging"])
+    patient_name = (tone_profile or {}).get("preferred_name") or ""
 
+    html = ""
+    if patient_name:
+        html += (
+            f'<div class="text-xs text-slate-500 mb-2">'
+            f'Personalized for <span class="font-semibold">{escape(patient_name)}</span></div>'
+        )
     if summary:
         html += (
-            '<div class="text-sm text-slate-700 leading-relaxed mb-4 bg-emerald-50 '
-            'rounded-lg p-4 border-l-4 border-emerald-400">'
+            f'<div class="leading-relaxed mb-3 {style["summary_bg"]} '
+            f'rounded-lg p-4" style="font-size:0.95em">'
             f'{escape(summary)}</div>'
         )
 
-    if tips:
-        html += '<div class="space-y-2">'
-        _GUIDANCE_ICONS = {"protein": "🥩", "low_salt": "🧂", "low_oil": "🫒",
-                           "hydration": "💧", "fiber": "🌾", "exercise": "🚶",
-                           "rest": "😴", "monitoring": "📋"}
-        for tip in tips:
-            if isinstance(tip, dict):
-                icon = _GUIDANCE_ICONS.get(tip.get("category", ""), "💡")
-                text = tip.get("text", "")
-                why = tip.get("why", "")
-            else:
-                icon = "💡"
-                text = str(tip)
-                why = ""
-            html += (
-                f'<div class="flex items-start gap-3 bg-slate-50 rounded-lg p-3 border border-slate-100">'
-                f'<span class="text-xl mt-0.5">{icon}</span>'
-                f'<div class="flex-1">'
-                f'<div class="text-sm font-medium text-slate-800">{escape(text)}</div>'
+    _GUIDANCE_ICONS = {"protein": "🥩", "low_salt": "🧂", "low_oil": "🫒",
+                       "hydration": "💧", "fiber": "🌾", "exercise": "🚶",
+                       "rest": "😴", "monitoring": "📋"}
+
+    for tip in tips:
+        if isinstance(tip, dict):
+            icon = _GUIDANCE_ICONS.get(tip.get("category", ""), "💡")
+            text = tip.get("text", "")
+            why = tip.get("why", "")
+        else:
+            icon = "💡"
+            text = str(tip)
+            why = ""
+
+        body_html = ""
+        if why:
+            body_html = (
+                f'<div class="text-sm {style["tip_why_color"]} leading-relaxed italic">'
+                f'→ {escape(why)}</div>'
             )
-            if why:
-                html += (
-                    f'<div class="text-xs text-emerald-700 mt-1 italic">'
-                    f'→ {escape(why)}</div>'
-                )
-            html += '</div></div>'
+
+        html += (
+            f'<div class="sub-card">'
+            f'<div class="sub-card-header">'
+            f'<span class="sub-card-icon">{icon}</span>'
+            f'<div class="flex-1 min-w-0">'
+            f'<div class="sub-card-value" style="font-size:0.95em">{escape(text)}</div>'
+            f'</div>'
+            f'<span class="sub-card-arrow">▶</span>'
+            f'</div>'
+        )
+        if body_html:
+            html += f'<div class="sub-card-body">{body_html}</div>'
         html += '</div>'
 
-    html += '</div>'
     return html
 
 
@@ -615,41 +785,44 @@ def _render_diet_table(diet_table: list[dict]) -> str:
 
 
 def _render_diet_tips(tips: list[dict]) -> str:
+    """Render each diet tip as a tappable sub-card: title visible, detail on tap."""
     if not tips:
         return ""
-    inner = ""
+
+    html = ""
     for tip in tips:
         title = tip.get("title", "")
-        safe_title = escape(title, quote=True)
-        feedback_key = escape(f"-1-tip-{title}", quote=True)
-        inner += (
-            f'<div class="bg-slate-50 rounded-lg p-3 border border-slate-100 meal-card">'
-            f'<div class="flex items-center gap-2 mb-1">'
-            f'<span class="text-base">{tip.get("icon", "💡")}</span>'
-            f'<span class="text-xs font-semibold text-slate-700 flex-1">{escape(title)}</span>'
-            f'<button class="feedback-btn feedback-action feedback-action-positive like" title="Helpful" '
-            f'data-day-idx="-1" data-meal-type="tip" data-item-name="{safe_title}" '
-            f'data-feedback-key="{feedback_key}" data-feedback-type="like" aria-pressed="false" '
-            f'onclick="saveLikeFromButton(this)">'
-            f'<span class="feedback-action-dot">✓</span>Useful</button>'
-            f'<button class="feedback-btn feedback-action feedback-action-negative" title="Not helpful" '
-            f'data-day-idx="-1" data-meal-type="tip" data-item-name="{safe_title}" '
-            f'data-feedback-key="{feedback_key}" data-feedback-type="dislike" aria-pressed="false" '
-            f'onclick="showFeedbackModalFromButton(this)">'
-            f'<span class="feedback-action-dot">−</span>Skip</button>'
+        detail = tip.get("detail", "")
+        icon = tip.get("icon", "💡")
+        safe_title = escape(title).replace("'", "&#39;")
+
+        body_html = ""
+        if detail:
+            body_html = (
+                f'<div class="text-sm text-slate-600 leading-relaxed mb-2">{escape(detail)}</div>'
+                f'<div class="flex gap-2">'
+                f'<button class="feedback-btn like" style="opacity:1" title="Helpful" '
+                f"onclick=\"saveLike(-1,'tip','{safe_title}')\">👍</button>"
+                f'<button class="feedback-btn" style="opacity:1" title="Not helpful" '
+                f"onclick=\"showFeedbackModal(-1,'tip','{safe_title}')\">👎</button>"
+                f'</div>'
+            )
+
+        html += (
+            f'<div class="sub-card">'
+            f'<div class="sub-card-header">'
+            f'<span class="sub-card-icon">{icon}</span>'
+            f'<div class="flex-1 min-w-0">'
+            f'<div class="sub-card-value" style="font-size:0.92em">{escape(title)}</div>'
             f'</div>'
-            f'<div class="text-xs text-slate-600 leading-relaxed">{escape(tip.get("detail", ""))}</div>'
+            f'<span class="sub-card-arrow">▶</span>'
             f'</div>'
         )
-    return (
-        '<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">'
-        '<div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">'
-        '<span class="text-lg">✨</span>'
-        '<h2 class="text-sm font-bold text-slate-800">Diet tips</h2>'
-        '</div>'
-        f'<div class="grid grid-cols-2 gap-2">{inner}</div>'
-        '</div>'
-    )
+        if body_html:
+            html += f'<div class="sub-card-body">{body_html}</div>'
+        html += '</div>'
+
+    return html
 
 
 def _render_map_section(
@@ -906,6 +1079,14 @@ def main() -> None:
         print(f"Template not found: {_TEMPLATE_PATH}", file=sys.stderr)
         sys.exit(1)
 
+    tone_profile = memory.get("tone_profile") or {}
+    condition_ctx_name = tone_profile.get("condition_context") or "stable_routine"
+    ctx = _CONDITION_CONTEXTS.get(condition_ctx_name, _CONDITION_CONTEXTS["stable_routine"])
+    visible = ctx["show_sections"]
+
+    if ctx["tone_override"]:
+        tone_profile = {**tone_profile, "style": ctx["tone_override"]}
+
     # Check for symptom escalation based on memory events
     key_events = memory.get("key_events") or []
     escalations = _check_escalations(key_events)
@@ -961,39 +1142,268 @@ def main() -> None:
 
     meal_json = json.dumps(so.get("weekly_meal_plan") or [], ensure_ascii=False)
 
-    patient_id = meta.get("user_id") or payload.get("user_id") or payload.get("patient_id") or "unknown"
+    patient_id = meta.get("user_id") or "unknown"
+    memory_api_url = os.environ.get("MEMORY_API_URL", "").strip()
+    memory_api_token = os.environ.get("MEMORY_API_TOKEN", "").strip()
 
-    report_title = "Adherence report"
+    header_greeting = ctx.get("header_greeting") or "Hello!"
+
+    # Always use card/accordion layout — patient taps to expand what they need
+    use_cards = True
+    layout_class = ""
+
+    # Build each section's content
+    sections = []
+
+    def _vitals_subcards() -> str:
+        vd = so.get("latest_health_summary") or {}
+        _icons = {"blood_pressure": "🩸", "heart_rate": "💓", "blood_oxygen": "🫁",
+                  "blood_glucose": "🍬", "steps_today": "👟"}
+        _labels = {"blood_pressure": "Blood Pressure", "heart_rate": "Heart Rate",
+                   "blood_oxygen": "Blood Oxygen", "blood_glucose": "Glucose",
+                   "steps_today": "Steps"}
+        html = ""
+        for k in ("blood_pressure", "heart_rate", "blood_oxygen", "blood_glucose", "steps_today"):
+            val = vd.get(k, "")
+            if val:
+                html += (
+                    f'<div class="sub-card">'
+                    f'<div class="sub-card-header">'
+                    f'<span class="sub-card-icon">{_icons.get(k, "📊")}</span>'
+                    f'<div class="flex-1 min-w-0">'
+                    f'<div class="sub-card-label">{_labels.get(k, k)}</div>'
+                    f'<div class="sub-card-value">{escape(str(val))}</div>'
+                    f'</div></div></div>'
+                )
+        return html if html else '<p class="text-slate-500">No data available</p>'
+
+    def _adherence_subcards() -> str:
+        adh = so.get("adherence_analysis") or {}
+        _icons = {"medication": "💊", "appetite": "🍽️", "exercise": "🏃", "monitoring": "📋"}
+        _labels = {"medication": "Medication", "appetite": "Appetite & diet",
+                   "exercise": "Exercise & activity", "monitoring": "Health monitoring"}
+        html = ""
+        for k in ("medication", "appetite", "exercise", "monitoring"):
+            dim = adh.get(k)
+            if not isinstance(dim, dict) or not dim.get("status"):
+                continue
+            status = dim["status"]
+            is_good = any(w in status.lower() for w in ("good", "on track", "compliant", "adequate"))
+            color = "text-emerald-700" if is_good else "text-amber-700"
+
+            detail_parts = []
+            for dk in [x for x in dim if x != "status"]:
+                val = dim[dk]
+                if val:
+                    label = dk.replace("_", " ").capitalize()
+                    detail_parts.append(
+                        f'<div class="text-sm text-slate-600 mb-1">'
+                        f'<span class="font-medium text-slate-500">{label}:</span> {escape(str(val))}</div>'
+                    )
+            body_html = "".join(detail_parts)
+
+            html += (
+                f'<div class="sub-card">'
+                f'<div class="sub-card-header">'
+                f'<span class="sub-card-icon">{_icons.get(k, "📋")}</span>'
+                f'<div class="flex-1 min-w-0">'
+                f'<div class="sub-card-label">{_labels.get(k, k)}</div>'
+                f'<div class="sub-card-value {color}">{escape(status)}</div>'
+                f'</div>'
+                f'<span class="sub-card-arrow">▶</span>'
+                f'</div>'
+            )
+            if body_html:
+                html += f'<div class="sub-card-body">{body_html}</div>'
+            html += '</div>'
+        return html
+
+    def _recs_subcards() -> str:
+        recs = so.get("recommendations") or []
+        if not recs:
+            return ""
+        html = ""
+        if "risk_tags" in visible:
+            tags = _render_risk_tags(so.get("risk_tags") or [])
+            if tags:
+                html += f'<div class="flex flex-wrap gap-2 mb-3">{tags}</div>'
+        for i, r in enumerate(recs):
+            if isinstance(r, dict):
+                text = r.get("text", "")
+                reason = r.get("reason", "")
+                category = r.get("category", "")
+                icon = _CATEGORY_ICONS.get(category, "💡")
+            else:
+                text = str(r)
+                reason = ""
+                icon = "💡"
+            safe_text = escape(text).replace("'", "&#39;")
+
+            body_html = ""
+            body_parts = []
+            if reason:
+                body_parts.append(
+                    f'<div class="text-sm text-emerald-700 leading-relaxed italic mb-2">'
+                    f'💬 {escape(reason)}</div>'
+                )
+            body_parts.append(
+                f'<div class="flex gap-2">'
+                f'<button class="feedback-btn like" style="opacity:1" title="Helpful" '
+                f"onclick=\"saveLike(-1,'rec','{safe_text}')\">👍</button>"
+                f'<button class="feedback-btn" style="opacity:1" title="Not helpful" '
+                f"onclick=\"showFeedbackModal(-1,'rec','{safe_text}')\">👎</button>"
+                f'</div>'
+            )
+            body_html = "".join(body_parts)
+
+            html += (
+                f'<div class="sub-card">'
+                f'<div class="sub-card-header">'
+                f'<span class="sub-card-icon">{icon}</span>'
+                f'<div class="flex-1 min-w-0">'
+                f'<div class="sub-card-value" style="font-size:0.92em">{escape(text)}</div>'
+                f'</div>'
+                f'<span class="sub-card-arrow">▶</span>'
+                f'</div>'
+                f'<div class="sub-card-body">{body_html}</div>'
+                f'</div>'
+            )
+        reasoning = so.get("reasoning") or ""
+        if reasoning and "reasoning" in visible:
+            html += (
+                f'<div class="text-xs text-slate-500 mt-3 bg-slate-50 rounded-lg p-3 leading-relaxed">'
+                f'💭 {escape(reasoning)}</div>'
+            )
+        return html
+
+    _CARD_DEFS = [
+        ("guidance", "💚", "#d1fae5", "Health Guidance",
+         lambda: _render_health_guidance(so.get("health_guidance") or {}, conditions, tone_profile=tone_profile)),
+        ("memory", "🧠", "#e0e7ff", "Health History",
+         lambda: _render_memory(memory)),
+        ("doctor_notes", "👨\u200d⚕️", "#dbeafe", "Doctor's Notes",
+         lambda: _render_doctor_notes(doctor_feedback)),
+        ("vitals", "📊", "#fef3c7", "Latest Health Data",
+         lambda: _vitals_subcards()),
+        ("adherence", "📋", "#f3e8ff", "Adherence Overview",
+         lambda: _adherence_subcards()),
+        ("recommendations", "💡", "#dcfce7", "Suggestions",
+         lambda: _recs_subcards()),
+        ("nutrition", "🥗", "#ecfdf5", "Nutrition Advice",
+         lambda: (
+             '<p style="font-size:0.95em;line-height:1.7;color:#334155;padding:8px 0">'
+             + escape(so.get("nutrition_advice") or "Aim for balanced meals with plenty of vegetables and adequate hydration.")
+             + '</p>'
+         )),
+        ("diet_table", "📑", "#fff7ed", "Diet by Condition",
+         lambda: _render_diet_table(so.get("diet_table") or [])),
+        ("cuisine", "🍜", "#fdf2f8", "Cuisine Preferences",
+         lambda: (
+             '<p class="text-sm text-slate-500 mb-3">Select cuisines you enjoy — '
+             "we'll tailor future meal plans to your taste.</p>"
+             '<div class="flex flex-wrap gap-2 mb-3" id="cuisineChips"></div>'
+             '<div class="flex items-center gap-2">'
+             '<input id="customCuisineInput" type="text" placeholder="Add another cuisine..." '
+             'class="flex-1 text-sm border border-slate-200 rounded-lg px-3 py-2 '
+             'focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-200">'
+             '<button onclick="addCustomCuisine()" class="px-3 py-2 rounded-lg bg-emerald-50 '
+             'border border-emerald-200 text-emerald-700 text-sm font-medium hover:bg-emerald-100">'
+             '+ Add</button></div>'
+         )),
+        ("meal_plan", "📅", "#eff6ff", "Weekly Meal Ideas",
+         lambda: (
+             '<div class="flex gap-2 mb-4 overflow-x-auto pb-2" id="dayTabs"></div>'
+             '<div id="mealContent"></div>'
+         )),
+        ("diet_tips", "✨", "#f0fdf4", "Diet Tips",
+         lambda: _render_diet_tips(so.get("diet_tips") or [])),
+        ("map", "🏥", "#f0f9ff", "Nearby Care & Parks",
+         lambda: map_section),
+        ("submit", "✓", "#ecfdf5", "Submit Preferences",
+         lambda: (
+             '<button id="exportFeedbackBtn" onclick="exportFeedbackJSON()" style="display:none" '
+             'class="w-full px-6 py-3 rounded-full text-sm font-bold bg-emerald-600 text-white shadow-md '
+             'hover:bg-emerald-700 active:scale-95 transition-all">'
+             '✓ Submit my preferences</button>'
+             '<p class="text-xs text-slate-400 mt-2 text-center" id="submitHint" style="display:none">'
+             'Your choices will be remembered for next time</p>'
+         )),
+    ]
+
+    # Dynamic summaries — pull brief data from payload for card previews
+    vitals_data = so.get("latest_health_summary") or {}
+    bp_preview = vitals_data.get("blood_pressure", "")
+    hr_preview = vitals_data.get("heart_rate", "")
+    vitals_preview = f"BP {bp_preview}, HR {hr_preview}" if bp_preview else "Blood pressure, heart rate, glucose, and more"
+
+    doctor_name = doctor_feedback.get("doctor_name", "your doctor")
+    doctor_preview = f"Latest notes from {doctor_name}"
+
+    guidance_data = so.get("health_guidance") or {}
+    guidance_preview = (guidance_data.get("summary") or "Personalized tips based on your conditions")[:80]
+    if len(guidance_data.get("summary", "")) > 80:
+        guidance_preview += "..."
+
+    _CARD_SUMMARIES = {
+        "guidance": guidance_preview,
+        "memory": "Your health history and past events",
+        "doctor_notes": doctor_preview,
+        "vitals": vitals_preview,
+        "adherence": "How you've been doing with medication, diet, and exercise",
+        "recommendations": "Actionable suggestions for your health",
+        "nutrition": "What to eat and why",
+        "diet_table": "Foods to prefer and avoid for each condition",
+        "cuisine": "Tell us what cuisines you enjoy",
+        "meal_plan": "Breakfast, lunch, and dinner ideas for the week",
+        "diet_tips": "Quick tips for healthier eating",
+        "map": "Hospitals and parks near you",
+        "submit": "Save your feedback and preferences",
+    }
+
+    cards_html_parts = []
+    for section_key, icon, bg_color, title, render_fn in _CARD_DEFS:
+        if section_key not in visible:
+            continue
+        content = render_fn()
+        if not content or not content.strip():
+            continue
+
+        summary = _CARD_SUMMARIES.get(section_key, "")
+
+        card = (
+            f'<div class="section-card" data-section="{section_key}">'
+            f'<div class="section-card-header">'
+            f'<div class="section-card-icon" style="background:{bg_color}">{icon}</div>'
+            f'<div class="flex-1 min-w-0">'
+            f'<div class="section-card-title">{title}</div>'
+            f'<div class="section-card-summary">{summary}</div>'
+            f'</div>'
+            f'<div class="section-card-arrow">▼</div>'
+            f'</div>'
+            f'<div class="section-card-body">{content}</div>'
+            f'</div>'
+        )
+        cards_html_parts.append(card)
+
+    cards_html = "\n".join(cards_html_parts)
+
     html = template.format(
-        report_title=report_title,
-        header_greeting="Hello!",
+        report_title="Adherence report",
+        header_greeting=header_greeting,
+        layout_class=layout_class,
         patient_id=patient_id,
+        memory_api_url=memory_api_url,
+        memory_api_token=memory_api_token,
         current_time=current_time,
         status_badge_class=badge_class,
         status_icon=status_icon,
         status_text=status_text,
         condition_badges=_render_condition_badges(conditions),
-        escalation_html=_render_escalation_banner(escalations),
-        ai_message=escape(so.get("assistant_message_patient") or ""),
-        memory_html=_render_memory(memory),
-        doctor_notes_html=_render_doctor_notes(doctor_feedback),
-        health_guidance_html=_render_health_guidance(
-            so.get("health_guidance") or {}, conditions
-        ),
-        vitals_html=_render_vitals(so.get("latest_health_summary") or {}),
-        risk_tags_html=_render_risk_tags(so.get("risk_tags") or []),
-        recommendations_html=_render_recommendations(so.get("recommendations") or []),
-        reasoning_html=_render_reasoning(so.get("reasoning") or ""),
-        adherence_html=_render_adherence(so.get("adherence_analysis") or {}),
-        nutrition_advice=escape(
-            so.get("nutrition_advice")
-            or "Aim for balanced meals with plenty of vegetables and adequate hydration."
-        ),
-        diet_table_html=_render_diet_table(so.get("diet_table") or []),
-        diet_tips_html=_render_diet_tips(so.get("diet_tips") or []),
+        escalation_html=_render_escalation_banner(escalations) if "escalation" in visible else "",
+        ai_message_html=_render_ai_message(so),
+        cards_html=cards_html,
         meal_data_json=meal_json,
-        map_html=map_section,
-        maps_script=maps_script,
+        maps_script=maps_script if "map" in visible else "",
         guardrail=escape(
             so.get("guardrail")
             or (
@@ -1003,11 +1413,22 @@ def main() -> None:
         ),
     )
 
+    escalation_records = []
+    for esc in escalations:
+        escalation_records.append({
+            "level": esc["level"],
+            "title": esc["title"],
+            "message": esc["message"],
+            "count": esc["count"],
+            "threshold": esc["threshold"],
+            "detected_at": meta.get("current_time") or datetime.now().isoformat(),
+        })
+
     result = {
         "structured_output": {
-            "title": report_title,
-            "category": "adherence",
             "html": html,
+            "detail": so,
+            "escalations": escalation_records,
         },
     }
 
