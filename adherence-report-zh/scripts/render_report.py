@@ -98,46 +98,6 @@ def _load_env() -> None:
                 os.environ.setdefault(key.strip(), value.strip())
 
 
-def _render_doctor_notes(doctor_feedback: dict) -> str:
-    if not doctor_feedback:
-        return ""
-    doctor_name = doctor_feedback.get("doctor_name") or "医生"
-    timestamp = doctor_feedback.get("timestamp") or ""
-    message = doctor_feedback.get("message") or ""
-    med_changes = doctor_feedback.get("medication_changes") or []
-    if not message and not med_changes:
-        return ""
-    time_display = _format_time(timestamp) if timestamp else ""
-    html = (
-        '<div class="bg-white rounded-xl shadow-sm border border-blue-100 p-5 mb-3">'
-        '<div class="flex items-center gap-2 mb-3 pb-3 border-b border-blue-50">'
-        '<span class="text-lg">👨‍⚕️</span><div class="flex-1">'
-        f'<h2 class="text-sm font-bold text-slate-800">{escape(doctor_name)}的反馈</h2>'
-    )
-    if time_display:
-        html += f'<div class="text-[10px] text-slate-400">{escape(time_display)}</div>'
-    html += '</div></div>'
-    if message:
-        html += (
-            '<div class="text-sm text-slate-700 bg-blue-50 rounded-lg p-3 leading-relaxed '
-            f'border border-blue-100 mb-3" style="border-left:3px solid #3b82f6">{escape(message)}</div>'
-        )
-    if med_changes:
-        html += '<div class="mt-2"><div class="text-[11px] text-slate-500 font-semibold mb-2">用药调整</div><div class="space-y-2">'
-        for change in med_changes:
-            if isinstance(change, dict):
-                action = change.get("action") or "调整"
-                from_med = change.get("from") or ""
-                to_med = change.get("to") or ""
-                text = f"{action}: {from_med} → {to_med}" if from_med else f"{action}: {to_med}"
-            else:
-                text = str(change)
-            html += f'<div class="text-xs text-blue-700 bg-blue-50 rounded px-3 py-2 border border-blue-100">💊 {escape(text)}</div>'
-        html += '</div></div>'
-    html += '</div>'
-    return html
-
-
 def _render_vitals(summary: dict) -> str:
     parts = []
     for key, label, unit, icon in _VITAL_DEFS:
@@ -709,8 +669,6 @@ def main() -> None:
     payload = data.get("payload") or {}
     llm = data.get("llm_result") or {}
     so = llm.get("structured_output") or {}
-    doctor_feedback = payload.get("doctor_feedback") or {}
-
     try:
         template = _TEMPLATE_PATH.read_text(encoding="utf-8")
     except FileNotFoundError:
@@ -774,7 +732,6 @@ def main() -> None:
         diet_table_html=_render_diet_table(so.get("diet_table") or []),
         diet_tips_html=_render_diet_tips(so.get("diet_tips") or []),
         meal_data_json=meal_json,
-        doctor_notes_html=_render_doctor_notes(doctor_feedback),
         patient_id=meta.get("user_id") or payload.get("user_id") or payload.get("patient_id") or "",
         map_html=map_section,
         baidu_map_ak=baidu_map_ak,

@@ -30,7 +30,6 @@ scripts:
   6. `outlier_analysis` — 异常分析
   7. `location` — 位置信息
   8. `user_preference`（可选）— 过往收集的患者偏好：菜系偏好、喜欢的建议/食物、不喜欢的建议/食物及原因
-  9. `doctor_feedback`（可选）— 最新医生反馈和用药调整
 - 若 `latest_health` 为空或全为 null，从 `memory.recent_health_dynamics` 或 `signals.summary_text` 推断最新值并填入 `latest_health_summary`。
 - 某维度无数据时，使用空字符串或空数组，不要编造。
 - 当 `user_preference.cuisine_preferences` 存在时，`weekly_meal_plan` 必须体现这些菜系偏好。

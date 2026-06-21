@@ -31,14 +31,6 @@
         {"date": "2026-05-10", "type": "alert", "description": "Activity level dropped below 2000 steps for 5 consecutive days"}
       ]
     },
-    "doctor_feedback": {
-      "doctor_name": "Dr. Sarah Liu",
-      "timestamp": "2026-05-12T16:30:00",
-      "message": "Margaret's recovery is progressing but I'm concerned about her decreased appetite and nausea. Let's try switching metformin to the extended-release version to reduce GI side effects. Keep encouraging small, frequent meals. Her knee rehab is on track — she can start gentle outdoor walks (10 min) when she feels ready. Please continue monitoring blood glucose daily.",
-      "medication_changes": [
-        {"action": "switch", "from": "Metformin 500mg bid (immediate-release)", "to": "Metformin XR 1000mg once daily with dinner"}
-      ]
-    },
     "signals": {
       "start_ts": "2026-04-29 00:00",
       "end_ts": "2026-05-13 14:00",

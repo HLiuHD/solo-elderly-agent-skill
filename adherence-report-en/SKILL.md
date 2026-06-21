@@ -44,7 +44,6 @@ This report is for the **patient** (solo older adult)—warm, readable, moderate
      - `cuisine_preferences`: array of cuisine names (e.g. `["Cantonese", "Italian"]`) — use to guide `weekly_meal_plan` food choices
      - `liked`: items the patient previously marked as helpful/enjoyable — prefer similar recommendations
      - `disliked`: items the patient rejected + reason — avoid similar recommendations
-  11. `doctor_feedback` (optional) — latest physician notes and medication changes
 - If `latest_health` is empty or all null, infer the latest values from `memory.recent_health_dynamics` or `signals.summary_text` and fill `latest_health_summary` accordingly.
 - When a dimension has no data, use empty strings or empty arrays—do not fabricate.
 - When `user_preference.cuisine_preferences` is present, the `weekly_meal_plan` **must** reflect those cuisines (e.g., if patient prefers Cantonese, suggest congee, steamed fish, bok choy stir-fry instead of oatmeal and salmon).

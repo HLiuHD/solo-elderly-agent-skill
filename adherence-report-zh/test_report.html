@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>2026年06月12日 遵从报告</title>
+<title>2026年06月21日 遵从报告</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script type="text/javascript" src="https://api.map.baidu.com/api?v=3.0&ak=6zXfgKZZiCdrL3MZBH7DGpjemq5IRxRC"></script>
 <style>
@@ -145,9 +145,6 @@
     </div>
     <p class="text-sm text-slate-700 leading-relaxed">Hello Margaret! We&#x27;ve been keeping an eye on how you&#x27;ve been doing over the past two weeks, and we want to share a few observations with you. First, the good news: your blood pressure has been pretty steady, and you&#x27;ve been taking most of your medications on time — great job! However, we&#x27;ve noticed your appetite has been lower than usual, and you mentioned feeling nauseous sometimes. This might be related to your metformin — your doctor is aware and may adjust the timing or dosage. Your walking has also slowed down since your knee surgery, which is understandable. We&#x27;ve put together some gentle suggestions and a meal plan that focuses on easy-to-digest, nutrient-rich foods to help you get your strength back. Small steps count!</p>
   </div>
-
-  <!-- Doctor Notes -->
-  <div class="bg-white rounded-xl shadow-sm border border-blue-100 p-5 mb-3"><div class="flex items-center gap-2 mb-3 pb-3 border-b border-blue-50"><span class="text-lg">👨‍⚕️</span><div class="flex-1"><h2 class="text-sm font-bold text-slate-800">刘医生的反馈</h2><div class="text-[10px] text-slate-400">2026年05月12日 16:30</div></div></div><div class="text-sm text-slate-700 bg-blue-50 rounded-lg p-3 leading-relaxed border border-blue-100 mb-3" style="border-left:3px solid #3b82f6">Margaret 的术后恢复整体平稳，但食欲下降和恶心需要关注。建议改用二甲双胍缓释片以减少胃肠道反应，同时继续鼓励少量多餐。膝关节康复进展符合预期，感觉合适时可开始 10 分钟轻度户外步行。</div><div class="mt-2"><div class="text-[11px] text-slate-500 font-semibold mb-2">用药调整</div><div class="space-y-2"><div class="text-xs text-blue-700 bg-blue-50 rounded px-3 py-2 border border-blue-100">💊 switch: 二甲双胍 500mg 每日两次（普通片） → 二甲双胍缓释片 1000mg 每晚随餐一次</div></div></div></div>
 
   <!-- Health Guidance -->
   <div class="bg-white rounded-xl shadow-sm border-2 border-emerald-200 p-5 mb-3"><div class="flex items-center gap-2 mb-3 pb-3 border-b border-emerald-100"><span class="text-lg">💚</span><h2 class="text-sm font-bold text-emerald-800">为什么这些建议适合您</h2></div><div class="text-sm text-slate-700 leading-relaxed mb-4 bg-emerald-50 rounded-lg p-4 border-l-4 border-emerald-400">Margaret，您正在从膝关节手术中恢复，同时还要管理高血压和糖尿病。现在的重点是减少恶心、保证一点点营养摄入，并用温和活动帮助身体恢复。</div><div class="space-y-2"><div class="flex items-start gap-3 bg-slate-50 rounded-lg p-3 border border-slate-100"><span class="text-xl mt-0.5">🥩</span><div class="flex-1"><div class="text-sm font-medium text-slate-800">每餐优先吃几口蛋白质食物</div><div class="text-xs text-emerald-700 mt-1 italic">→ 蛋白质能帮助术后组织修复，也能减少活动下降带来的肌肉流失。</div></div></div><div class="flex items-start gap-3 bg-slate-50 rounded-lg p-3 border border-slate-100"><span class="text-xl mt-0.5">🧂</span><div class="flex-1"><div class="text-sm font-medium text-slate-800">继续保持低盐饮食</div><div class="text-xs text-emerald-700 mt-1 italic">→ 您的血压仍在偏高范围，少盐能帮助降压药发挥作用。</div></div></div><div class="flex items-start gap-3 bg-slate-50 rounded-lg p-3 border border-slate-100"><span class="text-xl mt-0.5">🫒</span><div class="flex-1"><div class="text-sm font-medium text-slate-800">用蒸、煮、炖替代油炸</div><div class="text-xs text-emerald-700 mt-1 italic">→ 清淡软烂的食物更适合恶心和食欲下降时入口，也更有利于血脂控制。</div></div></div><div class="flex items-start gap-3 bg-slate-50 rounded-lg p-3 border border-slate-100"><span class="text-xl mt-0.5">💧</span><div class="flex-1"><div class="text-sm font-medium text-slate-800">少量多次喝温水</div><div class="text-xs text-emerald-700 mt-1 italic">→ 补水有助于代谢药物，也可能缓解二甲双胍相关的不适。</div></div></div></div></div>
@@ -420,6 +417,7 @@ let activeDay = 0;
 const MEAL_FEEDBACK_REASONS = ["不喜欢口味", "过敏/不耐受", "买不到食材", "准备起来太麻烦", "其他"];
 const GENERAL_FEEDBACK_REASONS = ["不适合我", "做起来太难", "我已经在做", "不同意这个建议", "其他"];
 let feedbackStore = JSON.parse(localStorage.getItem("mealFeedback") || "{}");
+const pendingFeedbackSubmits = {};
 
 function feedbackKey(dayIdx, mealType, itemName) {
   return `${dayIdx}-${mealType}-${itemName}`;
@@ -496,14 +494,35 @@ function exportFeedbackJSON() {
   const btn = document.getElementById("exportFeedbackBtn");
   if (!btn) return;
   const origText = btn.textContent;
-  localStorage.setItem("pendingPreferencePayload", JSON.stringify(payload));
-  btn.textContent = "✓ 偏好已在本地记录";
+  const feedbackId = "feedback_" + Date.now() + "_" + Math.random().toString(36).slice(2);
+  pendingFeedbackSubmits[feedbackId] = { btn, origText };
+  btn.textContent = "⏳ 提交中...";
   btn.disabled = true;
+  window.parent.postMessage({
+    type: "skill_feedback",
+    feedback_id: feedbackId,
+    payload
+  }, "*");
   setTimeout(() => {
+    if (!pendingFeedbackSubmits[feedbackId]) return;
+    delete pendingFeedbackSubmits[feedbackId];
     btn.textContent = origText;
     btn.disabled = false;
-  }, 2500);
+  }, 8000);
 }
+
+window.addEventListener("message", function(event) {
+  const data = event.data || {};
+  if (data.type !== "skill_feedback_result" || !data.feedback_id) return;
+  const pending = pendingFeedbackSubmits[data.feedback_id];
+  if (!pending) return;
+  delete pendingFeedbackSubmits[data.feedback_id];
+  pending.btn.textContent = data.ok === false ? "提交失败" : "✓ 已提交";
+  setTimeout(() => {
+    pending.btn.textContent = pending.origText;
+    pending.btn.disabled = false;
+  }, 2500);
+});
 
 function updateExportBadge() {
   const btn = document.getElementById("exportFeedbackBtn");

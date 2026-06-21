@@ -83,18 +83,6 @@
         "address": "Worcester, MA"
       }
     },
-    "doctor_feedback": {
-      "doctor_name": "刘医生",
-      "timestamp": "2026-05-12T16:30:00",
-      "message": "Margaret 的术后恢复整体平稳，但食欲下降和恶心需要关注。建议改用二甲双胍缓释片以减少胃肠道反应，同时继续鼓励少量多餐。膝关节康复进展符合预期，感觉合适时可开始 10 分钟轻度户外步行。",
-      "medication_changes": [
-        {
-          "action": "switch",
-          "from": "二甲双胍 500mg 每日两次（普通片）",
-          "to": "二甲双胍缓释片 1000mg 每晚随餐一次"
-        }
-      ]
-    },
     "user_preference": {
       "preferences": {
         "cuisine_preferences": [

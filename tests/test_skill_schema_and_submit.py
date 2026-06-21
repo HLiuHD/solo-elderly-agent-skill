@@ -100,6 +100,19 @@ class SkillSchemaAndSubmitTests(unittest.TestCase):
         self.assertIn("Keep this", rendered_html)
         self.assertIn("Useful", rendered_html)
 
+    def test_adherence_reports_do_not_render_doctor_notes(self) -> None:
+        cases = [
+            ("adherence-report-en/scripts/render_report.py", "adherence-report-en/test_input.json"),
+            ("adherence-report-zh/scripts/render_report.py", "adherence-report-zh/test_input.json"),
+        ]
+
+        forbidden = ["doctor_notes", "doctor_feedback", "Doctor's Notes", "医生的反馈"]
+        for script_path, input_path in cases:
+            with self.subTest(script_path=script_path):
+                html = render_json(script_path, input_path)["structured_output"]["html"]
+                for text in forbidden:
+                    self.assertNotIn(text, html)
+
     def test_selected_feedback_state_overrides_runtime_button_styles(self) -> None:
         template_paths = [
             ROOT / "adherence-report-en/templates/report.html",
