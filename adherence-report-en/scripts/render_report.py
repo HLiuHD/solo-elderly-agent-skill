@@ -343,11 +343,11 @@ def _render_recommendations(recs: list) -> str:
             f'<div class="flex-1 min-w-0">'
             f'<div class="text-sm text-slate-700 leading-relaxed font-medium">{escape(text)}</div>'
             f'{reason_html}</div>'
-            f'<div class="flex flex-col gap-1 flex-shrink-0">'
+            f'<div class="feedback-actions flex-shrink-0">'
             f'<button class="feedback-btn like" title="Helpful" '
-            f"onclick=\"saveLike(-1,'rec','{safe_text}')\">👍</button>"
-            f'<button class="feedback-btn" title="Not helpful" '
-            f"onclick=\"showFeedbackModal(-1,'rec','{safe_text}')\">👎</button>"
+            f"onclick=\"saveLike(-1,'rec','{safe_text}')\">Useful</button>"
+            f'<button class="feedback-btn feedback-skip" title="Not for me" '
+            f"onclick=\"showFeedbackModal(-1,'rec','{safe_text}')\">Not for me</button>"
             f'</div></div></div>'
         )
     return "\n".join(parts)
@@ -800,11 +800,11 @@ def _render_diet_tips(tips: list[dict]) -> str:
         if detail:
             body_html = (
                 f'<div class="text-sm text-slate-600 leading-relaxed mb-2">{escape(detail)}</div>'
-                f'<div class="flex gap-2">'
-                f'<button class="feedback-btn like" style="opacity:1" title="Helpful" '
-                f"onclick=\"saveLike(-1,'tip','{safe_title}')\">👍</button>"
-                f'<button class="feedback-btn" style="opacity:1" title="Not helpful" '
-                f"onclick=\"showFeedbackModal(-1,'tip','{safe_title}')\">👎</button>"
+                f'<div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap">'
+                f'<button class="feedback-btn like" title="Helpful" '
+                f"onclick=\"saveLike(-1,'tip','{safe_title}')\">Useful</button>"
+                f'<button class="feedback-btn feedback-skip" title="Not for me" '
+                f"onclick=\"showFeedbackModal(-1,'tip','{safe_title}')\">Not for me</button>"
                 f'</div>'
             )
 
@@ -1143,8 +1143,6 @@ def main() -> None:
     meal_json = json.dumps(so.get("weekly_meal_plan") or [], ensure_ascii=False)
 
     patient_id = meta.get("user_id") or "unknown"
-    memory_api_url = os.environ.get("MEMORY_API_URL", "").strip()
-    memory_api_token = os.environ.get("MEMORY_API_TOKEN", "").strip()
 
     header_greeting = ctx.get("header_greeting") or "Hello!"
 
@@ -1247,11 +1245,11 @@ def main() -> None:
                     f'💬 {escape(reason)}</div>'
                 )
             body_parts.append(
-                f'<div class="flex gap-2">'
-                f'<button class="feedback-btn like" style="opacity:1" title="Helpful" '
-                f"onclick=\"saveLike(-1,'rec','{safe_text}')\">👍</button>"
-                f'<button class="feedback-btn" style="opacity:1" title="Not helpful" '
-                f"onclick=\"showFeedbackModal(-1,'rec','{safe_text}')\">👎</button>"
+                f'<div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap">'
+                f'<button class="feedback-btn like" title="Helpful" '
+                f"onclick=\"saveLike(-1,'rec','{safe_text}')\">Useful</button>"
+                f'<button class="feedback-btn feedback-skip" title="Not for me" '
+                f"onclick=\"showFeedbackModal(-1,'rec','{safe_text}')\">Not for me</button>"
                 f'</div>'
             )
             body_html = "".join(body_parts)
@@ -1392,8 +1390,6 @@ def main() -> None:
         header_greeting=header_greeting,
         layout_class=layout_class,
         patient_id=patient_id,
-        memory_api_url=memory_api_url,
-        memory_api_token=memory_api_token,
         current_time=current_time,
         status_badge_class=badge_class,
         status_icon=status_icon,
@@ -1426,6 +1422,8 @@ def main() -> None:
 
     result = {
         "structured_output": {
+            "title": "Adherence report",
+            "category": "adherence",
             "html": html,
             "detail": so,
             "escalations": escalation_records,

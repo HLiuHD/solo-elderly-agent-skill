@@ -789,6 +789,8 @@ def main() -> None:
             "title": report_title,
             "category": "adherence",
             "html": html,
+            "detail": so,
+            "escalations": [],
         },
     }
 

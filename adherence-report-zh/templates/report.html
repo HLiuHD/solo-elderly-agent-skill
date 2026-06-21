@@ -245,6 +245,7 @@ let activeDay = 0;
 const MEAL_FEEDBACK_REASONS = ["不喜欢口味", "过敏/不耐受", "买不到食材", "准备起来太麻烦", "其他"];
 const GENERAL_FEEDBACK_REASONS = ["不适合我", "做起来太难", "我已经在做", "不同意这个建议", "其他"];
 let feedbackStore = JSON.parse(localStorage.getItem("mealFeedback") || "{{}}");
+const pendingFeedbackSubmits = {{}};
 
 function feedbackKey(dayIdx, mealType, itemName) {{
   return `${{dayIdx}}-${{mealType}}-${{itemName}}`;
@@ -321,14 +322,35 @@ function exportFeedbackJSON() {{
   const btn = document.getElementById("exportFeedbackBtn");
   if (!btn) return;
   const origText = btn.textContent;
-  localStorage.setItem("pendingPreferencePayload", JSON.stringify(payload));
-  btn.textContent = "✓ 偏好已在本地记录";
+  const feedbackId = "feedback_" + Date.now() + "_" + Math.random().toString(36).slice(2);
+  pendingFeedbackSubmits[feedbackId] = {{ btn, origText }};
+  btn.textContent = "⏳ 提交中...";
   btn.disabled = true;
+  window.parent.postMessage({{
+    type: "skill_feedback",
+    feedback_id: feedbackId,
+    payload
+  }}, "*");
   setTimeout(() => {{
+    if (!pendingFeedbackSubmits[feedbackId]) return;
+    delete pendingFeedbackSubmits[feedbackId];
     btn.textContent = origText;
     btn.disabled = false;
-  }}, 2500);
+  }}, 8000);
 }}
+
+window.addEventListener("message", function(event) {{
+  const data = event.data || {{}};
+  if (data.type !== "skill_feedback_result" || !data.feedback_id) return;
+  const pending = pendingFeedbackSubmits[data.feedback_id];
+  if (!pending) return;
+  delete pendingFeedbackSubmits[data.feedback_id];
+  pending.btn.textContent = data.ok === false ? "提交失败" : "✓ 已提交";
+  setTimeout(() => {{
+    pending.btn.textContent = pending.origText;
+    pending.btn.disabled = false;
+  }}, 2500);
+}});
 
 function updateExportBadge() {{
   const btn = document.getElementById("exportFeedbackBtn");

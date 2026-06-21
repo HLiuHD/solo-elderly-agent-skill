@@ -11,12 +11,60 @@
   * {{ box-sizing: border-box; }}
   .meal-card {{ transition: all .2s; }}
   .meal-card:hover {{ transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.08); }}
-  .feedback-btn {{ opacity:0; transition: opacity .2s; cursor:pointer; border:none; background:transparent; font-size:0.9em; padding:2px 4px; border-radius:4px; }}
-  .meal-card:hover .feedback-btn {{ opacity:1; }}
-  .feedback-btn:hover {{ background:#fee2e2; }}
-  .feedback-btn.like:hover {{ background:#dcfce7; }}
-  .feedback-btn.liked {{ opacity:1; background:#dcfce7; }}
-  .feedback-btn.disliked {{ opacity:1; background:#fef3c7; }}
+  .feedback-actions {{ display:flex; flex-direction:column; gap:6px; align-self:stretch; }}
+  .feedback-btn {{
+    opacity:1;
+    cursor:pointer;
+    border:1px solid #d8dee8;
+    background:#fff;
+    color:#475569;
+    font-size:.76rem;
+    line-height:1.1;
+    padding:8px 11px;
+    border-radius:999px;
+    min-height:36px;
+    min-width:92px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    font-weight:750;
+    box-shadow:0 2px 8px rgba(15,23,42,.05);
+    white-space:nowrap;
+    transition:background .18s ease, border-color .18s ease, color .18s ease, box-shadow .18s ease, transform .18s ease;
+  }}
+  .feedback-btn:hover {{ transform:translateY(-1px); border-color:#cbd5e1; background:#f8fafc; }}
+  .feedback-btn.like {{ color:#047857; border-color:#bbf7d0; background:#f0fdf4; }}
+  .feedback-btn.like:hover {{ background:#dcfce7; border-color:#86efac; }}
+  .feedback-btn.feedback-skip {{ color:#475569; border-color:#e2e8f0; background:#fff; box-shadow:none; }}
+  .feedback-btn.feedback-skip:hover {{ background:#f8fafc; border-color:#cbd5e1; }}
+  .feedback-btn.liked {{ color:#fff; background:#059669; border-color:#059669; box-shadow:0 0 0 3px rgba(5,150,105,.16); }}
+  .feedback-btn.disliked {{ color:#fff; background:#64748b; border-color:#64748b; box-shadow:0 0 0 3px rgba(100,116,139,.16); }}
+  .section-card[data-section="meal_plan"] #mealContent .grid {{
+    grid-template-columns:1fr !important;
+    gap:12px !important;
+  }}
+  .section-card[data-section="meal_plan"] .meal-card {{
+    display:grid !important;
+    grid-template-columns:auto minmax(0,1fr);
+    align-items:start;
+    gap:12px;
+    padding:14px !important;
+  }}
+  .section-card[data-section="meal_plan"] .meal-card > div:last-child {{
+    grid-column:1 / -1;
+    display:grid !important;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:8px !important;
+    width:100%;
+    margin-top:4px;
+  }}
+  .section-card[data-section="meal_plan"] .meal-card .feedback-btn {{
+    opacity:1 !important;
+    width:100%;
+    min-width:0;
+    min-height:40px;
+  }}
   .feedback-modal {{ position:fixed; inset:0; background:rgba(0,0,0,.4); display:flex; align-items:center; justify-content:center; z-index:9999; }}
   .feedback-modal-box {{ background:#fff; border-radius:16px; padding:24px; max-width:320px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,.2); }}
   .feedback-reason {{ display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0; border:1px solid #e2e8f0; border-radius:10px; background:#f8fafc; font-size:0.85em; cursor:pointer; transition:all .15s; }}
@@ -172,7 +220,7 @@
     .sub-card-body .text-sm {{ font-size: 0.95em; }}
 
     /* Feedback */
-    .feedback-btn {{ opacity: 1 !important; font-size: 1.2em !important; padding: 6px 8px !important; min-width: 36px; min-height: 36px; }}
+    .feedback-btn {{ opacity: 1 !important; font-size: .78rem !important; padding: 8px 10px !important; min-width: 0; min-height: 38px; }}
     .feedback-modal-box {{ padding: 24px; max-width: 94%; }}
     .feedback-reason {{ padding: 14px 16px; font-size: 1em; }}
 
@@ -257,6 +305,7 @@ const GENERAL_FEEDBACK_REASONS = [
   "Other"
 ];
 let feedbackStore = JSON.parse(localStorage.getItem("mealFeedback") || "{{}}");
+const pendingFeedbackSubmits = {{}};
 
 function saveFeedback(dayIdx, mealType, itemName, reason) {{
   const key = `${{dayIdx}}-${{mealType}}-${{itemName}}`;
@@ -276,9 +325,6 @@ function saveLike(dayIdx, mealType, itemName) {{
 function getFeedback(dayIdx, mealType, itemName) {{
   return feedbackStore[`${{dayIdx}}-${{mealType}}-${{itemName}}`];
 }}
-
-const MEMORY_API_URL = "{memory_api_url}";
-const MEMORY_API_TOKEN = "{memory_api_token}";
 
 function buildPreferencePayload() {{
   const likes = [];
@@ -309,55 +355,40 @@ function buildPreferencePayload() {{
   }};
 }}
 
-async function exportFeedbackJSON() {{
+function exportFeedbackJSON() {{
   const payload = buildPreferencePayload();
-
-  if (MEMORY_API_URL && !MEMORY_API_URL.includes("{{")) {{
-    // POST to memory API
-    const btn = document.getElementById("exportFeedbackBtn");
-    const origText = btn.textContent;
-    btn.textContent = "⏳ Saving...";
-    btn.disabled = true;
-    try {{
-      const resp = await fetch(MEMORY_API_URL, {{
-        method: "POST",
-        headers: {{
-          "Content-Type": "application/json",
-          "X-API-Token": MEMORY_API_TOKEN
-        }},
-        body: JSON.stringify(payload)
-      }});
-      if (resp.ok) {{
-        btn.textContent = "✅ Saved to memory!";
-        setTimeout(() => {{ btn.textContent = origText; btn.disabled = false; }}, 2500);
-      }} else {{
-        const errText = await resp.text();
-        btn.textContent = "❌ Failed (" + resp.status + ")";
-        console.error("Memory API error:", errText);
-        setTimeout(() => {{ btn.textContent = origText; btn.disabled = false; }}, 3000);
-      }}
-    }} catch (err) {{
-      console.error("Memory API unreachable:", err);
-      btn.textContent = "❌ Network error";
-      setTimeout(() => {{ btn.textContent = origText; btn.disabled = false; }}, 3000);
-      // Fallback: download file
-      downloadPayload(payload);
-    }}
-  }} else {{
-    // No API configured — fallback to file download
-    downloadPayload(payload);
-  }}
+  const btn = document.getElementById("exportFeedbackBtn");
+  if (!btn) return;
+  const origText = btn.textContent;
+  const feedbackId = "feedback_" + Date.now() + "_" + Math.random().toString(36).slice(2);
+  pendingFeedbackSubmits[feedbackId] = {{ btn, origText }};
+  btn.textContent = "⏳ Submitting...";
+  btn.disabled = true;
+  window.parent.postMessage({{
+    type: "skill_feedback",
+    feedback_id: feedbackId,
+    payload
+  }}, "*");
+  setTimeout(() => {{
+    if (!pendingFeedbackSubmits[feedbackId]) return;
+    delete pendingFeedbackSubmits[feedbackId];
+    btn.textContent = origText;
+    btn.disabled = false;
+  }}, 8000);
 }}
 
-function downloadPayload(payload) {{
-  const blob = new Blob([JSON.stringify(payload, null, 2)], {{ type: "application/json" }});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "patient_preferences_" + new Date().toISOString().slice(0,10) + ".json";
-  a.click();
-  URL.revokeObjectURL(url);
-}}
+window.addEventListener("message", function(event) {{
+  const data = event.data || {{}};
+  if (data.type !== "skill_feedback_result" || !data.feedback_id) return;
+  const pending = pendingFeedbackSubmits[data.feedback_id];
+  if (!pending) return;
+  delete pendingFeedbackSubmits[data.feedback_id];
+  pending.btn.textContent = data.ok === false ? "Submission failed" : "✓ Submitted";
+  setTimeout(() => {{
+    pending.btn.textContent = pending.origText;
+    pending.btn.disabled = false;
+  }}, 2500);
+}});
 
 function updateExportBadge() {{
   const btn = document.getElementById("exportFeedbackBtn");
@@ -439,9 +470,9 @@ function renderMeals() {{
           <div class="text-sm font-semibold text-slate-800">${{it.name}}</div>
           <div class="text-xs text-emerald-600 mt-0.5 leading-relaxed italic">${{reason}}</div>
         </div>
-        <div class="flex flex-col gap-1">
-          <button class="feedback-btn like ${{likeClass}}" title="I like this" onclick="saveLike(${{activeDay}},'${{key}}','${{safeName}}')">👍</button>
-          <button class="feedback-btn ${{dislikeClass}}" title="I don't want this" onclick="showFeedbackModal(${{activeDay}},'${{key}}','${{safeName}}')">👎</button>
+        <div class="feedback-actions">
+          <button class="feedback-btn like ${{likeClass}}" title="Keep this meal idea" onclick="saveLike(${{activeDay}},'${{key}}','${{safeName}}')">Keep this</button>
+          <button class="feedback-btn feedback-skip ${{dislikeClass}}" title="This meal is not for me" onclick="showFeedbackModal(${{activeDay}},'${{key}}','${{safeName}}')">Not for me</button>
         </div>
       </div>`;
     }}
