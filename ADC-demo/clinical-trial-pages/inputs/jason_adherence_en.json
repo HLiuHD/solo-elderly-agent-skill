@@ -1,0 +1,326 @@
+{
+  "payload": {
+    "meta": {
+      "current_time": "2026-06-22 11:36",
+      "user_id": "ct_jason"
+    },
+    "memory": {
+      "patient_long_term_profile": "Jason Miller, 72-year-old male. Baseline conditions: Metastatic NSCLC (EGFR exon 19 del)（Metastatic non-small cell lung cancer; EGFR exon 19 deletion）; Prior platinum chemotherapy; reduced respiratory reserve. Current medications: ADC-047 1.8 mg/kg; amlodipine.",
+      "recent_health_dynamics": "Current monitoring focus: mild exertional dyspnea, slight SpO2 drift, dry cough, fatigue. Mild HR drift and SpO2 below baseline in the early ADC-047 exposure window; respiratory self-report.",
+      "key_events": [
+        {
+          "date": "2026-06-22",
+          "type": "symptom",
+          "description": "I am not in real distress, but my breathing has felt a little uncomfortable recently, especially when I walk upstairs."
+        },
+        {
+          "date": "2026-06-05",
+          "type": "alert",
+          "description": "baseline SpO2 98%, HR 74"
+        },
+        {
+          "date": "2026-05-20",
+          "type": "alert",
+          "description": "metastatic NSCLC, EGFR exon 19 deletion"
+        },
+        {
+          "date": "2026-05-22",
+          "type": "alert",
+          "description": "prior platinum chemotherapy"
+        },
+        {
+          "date": "2026-05-25",
+          "type": "alert",
+          "description": "reduced DLCO / baseline chest imaging on file"
+        },
+        {
+          "date": "2026-06-20",
+          "type": "alert",
+          "description": "first respiratory self-report this cycle"
+        }
+      ],
+      "tone_profile": {
+        "condition_context": "stable_routine",
+        "preferred_name": "Jason"
+      }
+    },
+    "location": {}
+  },
+  "llm_result": {
+    "structured_output": {
+      "patient_status": "at_risk",
+      "risk_tags": [
+        "exertional dyspnea",
+        "dry cough",
+        "slight SpO2 drop",
+        "fatigue"
+      ],
+      "assistant_message_sections": [
+        {
+          "type": "good_news",
+          "title": "This is not resting respiratory distress yet",
+          "content": "SpO2 is lower than baseline, but there is still no resting dyspnea or fever, so there is still a useful tracking window."
+        },
+        {
+          "type": "attention",
+          "title": "Treat it like an early lung-toxicity signal",
+          "content": "With a DXd-class ADC, mild exertional dyspnea plus dry cough and SpO2 drift should not be brushed off as simple deconditioning."
+        },
+        {
+          "type": "plan",
+          "title": "The next 48 to 72 hours matter most",
+          "content": "Watch for oxygen falling further, cough worsening, or symptoms shifting from exertional to resting."
+        },
+        {
+          "type": "encouragement",
+          "title": "Save breathing reserve for recovery",
+          "content": "Lighter meals and slower activity this week can reduce extra respiratory load while the picture becomes clearer."
+        }
+      ],
+      "adherence_analysis": {
+        "period": "C1D15",
+        "medication": {
+          "status": "Baseline medicines continued",
+          "issues": "The bigger issue is not missed medication but quickly identifying whether this is early ADC-related lung toxicity.",
+          "adjustments": "Keep current medicines steady unless the trial team changes them, but escalate quickly if symptoms worsen before the next dose."
+        },
+        "appetite": {
+          "status": "Mildly affected",
+          "cause_if_known": "Dyspnea and fatigue can slow down normal eating and make meals feel more tiring.",
+          "suggestions": "Meals can stay smaller, but try not to let total protein and calories drop too far."
+        },
+        "exercise": {
+          "status": "Should stay conservative",
+          "barriers": "Reduced respiratory reserve plus exertional dyspnea and dry cough are the main current limits.",
+          "plan": "Use slower, shorter indoor movement and avoid stairs or brisk walking for now."
+        },
+        "monitoring": {
+          "status": "Needs closer watching",
+          "gaps": "He should log resting and post-activity SpO2, temperature, cough frequency, and walking tolerance every day."
+        }
+      },
+      "recommendations": [
+        {
+          "text": "Check resting and post-activity SpO2, heart rate and temperature daily",
+          "reason": "Pulled forward from the trial-page self-monitoring block.",
+          "category": "monitoring"
+        },
+        {
+          "text": "Note any change in cough frequency and walking tolerance",
+          "reason": "Pulled forward from the trial-page self-monitoring block.",
+          "category": "monitoring"
+        },
+        {
+          "text": "Contact the trial team immediately if SpO2 falls below 92%, you become short of breath at rest, develop fever, or have chest pain",
+          "reason": "Pulled forward from the trial-page when to seek help block.",
+          "category": "lifestyle"
+        },
+        {
+          "text": "Record both resting and post-activity oxygen each day",
+          "reason": "That is one of the fastest ways to catch a trend before it becomes obvious clinically.",
+          "category": "monitoring"
+        },
+        {
+          "text": "Do not stay in home-observation mode if breathlessness shifts to rest",
+          "reason": "A change from exertional to resting symptoms is a major escalation boundary.",
+          "category": "monitoring"
+        }
+      ],
+      "nutrition_advice": "Antibody-drug conjugates (ADCs) combine a targeted antibody with a potent cytotoxic payload. While they can attack tumors effectively, off-target effects or payload release may also trigger gastrointestinal, hepatic, renal, marrow, or lung toxicity. The core nutrition principles are: higher protein, easy digestion, small frequent meals, and side-effect-specific adjustments. Because ADC targets may be broadly expressed in the gastrointestinal tract, or because the gut lining turns over quickly, nausea, diarrhea, and reduced intake are common. Use small, frequent, bland meals; avoid greasy, fried, and spicy foods; and aim for 5 to 6 eating moments per day without overfilling. Prioritize steamed fish, poached chicken breast, tofu, steamed egg, and vitamin-rich gourd vegetables for higher-protein, easier-to-digest choices. If diarrhea becomes significant, watch for dehydration and electrolyte loss and use oral rehydration solution, or lightly salted rice broth. Avoid milk and dairy because lactose can worsen gut burden. If nausea is severe, avoid large amounts of fluid during meals and move soups and other liquid foods to at least 30 minutes before or after eating. The food goal is lower breathing burden without losing nutrition. Choose warm, easy-to-chew, lower-fat protein options like steamed fish, chicken, tofu, soft noodles, and cooked vegetables, and slow meals down so a full stomach does not worsen breathing.",
+      "latest_health_summary": {
+        "blood_pressure": "132/84",
+        "heart_rate": "88",
+        "blood_oxygen": "95",
+        "blood_glucose": "",
+        "steps_today": ""
+      },
+      "conditions": [
+        "Reduced pulmonary reserve",
+        "During chemotherapy"
+      ],
+      "diet_table": [
+        {
+          "condition": "General nutrition during ADC treatment",
+          "principle": "Higher protein, easy digestion, small frequent meals",
+          "recommend": "Steamed fish, chicken breast, tofu, steamed egg, mild gourd vegetables, oral rehydration solution",
+          "avoid": "Greasy spicy foods, overeating, large liquids during meals, dairy when diarrhea is active"
+        },
+        {
+          "condition": "Reduced pulmonary reserve",
+          "principle": "Lower load and split intake",
+          "recommend": "Soft noodles, steamed fish, tofu, cooked vegetables",
+          "avoid": "Very greasy food, overly large meals, and eating while rushing"
+        },
+        {
+          "condition": "Fatigue recovery",
+          "principle": "Small higher-protein meals",
+          "recommend": "Chicken, eggs, beans, warm soups",
+          "avoid": "Long fasts and snack-only days"
+        },
+        {
+          "condition": "During chemotherapy",
+          "principle": "Steady energy and hydration",
+          "recommend": "Simple starches, warm water, spaced fluids",
+          "avoid": "Irritating drinks and skipping breakfast after poor sleep"
+        }
+      ],
+      "weekly_meal_plan": [
+        {
+          "day": "Day 1",
+          "breakfast": [
+            {
+              "name": "Soft noodles with steamed egg",
+              "icon": "🍜",
+              "condition": "Fatigue",
+              "benefit": "Easy to eat and not overly filling"
+            }
+          ],
+          "lunch": [
+            {
+              "name": "Steamed fish with pumpkin",
+              "icon": "🐟",
+              "condition": "Reduced pulmonary reserve",
+              "benefit": "Higher-protein and lower-fat with less post-meal load"
+            }
+          ],
+          "dinner": [
+            {
+              "name": "Tofu chicken soup",
+              "icon": "🍲",
+              "condition": "During chemotherapy",
+              "benefit": "Adds warm fluids and gentle protein"
+            }
+          ]
+        },
+        {
+          "day": "Day 2",
+          "breakfast": [
+            {
+              "name": "Banana oatmeal porridge",
+              "icon": "🥣",
+              "condition": "Exertional dyspnea",
+              "benefit": "Gentle morning energy without feeling too heavy"
+            }
+          ],
+          "lunch": [
+            {
+              "name": "Chicken vegetable congee",
+              "icon": "🍚",
+              "condition": "Dry cough",
+              "benefit": "Soft texture is easier when meals need to stay slow"
+            }
+          ],
+          "dinner": [
+            {
+              "name": "Light tofu with soft rice",
+              "icon": "🍚",
+              "condition": "During chemotherapy",
+              "benefit": "Keeps dinner lighter so breathing is not worse after eating"
+            }
+          ]
+        },
+        {
+          "day": "Day 3",
+          "breakfast": [
+            {
+              "name": "Whole-wheat toast with warm soy milk",
+              "icon": "🍞",
+              "condition": "Fatigue",
+              "benefit": "Adds some carbohydrate and protein for the morning"
+            }
+          ],
+          "lunch": [
+            {
+              "name": "Cod with mashed potato",
+              "icon": "🐟",
+              "condition": "Reduced pulmonary reserve",
+              "benefit": "Simple, softer, and easier to finish slowly"
+            }
+          ],
+          "dinner": [
+            {
+              "name": "Chicken winter-melon noodle soup",
+              "icon": "🍜",
+              "condition": "Exertional dyspnea",
+              "benefit": "Warm and soft, with less chance of post-meal tight breathing"
+            }
+          ]
+        }
+      ],
+      "diet_tips": [
+        {
+          "icon": "🌬️",
+          "title": "Slow meals down",
+          "detail": "Talking a lot, eating too fast, or overfilling the stomach can make breathlessness feel worse."
+        },
+        {
+          "icon": "🍲",
+          "title": "Favor warm softer foods",
+          "detail": "Warm soups, soft porridge, steamed fish, and tofu are easier to finish on a fatigued day."
+        },
+        {
+          "icon": "🧃",
+          "title": "Space fluids through the day",
+          "detail": "Small frequent drinks are usually more comfortable than trying to catch up all at once."
+        },
+        {
+          "icon": "📉",
+          "title": "Watch walking tolerance with oxygen",
+          "detail": "Sometimes walking capacity drops before oxygen numbers look dramatic."
+        },
+        {
+          "icon": "🍽️",
+          "title": "Small frequent meals",
+          "detail": "Aim for 5 to 6 eating moments per day instead of one or two heavy meals to reduce nausea, bloating, and post-meal discomfort."
+        },
+        {
+          "icon": "🥚",
+          "title": "Higher-protein and easy to digest",
+          "detail": "Steamed fish, poached chicken breast, tofu, and steamed egg are practical ADC-treatment protein staples."
+        },
+        {
+          "icon": "🧂",
+          "title": "Replace fluids and salt during diarrhea",
+          "detail": "Significant diarrhea causes fluid and electrolyte loss, so use oral rehydration solution or lightly salted rice broth."
+        },
+        {
+          "icon": "🥛",
+          "title": "Pause dairy if diarrhea is active",
+          "detail": "Lactose in milk and dairy can add to gut burden when diarrhea is already present."
+        },
+        {
+          "icon": "🥣",
+          "title": "Separate larger liquids from meals if nausea is strong",
+          "detail": "Move soups and other liquid foods to at least 30 minutes before or after eating when nausea is severe."
+        }
+      ],
+      "reasoning": "Jason Miller is in the ADC-047 C1D15 treatment window. The core interpretation is adapted from the trial-triage rationale: Stable now; complaint could be baseline lung cancer / deconditioning / treatment fatigue, but it sits in the early ADC exposure window, so a small respiratory change may precede a toxicity pattern.",
+      "guardrail": "This page is restructured from clinical-trial review data for supportive understanding only. It does not replace the trial team, treating clinician, or emergency assessment.",
+      "health_guidance": {
+        "summary": "Antibody-drug conjugates (ADCs) combine a targeted antibody with a potent cytotoxic payload. While they can attack tumors effectively, off-target effects or payload release may also trigger gastrointestinal, hepatic, renal, marrow, or lung toxicity. The core nutrition principles are: higher protein, easy digestion, small frequent meals, and side-effect-specific adjustments. For Jason, the key is to treat mild dyspnea, dry cough, and SpO2 drift as a possible early lung-toxicity signal and track it actively instead of waiting it out.",
+        "tips": [
+          {
+            "text": "Check both resting and post-activity oxygen every day",
+            "why": "For lung toxicity, the trend often matters more than a single point."
+          },
+          {
+            "text": "Lighter meals are fine, but avoid very greasy or overly large meals",
+            "why": "Overfilling the stomach can make breathing feel harder."
+          },
+          {
+            "text": "Skip stairs and brisk walking today",
+            "why": "Protecting breathing reserve matters more than pushing activity right now."
+          },
+          {
+            "text": "Break meals into 5 to 6 small eating moments",
+            "why": "Small frequent intake is usually easier to tolerate than forcing larger meals and is less likely to worsen nausea or fullness."
+          },
+          {
+            "text": "Lead with higher-protein, easy-to-digest softer foods",
+            "why": "Steamed fish, chicken breast, tofu, and steamed egg help preserve nutrition even when total intake is limited."
+          }
+        ]
+      }
+    }
+  }
+}

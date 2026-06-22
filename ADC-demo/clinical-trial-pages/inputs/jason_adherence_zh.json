@@ -1,0 +1,326 @@
+{
+  "payload": {
+    "meta": {
+      "current_time": "2026-06-22 11:36",
+      "user_id": "ct_jason"
+    },
+    "memory": {
+      "patient_long_term_profile": "Jason Miller，72 岁男性。当前主要基础情况：Metastatic NSCLC (EGFR exon 19 del)（Metastatic non-small cell lung cancer; EGFR exon 19 deletion）；Prior platinum chemotherapy; reduced respiratory reserve。近期用药：ADC-047 1.8 mg/kg；amlodipine。",
+      "recent_health_dynamics": "当前系统重点关注：mild exertional dyspnea、slight SpO2 drift、dry cough、fatigue。Mild HR drift and SpO2 below baseline in the early ADC-047 exposure window; respiratory self-report.",
+      "key_events": [
+        {
+          "date": "2026-06-22",
+          "type": "symptom",
+          "description": "I am not in real distress, but my breathing has felt a little uncomfortable recently, especially when I walk upstairs."
+        },
+        {
+          "date": "2026-06-05",
+          "type": "alert",
+          "description": "基线 SpO₂ 98%、HR 74"
+        },
+        {
+          "date": "2026-05-20",
+          "type": "alert",
+          "description": "转移性非小细胞肺癌,EGFR exon 19 缺失"
+        },
+        {
+          "date": "2026-05-22",
+          "type": "alert",
+          "description": "既往含铂化疗"
+        },
+        {
+          "date": "2026-05-25",
+          "type": "alert",
+          "description": "DLCO 下降 / 已有基线胸部影像"
+        },
+        {
+          "date": "2026-06-20",
+          "type": "alert",
+          "description": "本周期首次呼吸相关自述"
+        }
+      ],
+      "tone_profile": {
+        "condition_context": "stable_routine",
+        "preferred_name": "Jason"
+      }
+    },
+    "location": {}
+  },
+  "llm_result": {
+    "structured_output": {
+      "patient_status": "at_risk",
+      "risk_tags": [
+        "活动后气短",
+        "干咳",
+        "血氧轻度下降",
+        "乏力"
+      ],
+      "assistant_message_sections": [
+        {
+          "type": "good_news",
+          "title": "现在还不是静息性呼吸困难",
+          "content": "目前血氧虽然较基线下降，但还没有静息气短和发热，说明仍处在可以尽快追踪和处理的窗口。"
+        },
+        {
+          "type": "attention",
+          "title": "要把它当作早期肺毒性信号",
+          "content": "在 DXd 类药物背景下，轻度活动后气短加干咳和血氧漂移，不能简单按体能下降处理。"
+        },
+        {
+          "type": "plan",
+          "title": "这 48 到 72 小时最重要",
+          "content": "重点观察血氧是否继续下降、咳嗽是否加重、气短是否从活动后转到静息时。"
+        },
+        {
+          "type": "encouragement",
+          "title": "先把气息留给恢复",
+          "content": "这几天饮食要轻一些、活动要慢一些，目标是减少额外呼吸负荷。"
+        }
+      ],
+      "adherence_analysis": {
+        "period": "C1D15",
+        "medication": {
+          "status": "基础用药延续",
+          "issues": "当前更大的问题不是漏服，而是需要尽快识别是否出现 ADC 相关肺毒性。",
+          "adjustments": "没有试验团队新指示前先按原方案服药，但若症状升级，要立即联系团队确认是否需要暂停下一次给药。"
+        },
+        "appetite": {
+          "status": "轻度受影响",
+          "cause_if_known": "气短和乏力会让吃饭变慢，也容易因为说话或活动多了而更累。",
+          "suggestions": "餐量可以小一点，但尽量保证蛋白和总热量，不要因为怕累就整天不吃。"
+        },
+        "exercise": {
+          "status": "需要保守",
+          "barriers": "现阶段呼吸储备下降，活动后气短和干咳是主要限制。",
+          "plan": "先以室内短距离、节奏慢的活动为主，避免爬楼和快走。"
+        },
+        "monitoring": {
+          "status": "需要更密切",
+          "gaps": "要每天记录静息与活动后血氧、体温、咳嗽频率和步行耐量。"
+        }
+      },
+      "recommendations": [
+        {
+          "text": "Check resting and post-activity SpO2, heart rate and temperature daily",
+          "reason": "来自自我监测模块的试验期建议。",
+          "category": "monitoring"
+        },
+        {
+          "text": "Note any change in cough frequency and walking tolerance",
+          "reason": "来自自我监测模块的试验期建议。",
+          "category": "monitoring"
+        },
+        {
+          "text": "Contact the trial team immediately if SpO2 falls below 92%, you become short of breath at rest, develop fever, or have chest pain",
+          "reason": "来自何时立即求助模块的试验期建议。",
+          "category": "lifestyle"
+        },
+        {
+          "text": "每日记录静息和活动后血氧",
+          "reason": "这能更早发现从轻度信号转向真正进展的趋势。",
+          "category": "monitoring"
+        },
+        {
+          "text": "只要气短开始影响静息状态，就不要再在家观察",
+          "reason": "从活动后转为静息时不适，是需要升级处理的重要分界点。",
+          "category": "monitoring"
+        }
+      ],
+      "nutrition_advice": "ADC（抗体偶联药物）由于将靶向抗体与强效小分子细胞毒素结合，在杀伤肿瘤的同时，也可能因为脱靶效应或毒素释放，引发胃肠道、肝肾、骨髓及肺部等毒性反应。科学补充营养的核心原则是：高蛋白、易消化、少食多餐，并根据具体副作用做针对性调整。由于 ADC 靶点在消化道广泛分布，或肠道黏膜更新较快，恶心、腹泻和进食减少都很常见。建议少量多餐、保持清淡，避免油腻、油炸及辛辣刺激性食物，每日可进食 5 到 6 顿、避免过饱。食物优先选择蒸鱼、水煮鸡胸肉、豆腐、蒸蛋等优质高蛋白且容易消化的搭配，并多补充富含维生素的瓜类蔬菜。若腹泻明显，要警惕脱水与电解质流失，可饮用口服补液盐，或米汤加少量盐；此时先避开牛奶和乳制品，以免乳糖进一步增加肠道负担。若恶心严重，避免在进餐时饮用大量液体，汤水等流食尽量放在餐前或餐后 30 分钟以上。饮食重点是轻负担但别掉营养。优先选择温热、易咀嚼、不过于油腻的蛋白来源，如蒸鱼、鸡肉、豆腐、软面和熟蔬菜；进餐时放慢速度，避免一次吃得过饱影响呼吸。",
+      "latest_health_summary": {
+        "blood_pressure": "132/84",
+        "heart_rate": "88",
+        "blood_oxygen": "95",
+        "blood_glucose": "",
+        "steps_today": ""
+      },
+      "conditions": [
+        "肺储备下降",
+        "化疗期间"
+      ],
+      "diet_table": [
+        {
+          "condition": "ADC 治疗期通用饮食",
+          "principle": "高蛋白、易消化、少量多餐",
+          "recommend": "蒸鱼、鸡胸肉、豆腐、蒸蛋、清淡瓜类蔬菜、口服补液盐",
+          "avoid": "油炸辛辣、过饱、大量餐中饮液、腹泻时乳制品"
+        },
+        {
+          "condition": "肺储备下降",
+          "principle": "轻负担、分次进食",
+          "recommend": "软面、蒸鱼、豆腐、熟蔬菜",
+          "avoid": "太油、太撑、边走边吃"
+        },
+        {
+          "condition": "乏力恢复期",
+          "principle": "少量高蛋白",
+          "recommend": "鸡肉、鸡蛋、豆类、温汤",
+          "avoid": "空腹太久、只吃零食"
+        },
+        {
+          "condition": "化疗期间",
+          "principle": "稳定能量和水分",
+          "recommend": "清淡主食、温水、分散补液",
+          "avoid": "刺激性饮料、熬夜后不吃早餐"
+        }
+      ],
+      "weekly_meal_plan": [
+        {
+          "day": "第1天",
+          "breakfast": [
+            {
+              "name": "软面配蒸蛋",
+              "icon": "🍜",
+              "condition": "乏力",
+              "benefit": "容易入口，不会太撑"
+            }
+          ],
+          "lunch": [
+            {
+              "name": "清蒸鱼配南瓜",
+              "icon": "🐟",
+              "condition": "肺储备下降",
+              "benefit": "高蛋白又不过油，减少餐后负担"
+            }
+          ],
+          "dinner": [
+            {
+              "name": "豆腐鸡丝汤",
+              "icon": "🍲",
+              "condition": "化疗期间",
+              "benefit": "补液同时提供温和蛋白"
+            }
+          ]
+        },
+        {
+          "day": "第2天",
+          "breakfast": [
+            {
+              "name": "香蕉燕麦粥",
+              "icon": "🥣",
+              "condition": "活动后气短",
+              "benefit": "早晨温和补能量，减少空腹乏力"
+            }
+          ],
+          "lunch": [
+            {
+              "name": "鸡肉蔬菜粥",
+              "icon": "🍚",
+              "condition": "干咳",
+              "benefit": "质地软，更适合说话少、慢慢吃"
+            }
+          ],
+          "dinner": [
+            {
+              "name": "清炒豆腐配软米饭",
+              "icon": "🍚",
+              "condition": "化疗期间",
+              "benefit": "晚餐不油不重，避免吃完更喘"
+            }
+          ]
+        },
+        {
+          "day": "第3天",
+          "breakfast": [
+            {
+              "name": "全麦吐司配温豆浆",
+              "icon": "🍞",
+              "condition": "乏力",
+              "benefit": "少量碳水和蛋白，维持上午体力"
+            }
+          ],
+          "lunch": [
+            {
+              "name": "鳕鱼土豆泥",
+              "icon": "🐟",
+              "condition": "肺储备下降",
+              "benefit": "吃得慢一点也容易完成"
+            }
+          ],
+          "dinner": [
+            {
+              "name": "鸡丝冬瓜汤面",
+              "icon": "🍜",
+              "condition": "活动后气短",
+              "benefit": "温热、软烂，减少餐后胸闷感"
+            }
+          ]
+        }
+      ],
+      "diet_tips": [
+        {
+          "icon": "🌬️",
+          "title": "吃饭速度放慢",
+          "detail": "说话多、吃得急、吃得太撑，都会让气短感觉更明显。"
+        },
+        {
+          "icon": "🍲",
+          "title": "优先温热软食",
+          "detail": "温汤面、软粥、蒸鱼和豆腐更容易在疲劳时完成。"
+        },
+        {
+          "icon": "🧃",
+          "title": "水分分散喝",
+          "detail": "全天小口补液，比临时猛灌更舒服，也更容易坚持。"
+        },
+        {
+          "icon": "📉",
+          "title": "把血氧和步行耐量一起看",
+          "detail": "有时候血氧变化不大，但步行耐量下降会更早提示问题。"
+        },
+        {
+          "icon": "🍽️",
+          "title": "少量多餐",
+          "detail": "每日可进食 5 到 6 顿，避免一次吃得太多，减轻恶心、腹胀和餐后不适。"
+        },
+        {
+          "icon": "🥚",
+          "title": "高蛋白易消化",
+          "detail": "蒸鱼、水煮鸡胸肉、豆腐、蒸蛋等更适合作为 ADC 治疗期的基础蛋白来源。"
+        },
+        {
+          "icon": "🧂",
+          "title": "腹泻时补液补盐",
+          "detail": "严重腹泻会带走水分和电解质，可使用口服补液盐，或米汤加少量盐。"
+        },
+        {
+          "icon": "🥛",
+          "title": "腹泻时先避开乳制品",
+          "detail": "牛奶和乳制品中的乳糖可能进一步增加肠道负担。"
+        },
+        {
+          "icon": "🥣",
+          "title": "恶心重时错开喝流食",
+          "detail": "如果恶心明显，汤水等流食尽量安排在餐前或餐后 30 分钟以上。"
+        }
+      ],
+      "reasoning": "Jason Miller 当前处于 ADC-047 C1D15 治疗窗口。 页面核心判断来自试验原始分诊：Stable now; complaint could be baseline lung cancer / deconditioning / treatment fatigue, but it sits in the early ADC exposure window, so a small respiratory change may precede a toxicity pattern.",
+      "guardrail": "本页面基于试验审核数据重组生成，仅供辅助理解，不替代试验团队、主诊医生或急诊评估。",
+      "health_guidance": {
+        "summary": "ADC（抗体偶联药物）由于将靶向抗体与强效小分子细胞毒素结合，在杀伤肿瘤的同时，也可能因为脱靶效应或毒素释放，引发胃肠道、肝肾、骨髓及肺部等毒性反应。科学补充营养的核心原则是：高蛋白、易消化、少食多餐，并根据具体副作用做针对性调整。Jason 当前最重要的是把“轻度气短 + 干咳 + 血氧漂移”看成可能的早期肺毒性线索，主动追踪，而不是等它自己过去。",
+        "tips": [
+          {
+            "text": "每天都测一次静息和活动后血氧",
+            "why": "对肺毒性来说，趋势往往比某一次单点更有意义。"
+          },
+          {
+            "text": "吃得少一点没关系，但别吃得太油太撑",
+            "why": "过饱会增加呼吸负担，轻一点反而更容易完成。"
+          },
+          {
+            "text": "今天先避免爬楼和快走",
+            "why": "把有限的呼吸储备留给恢复，比硬练更重要。"
+          },
+          {
+            "text": "把三餐拆成 5 到 6 次少量进食",
+            "why": "少量多餐通常比硬吃大餐更容易完成，也更不容易恶心或腹胀。"
+          },
+          {
+            "text": "优先补高蛋白、好消化的软食",
+            "why": "蒸鱼、鸡胸肉、豆腐、蒸蛋这类食物能在总量不多时尽量保住营养密度。"
+          }
+        ]
+      }
+    }
+  }
+}

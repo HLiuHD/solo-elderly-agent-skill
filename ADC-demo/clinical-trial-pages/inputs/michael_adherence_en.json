@@ -1,0 +1,327 @@
+{
+  "payload": {
+    "meta": {
+      "current_time": "2026-06-22 11:36",
+      "user_id": "ct_michael"
+    },
+    "memory": {
+      "patient_long_term_profile": "Michael Chen, 66-year-old male. Baseline conditions: Metastatic gastric cancer (HER2 amplification)（Metastatic gastric cancer; HER2 amplification）; Hypertension（Hypertension (~10 yrs)）; Prior coronary artery disease; baseline low-normal LVEF（Prior CAD; baseline LVEF 54% (low-normal); baseline ECG sinus rhythm, QTc 430 ms）. Current medications: ADC-047 6.4 mg/kg; metoprolol 47.5 mg QD; amlodipine 5 mg QD; aspirin 100 mg QD.",
+      "recent_health_dynamics": "Current monitoring focus: episodic palpitations, fatigue, mild exertional dyspnea, HR/BP drift. HR drift with episodic palpitations and labile BP this cycle in a patient with prior CAD and low-normal LVEF.",
+      "key_events": [
+        {
+          "date": "2026-06-22",
+          "type": "symptom",
+          "description": "My heart has been racing and skipping on and off since the last cycle, and I feel unusually tired."
+        },
+        {
+          "date": "2026-05-15",
+          "type": "alert",
+          "description": "HER2-amplified metastatic gastric cancer; hypertension; prior CAD"
+        },
+        {
+          "date": "2026-06-05",
+          "type": "alert",
+          "description": "baseline LVEF 54%, baseline ECG QTc 430 ms, BP 134/82, HR 70"
+        },
+        {
+          "date": "2026-05-20",
+          "type": "alert",
+          "description": "metoprolol, amlodipine, aspirin"
+        },
+        {
+          "date": "2026-04-30",
+          "type": "alert",
+          "description": "prior cardiac event + baseline echocardiogram on file"
+        },
+        {
+          "date": "2026-06-20",
+          "type": "alert",
+          "description": "new-onset palpitations + HR drift this cycle"
+        }
+      ],
+      "tone_profile": {
+        "condition_context": "stable_routine",
+        "preferred_name": "Michael"
+      }
+    },
+    "location": {}
+  },
+  "llm_result": {
+    "structured_output": {
+      "patient_status": "at_risk",
+      "risk_tags": [
+        "episodic palpitations",
+        "fatigue",
+        "mild exertional dyspnea",
+        "HR/BP drift"
+      ],
+      "assistant_message_sections": [
+        {
+          "type": "good_news",
+          "title": "No immediate collapse signal",
+          "content": "There is no chest pain, fainting, or breathlessness at rest right now, so this still looks controllable with prompt follow-up."
+        },
+        {
+          "type": "attention",
+          "title": "This behaves like an early cardiac toxicity signal",
+          "content": "With prior CAD and a low-normal baseline LVEF, new palpitations plus fatigue and BP drift should not be dismissed as routine treatment tiredness."
+        },
+        {
+          "type": "plan",
+          "title": "What should happen next",
+          "content": "Within the next 24 hours, the most useful steps are ECG, echo, and a clear HR/BP log to guide the trial team before the next dose."
+        },
+        {
+          "type": "encouragement",
+          "title": "Good records will help",
+          "content": "Tracking how long each palpitation lasts, and whether it comes with shortness of breath or dizziness, will make the next decision much easier."
+        }
+      ],
+      "adherence_analysis": {
+        "period": "C1D14",
+        "medication": {
+          "status": "Mostly on track",
+          "issues": "He reports continuing his regular medications without obvious missed doses.",
+          "adjustments": "Keep taking them as prescribed; if palpitations become sustained or more intense, do not self-adjust the beta blocker before speaking with the trial team."
+        },
+        "appetite": {
+          "status": "Mildly affected",
+          "cause_if_known": "Fatigue and exertional symptoms can slow down normal eating and hydration habits.",
+          "suggestions": "Prefer lower-salt, gentle meals and avoid heavy caffeine, very salty packaged foods, and large late meals."
+        },
+        "exercise": {
+          "status": "Should be scaled back",
+          "barriers": "Palpitations and mild exertional dyspnea make sudden exercise increases a poor fit this week.",
+          "plan": "Keep activity light and steady, with short flat walks instead of stairs, brisk walking, or anything that provokes symptoms."
+        },
+        "monitoring": {
+          "status": "Needs tighter follow-up",
+          "gaps": "He needs a clearer log of HR, BP, palpitation duration, and whether chest pressure, dizziness, or ankle swelling appear."
+        }
+      },
+      "recommendations": [
+        {
+          "text": "Keep a BP/HR trend log and note how long palpitations last",
+          "reason": "Pulled forward from the trial-page self-monitoring block.",
+          "category": "monitoring"
+        },
+        {
+          "text": "Continue metoprolol and blood-pressure medications as prescribed",
+          "reason": "Pulled forward from the trial-page self-monitoring block.",
+          "category": "monitoring"
+        },
+        {
+          "text": "Urgent contact for chest pain, fainting, sustained palpitations beyond a few minutes, breathlessness at rest, or ankle swelling",
+          "reason": "Pulled forward from the trial-page when to seek help block.",
+          "category": "lifestyle"
+        },
+        {
+          "text": "Start timing each palpitation episode today",
+          "reason": "Duration is one of the fastest ways to separate a short-lived fluctuation from something that needs escalation.",
+          "category": "monitoring"
+        },
+        {
+          "text": "Escalate immediately for chest pain, fainting, or breathlessness at rest",
+          "reason": "Those are red-flag symptoms that move this out of the home-observation lane.",
+          "category": "monitoring"
+        }
+      ],
+      "nutrition_advice": "Antibody-drug conjugates (ADCs) combine a targeted antibody with a potent cytotoxic payload. While they can attack tumors effectively, off-target effects or payload release may also trigger gastrointestinal, hepatic, renal, marrow, or lung toxicity. The core nutrition principles are: higher protein, easy digestion, small frequent meals, and side-effect-specific adjustments. Because ADC targets may be broadly expressed in the gastrointestinal tract, or because the gut lining turns over quickly, nausea, diarrhea, and reduced intake are common. Use small, frequent, bland meals; avoid greasy, fried, and spicy foods; and aim for 5 to 6 eating moments per day without overfilling. Prioritize steamed fish, poached chicken breast, tofu, steamed egg, and vitamin-rich gourd vegetables for higher-protein, easier-to-digest choices. If diarrhea becomes significant, watch for dehydration and electrolyte loss and use oral rehydration solution, or lightly salted rice broth. Avoid milk and dairy because lactose can worsen gut burden. If nausea is severe, avoid large amounts of fluid during meals and move soups and other liquid foods to at least 30 minutes before or after eating. For the next few days, aim for lower-salt, moderate-protein, low-stimulant meals. Steamed fish, chicken breast, tofu, oatmeal, soft rice, and cooked vegetables fit better than energy drinks, strong coffee, or very salty take-out foods.",
+      "latest_health_summary": {
+        "blood_pressure": "148/92",
+        "heart_rate": "104",
+        "blood_oxygen": "96",
+        "blood_glucose": "",
+        "steps_today": ""
+      },
+      "conditions": [
+        "Hypertension",
+        "Coronary artery disease",
+        "During chemotherapy"
+      ],
+      "diet_table": [
+        {
+          "condition": "General nutrition during ADC treatment",
+          "principle": "Higher protein, easy digestion, small frequent meals",
+          "recommend": "Steamed fish, chicken breast, tofu, steamed egg, mild gourd vegetables, oral rehydration solution",
+          "avoid": "Greasy spicy foods, overeating, large liquids during meals, dairy when diarrhea is active"
+        },
+        {
+          "condition": "Hypertension",
+          "principle": "Lower sodium and steady hydration",
+          "recommend": "Steamed fish, oatmeal, cooked vegetables, light soups",
+          "avoid": "Pickled foods, salty broths, heavy take-out"
+        },
+        {
+          "condition": "CAD / palpitation risk",
+          "principle": "Reduce stimulants and extremes",
+          "recommend": "Small regular meals, water, low-caffeine drinks",
+          "avoid": "Strong coffee, energy drinks, very large meals"
+        },
+        {
+          "condition": "During chemotherapy",
+          "principle": "Enough protein with stable energy",
+          "recommend": "Chicken breast, tofu, steamed egg, soft rice",
+          "avoid": "Fried high-fat meals and very late heavy dinners"
+        }
+      ],
+      "weekly_meal_plan": [
+        {
+          "day": "Day 1",
+          "breakfast": [
+            {
+              "name": "Oatmeal with steamed egg",
+              "icon": "🥣",
+              "condition": "Hypertension",
+              "benefit": "Gentle, lower-salt, and steady for the morning"
+            }
+          ],
+          "lunch": [
+            {
+              "name": "Steamed fish with soft rice",
+              "icon": "🐟",
+              "condition": "Cardiac risk",
+              "benefit": "Lean protein with less cardiovascular load"
+            }
+          ],
+          "dinner": [
+            {
+              "name": "Chicken and vegetable soup",
+              "icon": "🍲",
+              "condition": "During chemotherapy",
+              "benefit": "Adds fluids, protein, and cooked vegetables in one meal"
+            }
+          ]
+        },
+        {
+          "day": "Day 2",
+          "breakfast": [
+            {
+              "name": "Banana oatmeal cup",
+              "icon": "🍌",
+              "condition": "Fatigue",
+              "benefit": "Easy to tolerate and helps avoid a long fasting stretch"
+            }
+          ],
+          "lunch": [
+            {
+              "name": "Tofu greens noodle bowl",
+              "icon": "🍜",
+              "condition": "Hypertension",
+              "benefit": "Uses a lighter broth while keeping fluids and carbs up"
+            }
+          ],
+          "dinner": [
+            {
+              "name": "Steamed chicken with pumpkin mash",
+              "icon": "🍗",
+              "condition": "During chemotherapy",
+              "benefit": "Soft, digestible, and not too heavy at night"
+            }
+          ]
+        },
+        {
+          "day": "Day 3",
+          "breakfast": [
+            {
+              "name": "Warm soy milk with whole-wheat toast",
+              "icon": "🍞",
+              "condition": "Palpitation risk",
+              "benefit": "Regular breakfast without a heavy sugar or caffeine load"
+            }
+          ],
+          "lunch": [
+            {
+              "name": "Salmon and quinoa bowl",
+              "icon": "🥗",
+              "condition": "CAD",
+              "benefit": "Helpful for protein and heart-friendly fats"
+            }
+          ],
+          "dinner": [
+            {
+              "name": "Tofu steamed egg with broccoli",
+              "icon": "🥚",
+              "condition": "Hypertension",
+              "benefit": "Low-salt, easy to digest, and evening-friendly"
+            }
+          ]
+        }
+      ],
+      "diet_tips": [
+        {
+          "icon": "🫗",
+          "title": "Spread fluids through the day",
+          "detail": "Small frequent drinks work better than waiting until you are very thirsty."
+        },
+        {
+          "icon": "☕",
+          "title": "Scale back stimulants",
+          "detail": "Strong coffee, energy drinks, and excess alcohol can make palpitations feel worse."
+        },
+        {
+          "icon": "🧂",
+          "title": "Trim sodium a little more",
+          "detail": "BP is already drifting, so lower-salt meals give the medication more room to work."
+        },
+        {
+          "icon": "📝",
+          "title": "Track food and symptoms together",
+          "detail": "Some people notice palpitations cluster after large meals, poor sleep, or caffeine."
+        },
+        {
+          "icon": "🍽️",
+          "title": "Small frequent meals",
+          "detail": "Aim for 5 to 6 eating moments per day instead of one or two heavy meals to reduce nausea, bloating, and post-meal discomfort."
+        },
+        {
+          "icon": "🥚",
+          "title": "Higher-protein and easy to digest",
+          "detail": "Steamed fish, poached chicken breast, tofu, and steamed egg are practical ADC-treatment protein staples."
+        },
+        {
+          "icon": "🧂",
+          "title": "Replace fluids and salt during diarrhea",
+          "detail": "Significant diarrhea causes fluid and electrolyte loss, so use oral rehydration solution or lightly salted rice broth."
+        },
+        {
+          "icon": "🥛",
+          "title": "Pause dairy if diarrhea is active",
+          "detail": "Lactose in milk and dairy can add to gut burden when diarrhea is already present."
+        },
+        {
+          "icon": "🥣",
+          "title": "Separate larger liquids from meals if nausea is strong",
+          "detail": "Move soups and other liquid foods to at least 30 minutes before or after eating when nausea is severe."
+        }
+      ],
+      "reasoning": "Michael Chen is in the ADC-047 C1D14 treatment window. The core interpretation is adapted from the trial-triage rationale: DXd-class ADCs carry a cardiac monitoring signal (LVEF decline, QTc); Michael's CV history lowers his threshold. Fatigue may be treatment-related, cardiac, or anemia - objective LVEF/ECG/labs separate them before the next dose.",
+      "guardrail": "This page is restructured from clinical-trial review data for supportive understanding only. It does not replace the trial team, treating clinician, or emergency assessment.",
+      "health_guidance": {
+        "summary": "Antibody-drug conjugates (ADCs) combine a targeted antibody with a potent cytotoxic payload. While they can attack tumors effectively, off-target effects or payload release may also trigger gastrointestinal, hepatic, renal, marrow, or lung toxicity. The core nutrition principles are: higher protein, easy digestion, small frequent meals, and side-effect-specific adjustments. This page is best read as an early cardiac signal that needs to be objectified quickly, not something to push through and ignore.",
+        "tips": [
+          {
+            "text": "Write down each palpitation episode and how long it lasts",
+            "why": "Brief self-limited episodes and prolonged episodes lead to very different next steps."
+          },
+          {
+            "text": "Avoid stairs and sudden heavy exertion today",
+            "why": "Recent exertional dyspnea and HR drift suggest the current cardiac load should stay low."
+          },
+          {
+            "text": "Use gentle meals, regular fluids, and less stimulant intake",
+            "why": "Steadier hydration and less sympathetic stimulation may reduce extra HR and BP fluctuation."
+          },
+          {
+            "text": "Break meals into 5 to 6 small eating moments",
+            "why": "Small frequent intake is usually easier to tolerate than forcing larger meals and is less likely to worsen nausea or fullness."
+          },
+          {
+            "text": "Lead with higher-protein, easy-to-digest softer foods",
+            "why": "Steamed fish, chicken breast, tofu, and steamed egg help preserve nutrition even when total intake is limited."
+          }
+        ]
+      }
+    }
+  }
+}

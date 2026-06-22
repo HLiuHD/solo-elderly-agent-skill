@@ -1,0 +1,455 @@
+{
+  "scenario": "adherence",
+  "timestamp": "2026-05-10T00:58:08+08:00",
+  "payload": {
+    "meta": {
+      "user_id": "P-20260509-001",
+      "session_id": "orch_adherence",
+      "intent": "medical_dialog",
+      "lang": "zh",
+      "current_time": "2026-05-10T00:58:08+08:00"
+    },
+    "memory": {
+      "patient_long_term_profile": "王建国，男，72岁。诊断：高血压（10年）、2型糖尿病（5年）、高脂血症。长期用药：氨氯地平 5mg qd、二甲双胍 500mg bid、阿托伐他汀 20mg qn。独居，喜欢面食。",
+      "recent_health_dynamics": "近一周血压稍有波动（135-152mmHg），血糖控制尚可。活动量下降，日均步数从3200步降至1800步。睡眠质量一般，每晚5-6小时。"
+    },
+    "signals": {
+      "start_ts": "",
+      "end_ts": "",
+      "summary_text": "近7天设备数据：血压波动偏大，活动量持续下降，心率正常范围，血氧正常。",
+      "anomalies": [
+        "血压波动增大",
+        "活动量持续下降"
+      ]
+    },
+    "latest_health": {
+      "blood_pressure": "148/90",
+      "heart_rate": 74,
+      "blood_oxygen": 96,
+      "blood_glucose": 7.1,
+      "steps": 1500
+    },
+    "adherence_analysis": {
+      "statuses": [
+        "用药依从性良好",
+        "饮食控制一般",
+        "运动量不足",
+        "睡眠质量一般"
+      ],
+      "preferences": [
+        "偏好面食",
+        "不喜欢剧烈运动"
+      ],
+      "interventions": [
+        "建议简化运动方案",
+        "加强饮食指导",
+        "关注睡眠"
+      ],
+      "suggestions": [
+        "每日步行目标调整为3000步",
+        "少盐少油饮食",
+        "睡前减少看电视"
+      ]
+    },
+    "outlier_analysis": {
+      "symptoms": [],
+      "triage": null,
+      "patient_suggestions": [],
+      "doctor_suggestions": []
+    },
+    "location": {
+      "current": {
+        "lat": 39.9042,
+        "lon": 116.4074,
+        "record_at": "2026-05-10T00:58:08+08:00"
+      },
+      "records": []
+    },
+    "latest_user_message": "我最近几天没怎么出门，感觉有点累，晚上也睡不太好。",
+    "recent_dialog_summary": "上次随访3天前，患者表示按时服药但运动减少。"
+  },
+  "doctor_result": {
+    "message": "患者分诊报告已生成",
+    "structured_output": {
+      "patient_profile": {
+        "name": "王建国",
+        "age": 72,
+        "gender": "男",
+        "diagnoses": [
+          "高血压",
+          "2型糖尿病",
+          "高脂血症"
+        ],
+        "medications": [
+          "氨氯地平 5mg qd",
+          "二甲双胍 500mg bid",
+          "阿托伐他汀 20mg qn"
+        ],
+        "baseline_note": "独居，喜欢面食。"
+      },
+      "patient_status": "at_risk",
+      "triage_level": "semi_urgent",
+      "risk_tags": [
+        "血压波动增大",
+        "活动量偏低"
+      ],
+      "assistant_message_doctor": "患者王建国，72岁，具有高血压、2型糖尿病和高脂血症病史。近期监测显示血压波动增大，活动量显著下降，日均步数减少至1500步。睡眠质量一般，每晚5-6小时。建议关注患者的运动和饮食管理，调整步行目标，并加强睡眠卫生指导。",
+      "reasoning": "患者血压波动增大且活动量显著下降，提示存在心血管风险。虽然心率和血氧正常，但考虑到患者的年龄和多重慢性病史，需提高警惕。建议进行进一步的心血管评估和生活方式调整。",
+      "signals_summary": {
+        "window": "近7天",
+        "description": "血压波动偏大，活动量持续下降，心率正常范围，血氧正常。",
+        "anomalies": [
+          "血压波动增大",
+          "活动量持续下降"
+        ]
+      },
+      "latest_vitals": {
+        "blood_pressure": "148/90",
+        "heart_rate": 74,
+        "blood_oxygen": 96,
+        "blood_glucose": 7.1,
+        "steps": 1500
+      },
+      "adherence_analysis": {
+        "statuses": [
+          "用药依从性良好",
+          "饮食控制一般",
+          "运动量不足",
+          "睡眠质量一般"
+        ],
+        "preferences": [
+          "偏好面食",
+          "不喜欢剧烈运动"
+        ],
+        "interventions": [
+          "建议简化运动方案",
+          "加强饮食指导",
+          "关注睡眠"
+        ],
+        "suggestions": [
+          "每日步行目标调整为3000步",
+          "少盐少油饮食",
+          "睡前减少看电视"
+        ]
+      },
+      "recommendations": [
+        "调整每日步行目标至3000步。",
+        "减少钠盐和油脂摄入。",
+        "加强睡眠卫生，睡前减少电子设备使用。",
+        "定期监测血压，观察波动情况。",
+        "考虑进行心血管功能评估。"
+      ],
+      "nutrition_plan_summary": {
+        "conditions_addressed": [
+          "高血压",
+          "2型糖尿病",
+          "高脂血症"
+        ],
+        "diet_principles": [
+          "低盐",
+          "低脂",
+          "高纤维"
+        ],
+        "weekly_plan_generated": false,
+        "plan_note": "建议减少面食摄入，增加蔬果和全谷物。"
+      },
+      "guardrail": "本报告仅供临床医生参考，不作为患者自我诊断依据。",
+      "html": "<!DOCTYPE html>\n<html lang=\"zh-CN\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>分诊审核报告</title>\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>\n  body { font-family: system-ui, -apple-system, \"PingFang SC\", \"Microsoft YaHei\", sans-serif; }\n</style>\n</head>\n<body class=\"bg-slate-50 text-slate-800\">\n<div class=\"max-w-3xl mx-auto px-4 py-6\">\n\n  <!-- Header -->\n  <div class=\"bg-gradient-to-br from-slate-700 to-slate-900 text-white rounded-2xl p-6 mb-4 shadow-lg\">\n    <div class=\"flex items-center justify-between\">\n      <div>\n        <h1 class=\"text-lg font-bold\">分诊审核报告</h1>\n        <p class=\"text-slate-300 text-sm mt-1\">患者 P-20260509-001 · 2026-05-10T00:58:08+08:00</p>\n      </div>\n      <div class=\"flex items-center gap-2\">\n        <span class=\"bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-bold\">⚠️ 关注</span>\n      </div>\n    </div>\n  </div>\n\n  <!-- Patient Profile -->\n  <div class=\"bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3\">\n    <div class=\"flex items-center gap-2 mb-4 pb-3 border-b border-slate-100\">\n      <span class=\"text-lg\">👤</span>\n      <h2 class=\"text-sm font-bold text-slate-800\">患者概况</h2>\n    </div>\n    <div class=\"text-sm text-slate-700 space-y-1\">\n      <p><strong>长期档案：</strong>王建国，男，72岁。诊断：高血压（10年）、2型糖尿病（5年）、高脂血症。长期用药：氨氯地平 5mg qd、二甲双胍 500mg bid、阿托伐他汀 20mg qn。独居，喜欢面食。</p>\n      <p><strong>近期动态：</strong>近一周血压稍有波动（135-152mmHg），血糖控制尚可。活动量下降，日均步数从3200步降至1800步。睡眠质量一般，每晚5-6小时。</p>\n    </div>\n  </div>\n\n  <!-- Signal Summary -->\n  <div class=\"bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3\">\n    <div class=\"flex items-center gap-2 mb-4 pb-3 border-b border-slate-100\">\n      <span class=\"text-lg\">📡</span>\n      <h2 class=\"text-sm font-bold text-slate-800\">信号概览</h2>\n    </div>\n    <div class=\"text-xs text-slate-500 mb-2\">窗口：近7天</div>\n    <div class=\"flex flex-wrap gap-2 mb-3\"><span class=\"inline-block px-3 py-1 rounded-full text-xs font-medium bg-rose-50 text-rose-700\">血压波动增大</span>\n<span class=\"inline-block px-3 py-1 rounded-full text-xs font-medium bg-rose-50 text-rose-700\">活动量持续下降</span></div>\n    <p class=\"text-sm text-slate-600\">血压波动偏大，活动量持续下降，心率正常范围，血氧正常。</p>\n  </div>\n\n  <!-- Vitals -->\n  <div class=\"bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3\">\n    <div class=\"flex items-center gap-2 mb-4 pb-3 border-b border-slate-100\">\n      <span class=\"text-lg\">📊</span>\n      <h2 class=\"text-sm font-bold text-slate-800\">最新体征</h2>\n    </div>\n    <div class=\"grid grid-cols-3 sm:grid-cols-5 gap-2\"><div class=\"bg-slate-50 rounded-lg p-3 text-center border border-slate-100\"><div class=\"text-[11px] text-slate-500 font-medium mb-1\">血压</div><div class=\"text-xl font-bold text-slate-800\">148/90 <span class=\"text-[10px] font-normal text-slate-400\">mmHg</span></div></div>\n<div class=\"bg-slate-50 rounded-lg p-3 text-center border border-slate-100\"><div class=\"text-[11px] text-slate-500 font-medium mb-1\">心率</div><div class=\"text-xl font-bold text-slate-800\">74 <span class=\"text-[10px] font-normal text-slate-400\">bpm</span></div></div>\n<div class=\"bg-slate-50 rounded-lg p-3 text-center border border-slate-100\"><div class=\"text-[11px] text-slate-500 font-medium mb-1\">血氧</div><div class=\"text-xl font-bold text-slate-800\">96 <span class=\"text-[10px] font-normal text-slate-400\">%</span></div></div>\n<div class=\"bg-slate-50 rounded-lg p-3 text-center border border-slate-100\"><div class=\"text-[11px] text-slate-500 font-medium mb-1\">血糖</div><div class=\"text-xl font-bold text-slate-800\">7.1 <span class=\"text-[10px] font-normal text-slate-400\">mmol/L</span></div></div>\n<div class=\"bg-slate-50 rounded-lg p-3 text-center border border-slate-100\"><div class=\"text-[11px] text-slate-500 font-medium mb-1\">步数</div><div class=\"text-xl font-bold text-slate-800\">1500 <span class=\"text-[10px] font-normal text-slate-400\">步</span></div></div></div>\n  </div>\n\n  <!-- Triage Assessment -->\n  <div class=\"bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3\">\n    <div class=\"flex items-center gap-2 mb-4 pb-3 border-b border-slate-100\">\n      <span class=\"text-lg\">🏥</span>\n      <h2 class=\"text-sm font-bold text-slate-800\">分诊评估</h2>\n    </div>\n    <div class=\"flex items-center gap-3 mb-4\">\n      <span class=\"bg-yellow-50 text-yellow-700 border-yellow-400 px-4 py-2 rounded-lg text-sm font-bold border\">📋 次急</span>\n    </div>\n    <div class=\"mb-3\">\n      <div class=\"text-xs font-medium text-slate-500 uppercase tracking-wide mb-2\">风险标签</div>\n      <div class=\"flex flex-wrap gap-2\"><span class=\"inline-block px-3 py-1 rounded-full text-xs font-medium bg-orange-50 text-orange-700\">血压波动增大</span>\n<span class=\"inline-block px-3 py-1 rounded-full text-xs font-medium bg-orange-50 text-orange-700\">活动量偏低</span></div>\n    </div>\n    <div class=\"mt-4\"><div class=\"text-xs font-medium text-slate-500 uppercase tracking-wide mb-1\">评估依据</div><div class=\"text-sm text-slate-700 bg-amber-50 rounded-lg p-3\" style=\"border-left:3px solid #f59e0b\">患者血压波动增大且活动量显著下降，提示存在心血管风险。虽然心率和血氧正常，但考虑到患者的年龄和多重慢性病史，需提高警惕。建议进行进一步的心血管评估和生活方式调整。</div></div>\n  </div>\n\n  <!-- Recommendations -->\n  <div class=\"bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3\">\n    <div class=\"flex items-center gap-2 mb-4 pb-3 border-b border-slate-100\">\n      <span class=\"text-lg\">📋</span>\n      <h2 class=\"text-sm font-bold text-slate-800\">临床建议</h2>\n    </div>\n    <div class=\"text-xs font-medium text-slate-500 uppercase tracking-wide mb-1\">给医生</div><div class=\"text-sm text-slate-700 bg-amber-50 rounded-lg p-3 mb-3\" style=\"border-left:3px solid #f59e0b\">患者王建国，72岁，具有高血压、2型糖尿病和高脂血症病史。近期监测显示血压波动增大，活动量显著下降，日均步数减少至1500步。睡眠质量一般，每晚5-6小时。建议关注患者的运动和饮食管理，调整步行目标，并加强睡眠卫生指导。</div>\n    <div class=\"text-xs font-medium text-slate-500 uppercase tracking-wide mb-1\">具体建议</div><div class=\"text-sm text-slate-700 bg-blue-50 rounded-lg p-3 mb-2\" style=\"border-left:3px solid #3b82f6\">调整每日步行目标至3000步。</div><div class=\"text-sm text-slate-700 bg-blue-50 rounded-lg p-3 mb-2\" style=\"border-left:3px solid #3b82f6\">减少钠盐和油脂摄入。</div><div class=\"text-sm text-slate-700 bg-blue-50 rounded-lg p-3 mb-2\" style=\"border-left:3px solid #3b82f6\">加强睡眠卫生，睡前减少电子设备使用。</div><div class=\"text-sm text-slate-700 bg-blue-50 rounded-lg p-3 mb-2\" style=\"border-left:3px solid #3b82f6\">定期监测血压，观察波动情况。</div><div class=\"text-sm text-slate-700 bg-blue-50 rounded-lg p-3 mb-2\" style=\"border-left:3px solid #3b82f6\">考虑进行心血管功能评估。</div>\n  </div>\n\n  <!-- Nutrition Plan Summary -->\n  <div class=\"bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3\"><div class=\"flex items-center gap-2 mb-4 pb-3 border-b border-slate-100\"><span class=\"text-lg\">🥗</span><h2 class=\"text-sm font-bold text-slate-800\">营养方案摘要</h2></div><div class=\"flex flex-wrap gap-2 mb-3\"><span class=\"inline-block px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700\">高血压</span><span class=\"inline-block px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700\">2型糖尿病</span><span class=\"inline-block px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700\">高脂血症</span></div><div class=\"text-sm text-slate-600 mb-1\">• 低盐</div><div class=\"text-sm text-slate-600 mb-1\">• 低脂</div><div class=\"text-sm text-slate-600 mb-1\">• 高纤维</div><div class=\"text-sm text-slate-700 bg-blue-50 rounded-lg p-3 mt-3\" style=\"border-left:3px solid #3b82f6\">建议减少面食摄入，增加蔬果和全谷物。</div></div>\n\n  <!-- Adherence -->\n  <div class=\"bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3\"><div class=\"flex items-center gap-2 mb-4 pb-3 border-b border-slate-100\"><span class=\"text-lg\">💊</span><h2 class=\"text-sm font-bold text-slate-800\">依从性分析</h2></div><div class=\"text-xs font-medium text-slate-500 uppercase tracking-wide mb-1\">当前状态</div><div class=\"flex flex-wrap gap-2 mb-3\"><span class=\"inline-block px-3 py-1 rounded-full text-xs font-medium bg-purple-50 text-purple-700\">用药依从性良好</span><span class=\"inline-block px-3 py-1 rounded-full text-xs font-medium bg-purple-50 text-purple-700\">饮食控制一般</span><span class=\"inline-block px-3 py-1 rounded-full text-xs font-medium bg-purple-50 text-purple-700\">运动量不足</span><span class=\"inline-block px-3 py-1 rounded-full text-xs font-medium bg-purple-50 text-purple-700\">睡眠质量一般</span></div><div class=\"text-xs font-medium text-slate-500 uppercase tracking-wide mb-1\">偏好</div><div class=\"flex flex-wrap gap-2 mb-3\"><span class=\"inline-block px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-600\">偏好面食</span><span class=\"inline-block px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-600\">不喜欢剧烈运动</span></div><div class=\"text-xs font-medium text-slate-500 uppercase tracking-wide mb-1\">建议</div><div class=\"text-sm text-slate-700 bg-indigo-50 rounded-lg p-3 mb-2\" style=\"border-left:3px solid #6366f1\">每日步行目标调整为3000步</div><div class=\"text-sm text-slate-700 bg-indigo-50 rounded-lg p-3 mb-2\" style=\"border-left:3px solid #6366f1\">少盐少油饮食</div><div class=\"text-sm text-slate-700 bg-indigo-50 rounded-lg p-3 mb-2\" style=\"border-left:3px solid #6366f1\">睡前减少看电视</div></div>\n\n  <!-- Map -->\n  <div class=\"bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3\">\n    <div class=\"flex items-center gap-2 mb-4 pb-3 border-b border-slate-100\">\n      <span class=\"text-lg\">📍</span>\n      <h2 class=\"text-sm font-bold text-slate-800\">患者位置</h2>\n    </div>\n    <p class=\"text-sm text-slate-600 mb-3\">患者近期活动量偏低，以下是附近推荐的公园和医疗网点，可建议患者适当外出活动。</p>\n    <div class=\"rounded-lg overflow-hidden border border-slate-200\" style=\"height:240px\">\n      <iframe width=\"100%\" height=\"100%\" frameborder=\"0\" style=\"border:0\"\n        src=\"https://maps.google.com/maps?q=39.9042,116.4074&z=15&output=embed\"\n        allowfullscreen loading=\"lazy\"></iframe>\n    </div>\n  </div>\n\n  <!-- Guardrail -->\n  <div class=\"bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6\">\n    <p class=\"text-xs text-amber-800 leading-relaxed\">本报告仅供临床医生参考，不作为患者自我诊断依据。</p>\n  </div>\n\n  <div class=\"text-center text-xs text-slate-400 pb-6\">AI 健康助手 · 临床辅助报告 · 仅供参考</div>\n</div>\n</body>\n</html>\n",
+      "detail": {
+        "patient_profile": {
+          "name": "王建国",
+          "age": 72,
+          "gender": "男",
+          "diagnoses": [
+            "高血压",
+            "2型糖尿病",
+            "高脂血症"
+          ],
+          "medications": [
+            "氨氯地平 5mg qd",
+            "二甲双胍 500mg bid",
+            "阿托伐他汀 20mg qn"
+          ],
+          "baseline_note": "独居，喜欢面食。"
+        },
+        "patient_status": "at_risk",
+        "triage_level": "semi_urgent",
+        "risk_tags": [
+          "血压波动增大",
+          "活动量偏低"
+        ],
+        "assistant_message_doctor": "患者王建国，72岁，具有高血压、2型糖尿病和高脂血症病史。近期监测显示血压波动增大，活动量显著下降，日均步数减少至1500步。睡眠质量一般，每晚5-6小时。建议关注患者的运动和饮食管理，调整步行目标，并加强睡眠卫生指导。",
+        "reasoning": "患者血压波动增大且活动量显著下降，提示存在心血管风险。虽然心率和血氧正常，但考虑到患者的年龄和多重慢性病史，需提高警惕。建议进行进一步的心血管评估和生活方式调整。",
+        "signals_summary": {
+          "window": "近7天",
+          "description": "血压波动偏大，活动量持续下降，心率正常范围，血氧正常。",
+          "anomalies": [
+            "血压波动增大",
+            "活动量持续下降"
+          ]
+        },
+        "latest_vitals": {
+          "blood_pressure": "148/90",
+          "heart_rate": 74,
+          "blood_oxygen": 96,
+          "blood_glucose": 7.1,
+          "steps": 1500
+        },
+        "adherence_analysis": {
+          "statuses": [
+            "用药依从性良好",
+            "饮食控制一般",
+            "运动量不足",
+            "睡眠质量一般"
+          ],
+          "preferences": [
+            "偏好面食",
+            "不喜欢剧烈运动"
+          ],
+          "interventions": [
+            "建议简化运动方案",
+            "加强饮食指导",
+            "关注睡眠"
+          ],
+          "suggestions": [
+            "每日步行目标调整为3000步",
+            "少盐少油饮食",
+            "睡前减少看电视"
+          ]
+        },
+        "recommendations": [
+          "调整每日步行目标至3000步。",
+          "减少钠盐和油脂摄入。",
+          "加强睡眠卫生，睡前减少电子设备使用。",
+          "定期监测血压，观察波动情况。",
+          "考虑进行心血管功能评估。"
+        ],
+        "nutrition_plan_summary": {
+          "conditions_addressed": [
+            "高血压",
+            "2型糖尿病",
+            "高脂血症"
+          ],
+          "diet_principles": [
+            "低盐",
+            "低脂",
+            "高纤维"
+          ],
+          "weekly_plan_generated": false,
+          "plan_note": "建议减少面食摄入，增加蔬果和全谷物。"
+        },
+        "guardrail": "本报告仅供临床医生参考，不作为患者自我诊断依据。"
+      }
+    }
+  },
+  "patient_result": {
+    "message": "您的健康报告已生成",
+    "structured_output": {
+      "patient_name": "王叔叔",
+      "patient_status": "at_risk",
+      "risk_tags": [
+        "血压波动增大",
+        "活动量偏低"
+      ],
+      "assistant_message_patient": "亲爱的王叔叔，您的健康状况总体稳定，但需要注意一些方面。最近您的血压有些波动，活动量也有所下降。建议您适当增加日常活动，如每天步行3000步，同时注意饮食清淡，减少盐分摄入。保持良好的睡眠习惯，尽量在睡前减少看电视的时间。希望您能保持良好的生活方式，祝您健康快乐！",
+      "recommendations": [
+        "每日步行目标调整为3000步",
+        "少盐少油饮食",
+        "睡前减少看电视",
+        "保持规律的作息时间",
+        "多喝水，保持身体水分"
+      ],
+      "nutrition_advice": "建议您多选择低盐、低油的食物，增加蔬菜和水果的摄入，帮助控制血压和血糖。",
+      "latest_health_summary": {
+        "blood_pressure": "148/90 mmHg",
+        "heart_rate": "74 bpm",
+        "blood_oxygen": "96%",
+        "blood_glucose": "7.1 mmol/L",
+        "steps_today": "1500 步"
+      },
+      "adherence": {
+        "statuses": [
+          "用药依从性良好",
+          "饮食控制一般",
+          "运动量不足",
+          "睡眠质量一般"
+        ],
+        "preferences": [
+          "偏好面食",
+          "不喜欢剧烈运动"
+        ],
+        "suggestions": [
+          "每日步行目标调整为3000步",
+          "少盐少油饮食",
+          "睡前减少看电视"
+        ]
+      },
+      "conditions": [
+        "高血压",
+        "2型糖尿病",
+        "高脂血症"
+      ],
+      "diet_table": [
+        {
+          "condition": "高血压",
+          "principle": "低钠高钾",
+          "recommend": "新鲜蔬菜、水果",
+          "avoid": "腌制食品、咸菜"
+        },
+        {
+          "condition": "2型糖尿病",
+          "principle": "低糖高纤维",
+          "recommend": "全谷物、豆类",
+          "avoid": "糖分高的甜点"
+        }
+      ],
+      "weekly_meal_plan": [
+        {
+          "day": "周一",
+          "breakfast": [
+            {
+              "name": "燕麦粥",
+              "icon": "🥣",
+              "condition": "2型糖尿病",
+              "benefit": "富含纤维，帮助控制血糖"
+            }
+          ],
+          "lunch": [
+            {
+              "name": "清炒西兰花",
+              "icon": "🥦",
+              "condition": "高血压",
+              "benefit": "低钠高钾，帮助降压"
+            }
+          ],
+          "dinner": [
+            {
+              "name": "蒸鱼",
+              "icon": "🐟",
+              "condition": "高脂血症",
+              "benefit": "富含优质蛋白，低脂肪"
+            }
+          ]
+        }
+      ],
+      "diet_tips": [
+        {
+          "icon": "🍎",
+          "title": "多吃水果",
+          "detail": "水果富含维生素和矿物质，有助于增强免疫力。"
+        },
+        {
+          "icon": "🥗",
+          "title": "多吃蔬菜",
+          "detail": "蔬菜富含纤维，有助于消化和控制血糖。"
+        }
+      ],
+      "reasoning": "患者血压波动且活动量下降，需关注心血管健康。饮食和运动调整有助于改善健康状况。",
+      "guardrail": "本报告仅供参考，不作为医疗诊断依据。如有不适，请及时就医。",
+      "html": "<!DOCTYPE html>\n<html lang=\"zh-CN\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n<title>王叔叔的健康报告</title>\n<script src=\"https://cdn.tailwindcss.com\"></script>\n<style>\n  body { font-family: system-ui, -apple-system, \"PingFang SC\", \"Microsoft YaHei\", sans-serif; }\n  .meal-card { transition: all .2s; }\n  .meal-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.08); }\n</style>\n</head>\n<body class=\"bg-slate-50 text-slate-800\">\n<div class=\"max-w-2xl mx-auto px-4 py-6\">\n\n  <!-- Header -->\n  <div class=\"bg-gradient-to-br from-emerald-600 to-teal-700 text-white rounded-2xl p-6 mb-4 shadow-lg\">\n    <h1 class=\"text-xl font-bold\">王叔叔，您好！</h1>\n    <p class=\"text-emerald-100 text-sm mt-1\">这是您的专属健康报告 · 2026年05月10日 00:58</p>\n    <div class=\"flex items-center gap-2 mt-3\">\n      <span class=\"inline-flex items-center gap-1 bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-xs font-semibold\">⚠️ 需要关注</span>\n      <span class=\"inline-block bg-rose-500 text-white px-3 py-1 rounded-full text-xs font-semibold\">高血压</span>\n<span class=\"inline-block bg-amber-500 text-white px-3 py-1 rounded-full text-xs font-semibold\">2型糖尿病</span>\n<span class=\"inline-block bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold\">高脂血症</span>\n    </div>\n  </div>\n\n  <!-- AI Message -->\n  <div class=\"bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3\">\n    <div class=\"flex items-center gap-2 mb-3 pb-3 border-b border-slate-100\">\n      <span class=\"text-lg\">🤖</span>\n      <h2 class=\"text-sm font-bold text-slate-800\">AI 健康管家</h2>\n    </div>\n    <p class=\"text-sm text-slate-700 leading-relaxed\">亲爱的王叔叔，您的健康状况总体稳定，但需要注意一些方面。最近您的血压有些波动，活动量也有所下降。建议您适当增加日常活动，如每天步行3000步，同时注意饮食清淡，减少盐分摄入。保持良好的睡眠习惯，尽量在睡前减少看电视的时间。希望您能保持良好的生活方式，祝您健康快乐！</p>\n  </div>\n\n  <!-- Vitals -->\n  <div class=\"bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3\">\n    <div class=\"flex items-center gap-2 mb-4 pb-3 border-b border-slate-100\">\n      <span class=\"text-lg\">📊</span>\n      <h2 class=\"text-sm font-bold text-slate-800\">今日健康数据</h2>\n    </div>\n    <div class=\"grid grid-cols-3 sm:grid-cols-5 gap-2\">\n      <div class=\"bg-slate-50 rounded-lg p-3 text-center border border-slate-100\"><div class=\"text-lg mb-0.5\">💓</div><div class=\"text-[11px] text-slate-500 font-medium mb-1\">血压</div><div class=\"text-xl font-bold text-slate-800\">148/90 mmHg</div><div class=\"text-[10px] text-slate-400\">mmHg</div></div>\n<div class=\"bg-slate-50 rounded-lg p-3 text-center border border-slate-100\"><div class=\"text-lg mb-0.5\">❤️</div><div class=\"text-[11px] text-slate-500 font-medium mb-1\">心率</div><div class=\"text-xl font-bold text-slate-800\">74 bpm</div><div class=\"text-[10px] text-slate-400\">bpm</div></div>\n<div class=\"bg-slate-50 rounded-lg p-3 text-center border border-slate-100\"><div class=\"text-lg mb-0.5\">🫁</div><div class=\"text-[11px] text-slate-500 font-medium mb-1\">血氧</div><div class=\"text-xl font-bold text-slate-800\">96%</div><div class=\"text-[10px] text-slate-400\">%</div></div>\n<div class=\"bg-slate-50 rounded-lg p-3 text-center border border-slate-100\"><div class=\"text-lg mb-0.5\">🩸</div><div class=\"text-[11px] text-slate-500 font-medium mb-1\">血糖</div><div class=\"text-xl font-bold text-slate-800\">7.1 mmol/L</div><div class=\"text-[10px] text-slate-400\">mmol/L</div></div>\n<div class=\"bg-slate-50 rounded-lg p-3 text-center border border-slate-100\"><div class=\"text-lg mb-0.5\">🚶</div><div class=\"text-[11px] text-slate-500 font-medium mb-1\">步数</div><div class=\"text-xl font-bold text-slate-800\">1500 步</div><div class=\"text-[10px] text-slate-400\">步</div></div>\n    </div>\n  </div>\n\n  <!-- Risk Tags & Recommendations -->\n  <div class=\"bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3\">\n    <div class=\"flex items-center gap-2 mb-4 pb-3 border-b border-slate-100\">\n      <span class=\"text-lg\">💡</span>\n      <h2 class=\"text-sm font-bold text-slate-800\">健康建议</h2>\n    </div>\n    <div class=\"flex flex-wrap gap-2 mb-4\"><span class=\"inline-block px-3 py-1 rounded-full text-xs font-medium border bg-rose-50 text-rose-700 border-rose-200\">血压波动增大</span>\n<span class=\"inline-block px-3 py-1 rounded-full text-xs font-medium border bg-sky-50 text-sky-700 border-sky-200\">活动量偏低</span></div>\n    <div class=\"space-y-2\"><div class=\"flex items-start gap-3 bg-emerald-50 rounded-lg p-3 border border-emerald-100\"><span class=\"text-base mt-0.5\">💊</span><div class=\"text-sm text-slate-700 leading-relaxed\">每日步行目标调整为3000步</div></div>\n<div class=\"flex items-start gap-3 bg-emerald-50 rounded-lg p-3 border border-emerald-100\"><span class=\"text-base mt-0.5\">🚶</span><div class=\"text-sm text-slate-700 leading-relaxed\">少盐少油饮食</div></div>\n<div class=\"flex items-start gap-3 bg-emerald-50 rounded-lg p-3 border border-emerald-100\"><span class=\"text-base mt-0.5\">🫀</span><div class=\"text-sm text-slate-700 leading-relaxed\">睡前减少看电视</div></div>\n<div class=\"flex items-start gap-3 bg-emerald-50 rounded-lg p-3 border border-emerald-100\"><span class=\"text-base mt-0.5\">🩸</span><div class=\"text-sm text-slate-700 leading-relaxed\">保持规律的作息时间</div></div>\n<div class=\"flex items-start gap-3 bg-emerald-50 rounded-lg p-3 border border-emerald-100\"><span class=\"text-base mt-0.5\">🧈</span><div class=\"text-sm text-slate-700 leading-relaxed\">多喝水，保持身体水分</div></div></div>\n    <div class=\"mt-4 pt-3 border-t border-slate-100\"><div class=\"text-[11px] text-slate-400 uppercase tracking-wide font-medium mb-1.5\">评估依据</div><div class=\"text-xs text-slate-600 bg-slate-50 rounded-lg p-3 leading-relaxed\">患者血压波动且活动量下降，需关注心血管健康。饮食和运动调整有助于改善健康状况。</div></div>\n  </div>\n\n  <!-- Adherence -->\n  <div class=\"bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3\"><div class=\"flex items-center gap-2 mb-4 pb-3 border-b border-slate-100\"><span class=\"text-lg\">💊</span><h2 class=\"text-sm font-bold text-slate-800\">用药与依从性</h2></div><div class=\"flex flex-wrap gap-2 mb-3\"><span class=\"inline-block px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200\">用药依从性良好</span><span class=\"inline-block px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200\">饮食控制一般</span><span class=\"inline-block px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200\">运动量不足</span><span class=\"inline-block px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200\">睡眠质量一般</span></div><div class=\"flex flex-wrap gap-2 mb-3\"><span class=\"inline-block px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-600 border border-blue-200\">偏好面食</span><span class=\"inline-block px-3 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-600 border border-blue-200\">不喜欢剧烈运动</span></div><div class=\"flex items-start gap-3 bg-indigo-50 rounded-lg p-3 border border-indigo-100 mb-2\"><span class=\"text-base mt-0.5\">📋</span><div class=\"text-sm text-slate-700 leading-relaxed\">每日步行目标调整为3000步</div></div><div class=\"flex items-start gap-3 bg-indigo-50 rounded-lg p-3 border border-indigo-100 mb-2\"><span class=\"text-base mt-0.5\">📋</span><div class=\"text-sm text-slate-700 leading-relaxed\">少盐少油饮食</div></div><div class=\"flex items-start gap-3 bg-indigo-50 rounded-lg p-3 border border-indigo-100 mb-2\"><span class=\"text-base mt-0.5\">📋</span><div class=\"text-sm text-slate-700 leading-relaxed\">睡前减少看电视</div></div></div>\n\n  <!-- Nutrition Advice -->\n  <div class=\"bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3\">\n    <div class=\"flex items-center gap-2 mb-4 pb-3 border-b border-slate-100\">\n      <span class=\"text-lg\">🥗</span>\n      <h2 class=\"text-sm font-bold text-slate-800\">营养建议</h2>\n    </div>\n    <div class=\"text-sm text-slate-700 bg-emerald-50 rounded-lg p-3 leading-relaxed\" style=\"border-left:3px solid #10b981\">建议您多选择低盐、低油的食物，增加蔬菜和水果的摄入，帮助控制血压和血糖。</div>\n  </div>\n\n  <!-- Diet Table -->\n  <div class=\"bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3\"><div class=\"flex items-center gap-2 mb-4 pb-3 border-b border-slate-100\"><span class=\"text-lg\">📋</span><h2 class=\"text-sm font-bold text-slate-800\">疾病饮食对照表</h2></div><div class=\"overflow-x-auto\"><table class=\"w-full text-sm\"><thead><tr class=\"bg-slate-50\"><th class=\"px-4 py-2 text-left text-xs font-semibold text-slate-500\">疾病</th><th class=\"px-4 py-2 text-left text-xs font-semibold text-slate-500\">原则</th><th class=\"px-4 py-2 text-left text-xs font-semibold text-slate-500\">推荐</th><th class=\"px-4 py-2 text-left text-xs font-semibold text-slate-500\">避免</th></tr></thead><tbody class=\"divide-y divide-slate-100\"><tr><td class=\"px-4 py-3 font-medium text-slate-800\">高血压</td><td class=\"px-4 py-3 text-slate-600\">低钠高钾</td><td class=\"px-4 py-3 text-emerald-700\">新鲜蔬菜、水果</td><td class=\"px-4 py-3 text-rose-600\">腌制食品、咸菜</td></tr><tr><td class=\"px-4 py-3 font-medium text-slate-800\">2型糖尿病</td><td class=\"px-4 py-3 text-slate-600\">低糖高纤维</td><td class=\"px-4 py-3 text-emerald-700\">全谷物、豆类</td><td class=\"px-4 py-3 text-rose-600\">糖分高的甜点</td></tr></tbody></table></div></div>\n\n  <!-- Weekly Meal Plan -->\n  <div class=\"bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3\">\n    <div class=\"flex items-center gap-2 mb-4 pb-3 border-b border-slate-100\">\n      <span class=\"text-lg\">📅</span>\n      <h2 class=\"text-sm font-bold text-slate-800\">一周营养食谱</h2>\n    </div>\n    <div class=\"flex gap-2 mb-4 overflow-x-auto pb-2\" id=\"dayTabs\"></div>\n    <div id=\"mealContent\"></div>\n  </div>\n\n  <!-- Diet Tips -->\n  <div class=\"bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3\"><div class=\"flex items-center gap-2 mb-4 pb-3 border-b border-slate-100\"><span class=\"text-lg\">✨</span><h2 class=\"text-sm font-bold text-slate-800\">饮食小贴士</h2></div><div class=\"grid grid-cols-2 gap-2\"><div class=\"bg-slate-50 rounded-lg p-3 border border-slate-100\"><div class=\"flex items-center gap-2 mb-1\"><span class=\"text-base\">🍎</span><span class=\"text-xs font-semibold text-slate-700\">多吃水果</span></div><div class=\"text-xs text-slate-600 leading-relaxed\">水果富含维生素和矿物质，有助于增强免疫力。</div></div><div class=\"bg-slate-50 rounded-lg p-3 border border-slate-100\"><div class=\"flex items-center gap-2 mb-1\"><span class=\"text-base\">🥗</span><span class=\"text-xs font-semibold text-slate-700\">多吃蔬菜</span></div><div class=\"text-xs text-slate-600 leading-relaxed\">蔬菜富含纤维，有助于消化和控制血糖。</div></div></div></div>\n\n  <!-- Map -->\n  <div class=\"bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3\">\n    <div class=\"flex items-center gap-2 mb-4 pb-3 border-b border-slate-100\">\n      <span class=\"text-lg\">📍</span>\n      <h2 class=\"text-sm font-bold text-slate-800\">附近推荐</h2>\n    </div>\n    <p class=\"text-sm text-slate-600 mb-3\">您近期活动量偏低哦，天气不错的话可以去附近的公园散散步！</p>\n    <div class=\"rounded-lg overflow-hidden border border-slate-200\" style=\"height:240px\">\n      <iframe width=\"100%\" height=\"100%\" frameborder=\"0\" style=\"border:0\"\n        src=\"https://maps.google.com/maps?q=39.9042,116.4074&z=15&output=embed\"\n        allowfullscreen loading=\"lazy\"></iframe>\n    </div>\n  </div>\n\n  <!-- Guardrail -->\n  <div class=\"bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6\">\n    <p class=\"text-xs text-amber-800 leading-relaxed\">本报告仅供参考，不作为医疗诊断依据。如有不适，请及时就医。</p>\n  </div>\n\n  <div class=\"text-center text-xs text-slate-400 pb-6\">AI 健康管家 · 仅供参考，请遵医嘱</div>\n</div>\n\n<script>\nconst DAYS = [\"周一\",\"周二\",\"周三\",\"周四\",\"周五\",\"周六\",\"周日\"];\nconst MEAL_LABELS = {\"breakfast\":\"早餐\",\"lunch\":\"午餐\",\"dinner\":\"晚餐\"};\nconst meals = [{\"day\": \"周一\", \"breakfast\": [{\"name\": \"燕麦粥\", \"icon\": \"🥣\", \"condition\": \"2型糖尿病\", \"benefit\": \"富含纤维，帮助控制血糖\"}], \"lunch\": [{\"name\": \"清炒西兰花\", \"icon\": \"🥦\", \"condition\": \"高血压\", \"benefit\": \"低钠高钾，帮助降压\"}], \"dinner\": [{\"name\": \"蒸鱼\", \"icon\": \"🐟\", \"condition\": \"高脂血症\", \"benefit\": \"富含优质蛋白，低脂肪\"}]}];\nlet activeDay = 0;\n\nfunction renderTabs() {\n  const container = document.getElementById(\"dayTabs\");\n  container.innerHTML = DAYS.map((d, i) =>\n    `<button onclick=\"switchDay(${i})\" class=\"px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${i === activeDay ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}\">${d}</button>`\n  ).join(\"\");\n}\n\nfunction switchDay(i) {\n  activeDay = i;\n  renderTabs();\n  renderMeals();\n}\n\nfunction renderMeals() {\n  const day = meals[activeDay];\n  if (!day) { document.getElementById(\"mealContent\").innerHTML = '<p class=\"text-sm text-slate-400\">暂无数据</p>'; return; }\n  let html = \"\";\n  for (const [key, label] of Object.entries(MEAL_LABELS)) {\n    const items = day[key] || [];\n    if (!items.length) continue;\n    html += `<div class=\"mb-4\"><div class=\"text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2\">${label}</div><div class=\"grid grid-cols-1 sm:grid-cols-2 gap-2\">`;\n    for (const it of items) {\n      html += `<div class=\"meal-card flex items-start gap-3 bg-slate-50 rounded-lg p-3 border border-slate-100\">\n        <span class=\"text-2xl mt-0.5\">${it.icon || \"🍽️\"}</span>\n        <div class=\"flex-1 min-w-0\">\n          <div class=\"text-sm font-semibold text-slate-800\">${it.name}</div>\n          <div class=\"text-[11px] text-emerald-600 font-medium\">${it.condition || \"\"}</div>\n          <div class=\"text-xs text-slate-500 mt-0.5 leading-relaxed\">${it.benefit || \"\"}</div>\n        </div>\n      </div>`;\n    }\n    html += \"</div></div>\";\n  }\n  document.getElementById(\"mealContent\").innerHTML = html;\n}\n\nrenderTabs();\nrenderMeals();\n</script>\n</body>\n</html>\n",
+      "detail": {
+        "patient_name": "王叔叔",
+        "patient_status": "at_risk",
+        "risk_tags": [
+          "血压波动增大",
+          "活动量偏低"
+        ],
+        "assistant_message_patient": "亲爱的王叔叔，您的健康状况总体稳定，但需要注意一些方面。最近您的血压有些波动，活动量也有所下降。建议您适当增加日常活动，如每天步行3000步，同时注意饮食清淡，减少盐分摄入。保持良好的睡眠习惯，尽量在睡前减少看电视的时间。希望您能保持良好的生活方式，祝您健康快乐！",
+        "recommendations": [
+          "每日步行目标调整为3000步",
+          "少盐少油饮食",
+          "睡前减少看电视",
+          "保持规律的作息时间",
+          "多喝水，保持身体水分"
+        ],
+        "nutrition_advice": "建议您多选择低盐、低油的食物，增加蔬菜和水果的摄入，帮助控制血压和血糖。",
+        "latest_health_summary": {
+          "blood_pressure": "148/90 mmHg",
+          "heart_rate": "74 bpm",
+          "blood_oxygen": "96%",
+          "blood_glucose": "7.1 mmol/L",
+          "steps_today": "1500 步"
+        },
+        "adherence": {
+          "statuses": [
+            "用药依从性良好",
+            "饮食控制一般",
+            "运动量不足",
+            "睡眠质量一般"
+          ],
+          "preferences": [
+            "偏好面食",
+            "不喜欢剧烈运动"
+          ],
+          "suggestions": [
+            "每日步行目标调整为3000步",
+            "少盐少油饮食",
+            "睡前减少看电视"
+          ]
+        },
+        "conditions": [
+          "高血压",
+          "2型糖尿病",
+          "高脂血症"
+        ],
+        "diet_table": [
+          {
+            "condition": "高血压",
+            "principle": "低钠高钾",
+            "recommend": "新鲜蔬菜、水果",
+            "avoid": "腌制食品、咸菜"
+          },
+          {
+            "condition": "2型糖尿病",
+            "principle": "低糖高纤维",
+            "recommend": "全谷物、豆类",
+            "avoid": "糖分高的甜点"
+          }
+        ],
+        "weekly_meal_plan": [
+          {
+            "day": "周一",
+            "breakfast": [
+              {
+                "name": "燕麦粥",
+                "icon": "🥣",
+                "condition": "2型糖尿病",
+                "benefit": "富含纤维，帮助控制血糖"
+              }
+            ],
+            "lunch": [
+              {
+                "name": "清炒西兰花",
+                "icon": "🥦",
+                "condition": "高血压",
+                "benefit": "低钠高钾，帮助降压"
+              }
+            ],
+            "dinner": [
+              {
+                "name": "蒸鱼",
+                "icon": "🐟",
+                "condition": "高脂血症",
+                "benefit": "富含优质蛋白，低脂肪"
+              }
+            ]
+          }
+        ],
+        "diet_tips": [
+          {
+            "icon": "🍎",
+            "title": "多吃水果",
+            "detail": "水果富含维生素和矿物质，有助于增强免疫力。"
+          },
+          {
+            "icon": "🥗",
+            "title": "多吃蔬菜",
+            "detail": "蔬菜富含纤维，有助于消化和控制血糖。"
+          }
+        ],
+        "reasoning": "患者血压波动且活动量下降，需关注心血管健康。饮食和运动调整有助于改善健康状况。",
+        "guardrail": "本报告仅供参考，不作为医疗诊断依据。如有不适，请及时就医。"
+      }
+    }
+  }
+}

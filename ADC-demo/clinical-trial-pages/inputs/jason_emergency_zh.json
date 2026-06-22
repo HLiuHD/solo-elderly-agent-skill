@@ -1,0 +1,39 @@
+{
+  "payload": {
+    "meta": {
+      "current_time": "2026-06-22 11:36"
+    },
+    "location": {}
+  },
+  "llm_result": {
+    "structured_output": {
+      "patient_status": "at_risk",
+      "conditions": [
+        "肺储备下降",
+        "化疗期间"
+      ],
+      "situation_summary": "在 ADC-047 早期暴露窗(C1D15)出现新发、隐匿起病的活动后气短伴干咳。 当前更像：Early drug-induced ILD / pneumonitis (DXd-class signature DLT)；Tumor progression of metastatic NSCLC；Deconditioning / treatment-related fatigue；Infection or anemia。",
+      "physician_status": "notified",
+      "physician_note": "虽然现在还不是急性呼吸衰竭，但这符合 DXd 类药物早期肺毒性需要主动追踪的模式；近期任何血氧继续下降或发热，都要提高警惕。",
+      "latest_vitals": {
+        "blood_pressure": "132/84",
+        "heart_rate": "88",
+        "blood_oxygen": "95",
+        "blood_glucose": ""
+      },
+      "immediate_actions": [
+        "从今天开始记录静息和活动后血氧、心率、体温、咳嗽频率，以及走同样距离时是不是更累。",
+        "这几天活动要慢，先避免爬楼、快走和会明显诱发气短的事情。",
+        "如果血氧降到 92% 以下、出现静息气短、发热或胸痛，立即联系试验团队或前往急诊。",
+        "饮食先按 ADC 胃肠道友好的方式执行：少量多餐、清淡高蛋白；若有腹泻要补口服补液盐（或米汤加少量盐），若恶心明显则把大量液体和汤水放到餐前或餐后 30 分钟以上。"
+      ],
+      "monitoring_plan": {
+        "what_to_monitor": "静息/活动后血氧、体温、咳嗽频率、步行耐量、是否转为静息气短",
+        "frequency": "每天至少早晚各一次，活动后额外补测",
+        "next_checkin": "24 小时内由试验团队复核；一旦进展，尽快安排 HRCT 方向评估"
+      },
+      "nearest_care_instructions": "血氧 < 92%、静息气短、发热或胸痛 — 立即联系试验团队。",
+      "guardrail": "此页为临床试验安全审核场景下的患者提示页，仅帮助整理下一步行动，不替代急诊与正式医疗判断。"
+    }
+  }
+}

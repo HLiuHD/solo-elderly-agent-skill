@@ -1,0 +1,327 @@
+{
+  "payload": {
+    "meta": {
+      "current_time": "2026-06-22 11:36",
+      "user_id": "ct_michael"
+    },
+    "memory": {
+      "patient_long_term_profile": "Michael Chen，66 岁男性。当前主要基础情况：Metastatic gastric cancer (HER2 amplification)（Metastatic gastric cancer; HER2 amplification）；Hypertension（Hypertension (~10 yrs)）；Prior coronary artery disease; baseline low-normal LVEF（Prior CAD; baseline LVEF 54% (low-normal); baseline ECG sinus rhythm, QTc 430 ms）。近期用药：ADC-047 6.4 mg/kg；metoprolol 47.5 mg QD；amlodipine 5 mg QD；aspirin 100 mg QD。",
+      "recent_health_dynamics": "当前系统重点关注：episodic palpitations、fatigue、mild exertional dyspnea、HR/BP drift。HR drift with episodic palpitations and labile BP this cycle in a patient with prior CAD and low-normal LVEF.",
+      "key_events": [
+        {
+          "date": "2026-06-22",
+          "type": "symptom",
+          "description": "My heart has been racing and skipping on and off since the last cycle, and I feel unusually tired."
+        },
+        {
+          "date": "2026-05-15",
+          "type": "alert",
+          "description": "HER2 扩增转移性胃癌;高血压;既往冠心病"
+        },
+        {
+          "date": "2026-06-05",
+          "type": "alert",
+          "description": "基线 LVEF 54%、基线 ECG QTc 430 ms、血压 134/82、心率 70"
+        },
+        {
+          "date": "2026-05-20",
+          "type": "alert",
+          "description": "美托洛尔、氨氯地平、阿司匹林"
+        },
+        {
+          "date": "2026-04-30",
+          "type": "alert",
+          "description": "既往心脏事件 + 已有基线超声心动"
+        },
+        {
+          "date": "2026-06-20",
+          "type": "alert",
+          "description": "本周期新发心悸 + 心率漂移"
+        }
+      ],
+      "tone_profile": {
+        "condition_context": "stable_routine",
+        "preferred_name": "Michael"
+      }
+    },
+    "location": {}
+  },
+  "llm_result": {
+    "structured_output": {
+      "patient_status": "at_risk",
+      "risk_tags": [
+        "阵发性心悸",
+        "乏力",
+        "轻度活动后气短",
+        "心率/血压漂移"
+      ],
+      "assistant_message_sections": [
+        {
+          "type": "good_news",
+          "title": "目前没有急性失稳信号",
+          "content": "目前没有胸痛、晕厥或静息气短，说明虽然需要尽快复核，但暂时还不是最危险的状态。"
+        },
+        {
+          "type": "attention",
+          "title": "这更像早期心脏毒性信号",
+          "content": "在既往冠心病和基线 LVEF 低限的背景下，新的心悸、乏力和血压波动，不能简单按普通疲劳看待。"
+        },
+        {
+          "type": "plan",
+          "title": "接下来要尽快做什么",
+          "content": "24 小时内优先补齐心电图、超声心动图和心率血压趋势记录，帮助试验团队判断下一周期是否需要调整。"
+        },
+        {
+          "type": "encouragement",
+          "title": "先把记录做扎实",
+          "content": "把每次心悸持续多久、是否伴随气短、胸闷或头晕记下来，会让下一步判断快很多。"
+        }
+      ],
+      "adherence_analysis": {
+        "period": "C1D14",
+        "medication": {
+          "status": "基本按时",
+          "issues": "患者表示常规药物持续在服用，没有明显漏服。",
+          "adjustments": "继续按原处方服药，若心悸延长或加重，不要自行增减 β 受体阻滞剂，先联系试验团队。"
+        },
+        "appetite": {
+          "status": "轻度受影响",
+          "cause_if_known": "乏力与轻度气短可能让整体进食与日常节奏放慢。",
+          "suggestions": "选择低盐、温和、容易咀嚼和消化的餐食，减少浓茶、咖啡和高盐加工食品。"
+        },
+        "exercise": {
+          "status": "需要放缓",
+          "barriers": "活动后气短和心悸提示近期不适合突然增加运动量。",
+          "plan": "先以平地短距离步行为主，避免爬楼、快走和会诱发心悸的强度。"
+        },
+        "monitoring": {
+          "status": "需要加强",
+          "gaps": "需要更系统记录心率、血压、心悸持续时间和是否伴随胸闷、头晕、踝部水肿。"
+        }
+      },
+      "recommendations": [
+        {
+          "text": "Keep a BP/HR trend log and note how long palpitations last",
+          "reason": "来自自我监测模块的试验期建议。",
+          "category": "monitoring"
+        },
+        {
+          "text": "Continue metoprolol and blood-pressure medications as prescribed",
+          "reason": "来自自我监测模块的试验期建议。",
+          "category": "monitoring"
+        },
+        {
+          "text": "Urgent contact for chest pain, fainting, sustained palpitations beyond a few minutes, breathlessness at rest, or ankle swelling",
+          "reason": "来自何时立即求助模块的试验期建议。",
+          "category": "lifestyle"
+        },
+        {
+          "text": "今天开始记录每次心悸持续多久",
+          "reason": "这是区分短暂波动还是需要升级处理的重要线索。",
+          "category": "monitoring"
+        },
+        {
+          "text": "如果出现胸痛、晕厥或静息气短，直接升级就医",
+          "reason": "这些都是需要立刻跳出“居家观察”路径的红线信号。",
+          "category": "monitoring"
+        }
+      ],
+      "nutrition_advice": "ADC（抗体偶联药物）由于将靶向抗体与强效小分子细胞毒素结合，在杀伤肿瘤的同时，也可能因为脱靶效应或毒素释放，引发胃肠道、肝肾、骨髓及肺部等毒性反应。科学补充营养的核心原则是：高蛋白、易消化、少食多餐，并根据具体副作用做针对性调整。由于 ADC 靶点在消化道广泛分布，或肠道黏膜更新较快，恶心、腹泻和进食减少都很常见。建议少量多餐、保持清淡，避免油腻、油炸及辛辣刺激性食物，每日可进食 5 到 6 顿、避免过饱。食物优先选择蒸鱼、水煮鸡胸肉、豆腐、蒸蛋等优质高蛋白且容易消化的搭配，并多补充富含维生素的瓜类蔬菜。若腹泻明显，要警惕脱水与电解质流失，可饮用口服补液盐，或米汤加少量盐；此时先避开牛奶和乳制品，以免乳糖进一步增加肠道负担。若恶心严重，避免在进餐时饮用大量液体，汤水等流食尽量放在餐前或餐后 30 分钟以上。近期饮食以低盐、适度蛋白、少刺激为主。优先选择蒸鱼、鸡胸肉、豆腐、燕麦、软米饭和煮熟蔬菜，避免浓咖啡、能量饮料、重口味外卖和过咸汤面。",
+      "latest_health_summary": {
+        "blood_pressure": "148/92",
+        "heart_rate": "104",
+        "blood_oxygen": "96",
+        "blood_glucose": "",
+        "steps_today": ""
+      },
+      "conditions": [
+        "高血压",
+        "冠心病",
+        "化疗期间"
+      ],
+      "diet_table": [
+        {
+          "condition": "ADC 治疗期通用饮食",
+          "principle": "高蛋白、易消化、少量多餐",
+          "recommend": "蒸鱼、鸡胸肉、豆腐、蒸蛋、清淡瓜类蔬菜、口服补液盐",
+          "avoid": "油炸辛辣、过饱、大量餐中饮液、腹泻时乳制品"
+        },
+        {
+          "condition": "高血压",
+          "principle": "低盐、规律补水",
+          "recommend": "蒸鱼、燕麦、熟蔬菜、清汤",
+          "avoid": "腌制品、浓汤、重盐外卖"
+        },
+        {
+          "condition": "冠心病/心悸风险",
+          "principle": "减少刺激与大起大落",
+          "recommend": "少量多餐、温水、低咖啡因饮品",
+          "avoid": "浓咖啡、能量饮料、暴饮暴食"
+        },
+        {
+          "condition": "化疗期恢复",
+          "principle": "足够蛋白与稳定能量",
+          "recommend": "鸡胸肉、豆腐、蒸蛋、软米饭",
+          "avoid": "油炸高脂餐、深夜重餐"
+        }
+      ],
+      "weekly_meal_plan": [
+        {
+          "day": "第1天",
+          "breakfast": [
+            {
+              "name": "燕麦配蒸蛋",
+              "icon": "🥣",
+              "condition": "高血压",
+              "benefit": "温和、低盐、帮助稳定上午能量"
+            }
+          ],
+          "lunch": [
+            {
+              "name": "清蒸鱼配软米饭",
+              "icon": "🐟",
+              "condition": "冠心病",
+              "benefit": "低脂优质蛋白，减少心血管负担"
+            }
+          ],
+          "dinner": [
+            {
+              "name": "鸡胸肉蔬菜汤",
+              "icon": "🍲",
+              "condition": "化疗期间",
+              "benefit": "补水同时补充蛋白和熟蔬菜"
+            }
+          ]
+        },
+        {
+          "day": "第2天",
+          "breakfast": [
+            {
+              "name": "香蕉燕麦杯",
+              "icon": "🍌",
+              "condition": "乏力",
+              "benefit": "容易入口，避免空腹太久"
+            }
+          ],
+          "lunch": [
+            {
+              "name": "豆腐青菜面",
+              "icon": "🍜",
+              "condition": "高血压",
+              "benefit": "用少盐汤底保留水分和碳水"
+            }
+          ],
+          "dinner": [
+            {
+              "name": "蒸鸡肉南瓜泥",
+              "icon": "🍗",
+              "condition": "化疗期间",
+              "benefit": "软烂好消化，晚间不过饱"
+            }
+          ]
+        },
+        {
+          "day": "第3天",
+          "breakfast": [
+            {
+              "name": "酸奶替换为温豆浆配全麦吐司",
+              "icon": "🍞",
+              "condition": "心悸风险",
+              "benefit": "避免高糖刺激，保持早餐规律"
+            }
+          ],
+          "lunch": [
+            {
+              "name": "三文鱼藜麦碗",
+              "icon": "🥗",
+              "condition": "冠心病",
+              "benefit": "更有利于心血管与恢复期蛋白补充"
+            }
+          ],
+          "dinner": [
+            {
+              "name": "豆腐蒸蛋配西兰花",
+              "icon": "🥚",
+              "condition": "高血压",
+              "benefit": "低盐、好消化，也利于晚间休息"
+            }
+          ]
+        }
+      ],
+      "diet_tips": [
+        {
+          "icon": "🫗",
+          "title": "补水要分散进行",
+          "detail": "不要等口渴才喝，全天少量多次补水更有利于减少心率波动。"
+        },
+        {
+          "icon": "☕",
+          "title": "这几天减少刺激物",
+          "detail": "浓咖啡、能量饮料和过量酒精都可能让心悸更明显。"
+        },
+        {
+          "icon": "🧂",
+          "title": "盐味再降一点",
+          "detail": "血压已经有漂移，能少一点咸味，就给药物多一点发挥空间。"
+        },
+        {
+          "icon": "📝",
+          "title": "把症状和饮食放在同一本记录里",
+          "detail": "有些人会发现大餐、熬夜或咖啡因与心悸发生时间有关。"
+        },
+        {
+          "icon": "🍽️",
+          "title": "少量多餐",
+          "detail": "每日可进食 5 到 6 顿，避免一次吃得太多，减轻恶心、腹胀和餐后不适。"
+        },
+        {
+          "icon": "🥚",
+          "title": "高蛋白易消化",
+          "detail": "蒸鱼、水煮鸡胸肉、豆腐、蒸蛋等更适合作为 ADC 治疗期的基础蛋白来源。"
+        },
+        {
+          "icon": "🧂",
+          "title": "腹泻时补液补盐",
+          "detail": "严重腹泻会带走水分和电解质，可使用口服补液盐，或米汤加少量盐。"
+        },
+        {
+          "icon": "🥛",
+          "title": "腹泻时先避开乳制品",
+          "detail": "牛奶和乳制品中的乳糖可能进一步增加肠道负担。"
+        },
+        {
+          "icon": "🥣",
+          "title": "恶心重时错开喝流食",
+          "detail": "如果恶心明显，汤水等流食尽量安排在餐前或餐后 30 分钟以上。"
+        }
+      ],
+      "reasoning": "Michael Chen 当前处于 ADC-047 C1D14 治疗窗口。 页面核心判断来自试验原始分诊：DXd-class ADCs carry a cardiac monitoring signal (LVEF decline, QTc); Michael's CV history lowers his threshold. Fatigue may be treatment-related, cardiac, or anemia - objective LVEF/ECG/labs separate them before the next dose.",
+      "guardrail": "本页面基于试验审核数据重组生成，仅供辅助理解，不替代试验团队、主诊医生或急诊评估。",
+      "health_guidance": {
+        "summary": "ADC（抗体偶联药物）由于将靶向抗体与强效小分子细胞毒素结合，在杀伤肿瘤的同时，也可能因为脱靶效应或毒素释放，引发胃肠道、肝肾、骨髓及肺部等毒性反应。科学补充营养的核心原则是：高蛋白、易消化、少食多餐，并根据具体副作用做针对性调整。这份页面更适合把 Michael 当前的情况理解为“需要尽快客观化的早期心脏信号”，重点不是硬扛，而是及时把证据补齐。",
+        "tips": [
+          {
+            "text": "把心悸发生时间和持续时长记下来",
+            "why": "短暂自限和持续不缓解，对下一步处理意义完全不同。"
+          },
+          {
+            "text": "今天先避免高强度活动和爬楼",
+            "why": "近期活动后气短和心率漂移，提示心脏负荷不适合再往上加。"
+          },
+          {
+            "text": "吃得清淡、规律补水、减少刺激性饮品",
+            "why": "稳住交感神经兴奋和血压波动，比硬撑更重要。"
+          },
+          {
+            "text": "把三餐拆成 5 到 6 次少量进食",
+            "why": "少量多餐通常比硬吃大餐更容易完成，也更不容易恶心或腹胀。"
+          },
+          {
+            "text": "优先补高蛋白、好消化的软食",
+            "why": "蒸鱼、鸡胸肉、豆腐、蒸蛋这类食物能在总量不多时尽量保住营养密度。"
+          }
+        ]
+      }
+    }
+  }
+}

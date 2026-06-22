@@ -1,0 +1,327 @@
+{
+  "payload": {
+    "meta": {
+      "current_time": "2026-06-22 11:36",
+      "user_id": "ct_emily"
+    },
+    "memory": {
+      "patient_long_term_profile": "Emily Carter，58 岁女性。当前主要基础情况：HER2-positive metastatic breast cancer（HER2-positive metastatic breast cancer）；Type 2 diabetes（Type 2 diabetes (~6 yrs); HbA1c 7.2%; usual fasting glucose ~7.0 mmol/L）；Reduced oral intake over the past 2 days。近期用药：ADC-047 5.4 mg/kg；metformin 1000 mg BID；ondansetron PRN。",
+      "recent_health_dynamics": "当前系统重点关注：nausea、poor oral intake、orthostatic dizziness、mild tachycardia、trending-low glucose。Mild tachycardia, orthostatic BP drop and glucose drifting low after reduced oral intake on ADC-047.",
+      "key_events": [
+        {
+          "date": "2026-06-22",
+          "type": "symptom",
+          "description": "Since the last infusion I've felt really nauseous and can barely eat. When I stand up I get dizzy."
+        },
+        {
+          "date": "2026-05-18",
+          "type": "alert",
+          "description": "HER2+ 转移性乳腺癌;2 型糖尿病"
+        },
+        {
+          "date": "2026-05-26",
+          "type": "alert",
+          "description": "HbA1c 7.2%;已有基线肾功能"
+        },
+        {
+          "date": "2026-06-05",
+          "type": "alert",
+          "description": "基线血压 122/80,通常空腹血糖 ~7.0"
+        },
+        {
+          "date": "2026-05-20",
+          "type": "alert",
+          "description": "二甲双胍 1000 mg 每日两次;昂丹司琼 必要时"
+        },
+        {
+          "date": "2026-06-18",
+          "type": "alert",
+          "description": "既往化疗相关恶心发作;近 2 天进食下降"
+        }
+      ],
+      "tone_profile": {
+        "condition_context": "stable_routine",
+        "preferred_name": "Emily"
+      }
+    },
+    "location": {}
+  },
+  "llm_result": {
+    "structured_output": {
+      "patient_status": "at_risk",
+      "risk_tags": [
+        "恶心",
+        "进食减少",
+        "体位性头晕",
+        "血糖向低值漂移"
+      ],
+      "assistant_message_sections": [
+        {
+          "type": "good_news",
+          "title": "目前还来得及在家里主动处理",
+          "content": "现在最重要的是尽快把补液、止吐和血糖监测做起来，在症状升级前把风险压住。"
+        },
+        {
+          "type": "attention",
+          "title": "这不是单纯胃口差",
+          "content": "在 ADC 背景下，恶心和吃不下会同时带来脱水和血糖失衡，对有糖尿病的人尤其需要提前介入。"
+        },
+        {
+          "type": "plan",
+          "title": "处理顺序",
+          "content": "先用好止吐药、改成少量多餐，再同步盯住体位性血压、尿量和指尖血糖。"
+        },
+        {
+          "type": "encouragement",
+          "title": "目标不是硬吃，而是稳住",
+          "content": "哪怕每次只吃几口、每次只喝几口，只要能慢慢把液体和热量补回来，就是有效进展。"
+        }
+      ],
+      "adherence_analysis": {
+        "period": "C1D10",
+        "medication": {
+          "status": "需要动态调整",
+          "issues": "进食减少时继续使用二甲双胍，会把低血糖和脱水风险一起推高。",
+          "adjustments": "止吐和进食恢复前，务必尽快和试验团队确认是否需要暂缓二甲双胍或调整用药时机。"
+        },
+        "appetite": {
+          "status": "明显下降",
+          "cause_if_known": "ADC 相关胃肠道毒性叠加既往化疗后恶心史，近期饮水和进食量都下降。",
+          "suggestions": "改成 5 到 6 次少量进食，用温热、清淡、软烂、高蛋白食物先把能量和液体补回来。"
+        },
+        "exercise": {
+          "status": "暂不适合增加",
+          "barriers": "体位性头晕和轻度心动过速提示容量不足，现阶段先以安全起身和短距离活动为主。",
+          "plan": "起身前先坐床边缓一会儿，今天不安排额外运动量。"
+        },
+        "monitoring": {
+          "status": "需要立即强化",
+          "gaps": "要同步记录餐前后血糖、饮水量、尿量、体位性血压心率和体重变化。"
+        }
+      },
+      "recommendations": [
+        {
+          "text": "Check orthostatic BP/HR and pre/post-meal fingerstick glucose; track fluid intake, urine output and daily weight",
+          "reason": "来自自我监测模块的试验期建议。",
+          "category": "monitoring"
+        },
+        {
+          "text": "Sip fluids frequently and use the antiemetic as prescribed",
+          "reason": "来自自我监测模块的试验期建议。",
+          "category": "monitoring"
+        },
+        {
+          "text": "Urgent contact if you cannot keep fluids down, glucose < 4 mmol/L or > 13.9 with ketones, fainting, or less than 500 mL urine per day",
+          "reason": "来自何时立即求助模块的试验期建议。",
+          "category": "lifestyle"
+        },
+        {
+          "text": "今天开始少量频饮，目标是把饮水量慢慢拉回平时",
+          "reason": "目前体位性头晕和轻度心动过速，更像早期容量不足。",
+          "category": "diet"
+        },
+        {
+          "text": "若几乎吃不下，请优先和试验团队确认二甲双胍处理",
+          "reason": "进食差时继续按原量服药，会增加低血糖和脱水风险。",
+          "category": "medication"
+        }
+      ],
+      "nutrition_advice": "ADC（抗体偶联药物）由于将靶向抗体与强效小分子细胞毒素结合，在杀伤肿瘤的同时，也可能因为脱靶效应或毒素释放，引发胃肠道、肝肾、骨髓及肺部等毒性反应。科学补充营养的核心原则是：高蛋白、易消化、少食多餐，并根据具体副作用做针对性调整。由于 ADC 靶点在消化道广泛分布，或肠道黏膜更新较快，恶心、腹泻和进食减少都很常见。建议少量多餐、保持清淡，避免油腻、油炸及辛辣刺激性食物，每日可进食 5 到 6 顿、避免过饱。食物优先选择蒸鱼、水煮鸡胸肉、豆腐、蒸蛋等优质高蛋白且容易消化的搭配，并多补充富含维生素的瓜类蔬菜。若腹泻明显，要警惕脱水与电解质流失，可饮用口服补液盐，或米汤加少量盐；此时先避开牛奶和乳制品，以免乳糖进一步增加肠道负担。若恶心严重，避免在进餐时饮用大量液体，汤水等流食尽量放在餐前或餐后 30 分钟以上。由于 ADC 靶点在消化道广泛分布，或肠道黏膜更新较快，这类恶心、腹泻和进食减少很常见。这几天的重点是把进食拆小、把补液做足、把血糖波动和脱水一起盯住。 少量多餐与清淡饮食很关键：避免油腻、油炸和辛辣刺激食物；优先选择蒸鱼、水煮鸡胸肉、豆腐、蒸蛋和富含维生素的瓜类蔬菜。",
+      "latest_health_summary": {
+        "blood_pressure": "104/68",
+        "heart_rate": "96",
+        "blood_oxygen": "98",
+        "blood_glucose": "4.3",
+        "steps_today": ""
+      },
+      "conditions": [
+        "2型糖尿病",
+        "化疗期间"
+      ],
+      "diet_table": [
+        {
+          "condition": "ADC 治疗期通用饮食",
+          "principle": "高蛋白、易消化、少量多餐",
+          "recommend": "蒸鱼、鸡胸肉、豆腐、蒸蛋、清淡瓜类蔬菜、口服补液盐",
+          "avoid": "油炸辛辣、过饱、大量餐中饮液、腹泻时乳制品"
+        },
+        {
+          "condition": "ADC 胃肠道毒性",
+          "principle": "清淡、软烂、少量多餐",
+          "recommend": "蒸蛋、豆腐、米粥、清蒸鱼、鸡胸肉",
+          "avoid": "油炸、辛辣、重口味、特别油腻的菜"
+        },
+        {
+          "condition": "脱水/腹泻风险",
+          "principle": "补液和电解质并重",
+          "recommend": "口服补液盐、米汤加少量盐、清汤",
+          "avoid": "只喝甜饮料、不补盐分"
+        },
+        {
+          "condition": "糖尿病合并进食差",
+          "principle": "平稳补碳水、避免空腹硬扛",
+          "recommend": "少量主食配蛋白、定时测糖",
+          "avoid": "长时间不吃又照常降糖用药"
+        }
+      ],
+      "weekly_meal_plan": [
+        {
+          "day": "第1天",
+          "breakfast": [
+            {
+              "name": "小碗白粥配蒸蛋",
+              "icon": "🥣",
+              "condition": "恶心",
+              "benefit": "温和、容易入口，减少早晨反胃"
+            }
+          ],
+          "lunch": [
+            {
+              "name": "清蒸鱼配软米饭",
+              "icon": "🐟",
+              "condition": "进食减少",
+              "benefit": "高蛋白且比油煎食物更好消化"
+            }
+          ],
+          "dinner": [
+            {
+              "name": "豆腐南瓜羹",
+              "icon": "🍲",
+              "condition": "ADC 胃肠道毒性",
+              "benefit": "补液同时提供软烂碳水和蛋白"
+            }
+          ]
+        },
+        {
+          "day": "第2天",
+          "breakfast": [
+            {
+              "name": "苏打饼干配温豆浆",
+              "icon": "🍘",
+              "condition": "恶心",
+              "benefit": "少量碳水先垫底，减少空腹恶心"
+            }
+          ],
+          "lunch": [
+            {
+              "name": "水煮鸡胸肉配丝瓜",
+              "icon": "🍗",
+              "condition": "脱水风险",
+              "benefit": "清淡高蛋白，搭配含水量高的瓜类蔬菜"
+            }
+          ],
+          "dinner": [
+            {
+              "name": "米汤加少量盐配蒸蛋",
+              "icon": "🥚",
+              "condition": "体位性头晕",
+              "benefit": "补液和电解质，避免晚上完全吃不下"
+            }
+          ]
+        },
+        {
+          "day": "第3天",
+          "breakfast": [
+            {
+              "name": "香蕉燕麦泥",
+              "icon": "🍌",
+              "condition": "血糖向低值漂移",
+              "benefit": "少量温和碳水，帮助避免晨间低糖"
+            }
+          ],
+          "lunch": [
+            {
+              "name": "嫩豆腐鸡丝面",
+              "icon": "🍜",
+              "condition": "进食差",
+              "benefit": "软烂好吞咽，比干硬食物更容易完成一餐"
+            }
+          ],
+          "dinner": [
+            {
+              "name": "清蒸鳕鱼配冬瓜",
+              "icon": "🐟",
+              "condition": "ADC 胃肠道毒性",
+              "benefit": "低油低刺激，又能补足蛋白"
+            }
+          ]
+        }
+      ],
+      "diet_tips": [
+        {
+          "icon": "🍽️",
+          "title": "一天吃 5 到 6 次",
+          "detail": "每次少一点，比强迫自己吃大餐更容易完成，也更不容易恶心。"
+        },
+        {
+          "icon": "🥚",
+          "title": "高蛋白但要软和",
+          "detail": "蒸蛋、豆腐、蒸鱼和鸡胸肉能在吃得少的时候提高营养密度。"
+        },
+        {
+          "icon": "🧂",
+          "title": "腹泻时记得补盐",
+          "detail": "严重腹泻会丢失水和电解质，口服补液盐或米汤加少量盐更合适。"
+        },
+        {
+          "icon": "🥛",
+          "title": "先避开牛奶和乳制品",
+          "detail": "乳糖可能加重腹泻和肠道负担，尤其在胃肠道反应明显时。"
+        },
+        {
+          "icon": "🥣",
+          "title": "汤水和主食分开喝",
+          "detail": "严重恶心时，尽量把大口喝汤放到餐前或餐后 30 分钟以上。"
+        },
+        {
+          "icon": "🍽️",
+          "title": "少量多餐",
+          "detail": "每日可进食 5 到 6 顿，避免一次吃得太多，减轻恶心、腹胀和餐后不适。"
+        },
+        {
+          "icon": "🥚",
+          "title": "高蛋白易消化",
+          "detail": "蒸鱼、水煮鸡胸肉、豆腐、蒸蛋等更适合作为 ADC 治疗期的基础蛋白来源。"
+        },
+        {
+          "icon": "🧂",
+          "title": "腹泻时补液补盐",
+          "detail": "严重腹泻会带走水分和电解质，可使用口服补液盐，或米汤加少量盐。"
+        },
+        {
+          "icon": "🥛",
+          "title": "腹泻时先避开乳制品",
+          "detail": "牛奶和乳制品中的乳糖可能进一步增加肠道负担。"
+        },
+        {
+          "icon": "🥣",
+          "title": "恶心重时错开喝流食",
+          "detail": "如果恶心明显，汤水等流食尽量安排在餐前或餐后 30 分钟以上。"
+        }
+      ],
+      "reasoning": "Emily Carter 当前处于 ADC-047 C1D10 治疗窗口。 页面核心判断来自试验原始分诊：Nausea/vomiting is the most common DXd-class AE; in a diabetic, reduced intake on glucose-lowering meds risks hypoglycemia and dehydration shifts glucose unpredictably. Manage proactively before a grade 2-3 dehydration / hypoglycemia event.",
+      "guardrail": "本页面基于试验审核数据重组生成，仅供辅助理解，不替代试验团队、主诊医生或急诊评估。",
+      "health_guidance": {
+        "summary": "ADC（抗体偶联药物）由于将靶向抗体与强效小分子细胞毒素结合，在杀伤肿瘤的同时，也可能因为脱靶效应或毒素释放，引发胃肠道、肝肾、骨髓及肺部等毒性反应。科学补充营养的核心原则是：高蛋白、易消化、少食多餐，并根据具体副作用做针对性调整。Emily 现在的核心不是“吃不下”这一件事，而是 ADC 胃肠道毒性、脱水和糖尿病血糖波动正在互相放大，需要同时处理。",
+        "tips": [
+          {
+            "text": "把三餐拆成 5 到 6 次少量进食",
+            "why": "少量多餐比硬吃一整餐更容易缓解恶心，也更利于血糖稳定。"
+          },
+          {
+            "text": "优先用蒸鱼、鸡胸肉、豆腐、蒸蛋这类高蛋白软食",
+            "why": "这些食物更容易消化，也能在吃得不多时提高营养密度。"
+          },
+          {
+            "text": "严重恶心时，把汤水放到餐前或餐后 30 分钟",
+            "why": "进餐时大量饮液会让胃更胀、更容易反胃。"
+          },
+          {
+            "text": "优先补高蛋白、好消化的软食",
+            "why": "蒸鱼、鸡胸肉、豆腐、蒸蛋这类食物能在总量不多时尽量保住营养密度。"
+          }
+        ]
+      }
+    }
+  }
+}

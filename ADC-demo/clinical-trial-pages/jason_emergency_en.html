@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Emergency instructions</title>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+  body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+
+  /* ─── Mobile / Senior-Friendly ─── */
+  @media (max-width: 640px) {
+    body { font-size: 18px; line-height: 1.7; }
+    .max-w-2xl { max-width: 100%; padding-left: 12px; padding-right: 12px; }
+    h1 { font-size: 1.3em !important; }
+    h2 { font-size: 1.05em !important; }
+
+    /* Emergency actions: bigger numbered steps */
+    .bg-rose-50 { padding: 14px !important; }
+    .bg-rose-50 .text-sm { font-size: 1em !important; line-height: 1.6 !important; }
+    .w-6 { width: 28px !important; height: 28px !important; font-size: 0.85em !important; }
+
+    /* Vitals grid 2 columns on mobile */
+    .grid-cols-2 { grid-template-columns: repeat(2, 1fr) !important; }
+    .sm\:grid-cols-4 { grid-template-columns: repeat(2, 1fr) !important; }
+
+    /* Bigger vital numbers */
+    .text-xl { font-size: 1.4em !important; }
+
+    /* Monitoring plan bigger */
+    .bg-slate-50 .text-sm { font-size: 0.95em !important; }
+
+    /* Doctor notes bigger */
+    .bg-blue-50 { font-size: 1em !important; }
+
+    /* Section cards more padding */
+    .rounded-xl { padding-left: 16px !important; padding-right: 16px !important; }
+
+    /* Status badge bigger */
+    .rounded-full.text-xs { font-size: 0.8em !important; padding: 6px 12px !important; }
+  }
+</style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+<div class="max-w-2xl mx-auto px-4 py-6">
+
+  <!-- Header -->
+  <div class="bg-gradient-to-br from-amber-500 to-orange-600 text-white rounded-2xl p-6 mb-4 shadow-lg">
+    <div class="flex items-center gap-3 mb-2">
+      <span class="text-2xl">⚠️</span>
+      <h1 class="text-xl font-bold">Emergency instructions</h1>
+    </div>
+    <p class="text-sm opacity-80">Jun 22, 2026 11:36</p>
+    <div class="flex items-center gap-2 mt-3">
+      <span class="inline-flex items-center gap-1 bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-xs font-semibold">⚠️ Needs attention</span>
+      <span class="inline-block bg-slate-500 text-white px-3 py-1 rounded-full text-xs font-semibold">Reduced pulmonary reserve</span>
+<span class="inline-block bg-purple-500 text-white px-3 py-1 rounded-full text-xs font-semibold">During chemotherapy</span>
+    </div>
+  </div>
+
+  <!-- Situation Summary -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
+    <div class="flex items-center gap-2 mb-3 pb-3 border-b border-slate-100">
+      <span class="text-lg">📋</span>
+      <h2 class="text-sm font-bold text-slate-800">What is happening</h2>
+    </div>
+    <p class="text-sm text-slate-700 leading-relaxed">New, insidious-onset exertional dyspnea with a dry cough emerging in the early ADC-047 exposure window (C1D15). The most likely working explanations right now are: Early drug-induced ILD / pneumonitis (DXd-class signature DLT); Tumor progression of metastatic NSCLC; Deconditioning / treatment-related fatigue; Infection or anemia.</p>
+  </div>
+
+  <!-- Physician Status -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
+    <div class="flex items-center gap-2 mb-3 pb-3 border-b border-slate-100">
+      <span class="text-lg">👨‍⚕️</span>
+      <h2 class="text-sm font-bold text-slate-800">Your doctor's response</h2>
+    </div>
+    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border bg-amber-50 text-amber-700 border-amber-200 mb-3">📤 Your doctor has been notified and will review shortly.</div><div class="text-sm text-slate-700 bg-slate-50 rounded-lg p-3 leading-relaxed border border-slate-100">This is not acute respiratory failure right now, but it does fit the early pattern of DXd-class lung toxicity that needs active tracking; any further oxygen drop or fever should trigger a lower threshold to escalate.</div>
+  </div>
+
+  <!-- Doctor's Detailed Notes -->
+  
+
+  <!-- Current Vitals -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
+    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+      <span class="text-lg">📊</span>
+      <h2 class="text-sm font-bold text-slate-800">Your current readings</h2>
+    </div>
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2"><div class="bg-slate-50 rounded-lg p-3 text-center border border-slate-100"><div class="text-lg mb-0.5">💓</div><div class="text-[11px] text-slate-500 font-medium mb-1">Blood pressure</div><div class="text-xl font-bold text-slate-800">132/84</div><div class="text-[10px] text-slate-400">mmHg</div></div>
+<div class="bg-slate-50 rounded-lg p-3 text-center border border-slate-100"><div class="text-lg mb-0.5">❤️</div><div class="text-[11px] text-slate-500 font-medium mb-1">Heart rate</div><div class="text-xl font-bold text-slate-800">88</div><div class="text-[10px] text-slate-400">bpm</div></div>
+<div class="bg-slate-50 rounded-lg p-3 text-center border border-slate-100"><div class="text-lg mb-0.5">🫁</div><div class="text-[11px] text-slate-500 font-medium mb-1">Blood oxygen</div><div class="text-xl font-bold text-slate-800">95</div><div class="text-[10px] text-slate-400">%</div></div>
+<div class="bg-slate-50 rounded-lg p-3 text-center border border-slate-100"><div class="text-lg mb-0.5">🩸</div><div class="text-[11px] text-slate-500 font-medium mb-1">Blood glucose</div><div class="text-base text-slate-300">--</div></div></div>
+  </div>
+
+  <!-- Immediate Actions -->
+  <div class="bg-white rounded-xl shadow-sm border border-rose-200 p-5 mb-3">
+    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-rose-100">
+      <span class="text-lg">🚨</span>
+      <h2 class="text-sm font-bold text-rose-700">What to do right now</h2>
+    </div>
+    <div class="space-y-2"><div class="flex items-start gap-3 bg-rose-50 rounded-lg p-3 border border-rose-100"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-rose-600 text-white text-xs font-bold flex items-center justify-center mt-0.5">1</span><div class="text-sm text-slate-700 leading-relaxed">Start tracking resting and post-activity oxygen, heart rate, temperature, cough frequency, and whether the same walking distance feels harder.</div></div>
+<div class="flex items-start gap-3 bg-rose-50 rounded-lg p-3 border border-rose-100"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-rose-600 text-white text-xs font-bold flex items-center justify-center mt-0.5">2</span><div class="text-sm text-slate-700 leading-relaxed">Keep activity slower for the next few days and avoid stairs, brisk walking, or anything that clearly provokes dyspnea.</div></div>
+<div class="flex items-start gap-3 bg-rose-50 rounded-lg p-3 border border-rose-100"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-rose-600 text-white text-xs font-bold flex items-center justify-center mt-0.5">3</span><div class="text-sm text-slate-700 leading-relaxed">If oxygen falls below 92%, or resting shortness of breath, fever, or chest pain appears, contact the trial team or emergency care immediately.</div></div>
+<div class="flex items-start gap-3 bg-rose-50 rounded-lg p-3 border border-rose-100"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-rose-600 text-white text-xs font-bold flex items-center justify-center mt-0.5">4</span><div class="text-sm text-slate-700 leading-relaxed">Use an ADC-friendly eating pattern right away: small frequent bland higher-protein meals; if diarrhea is present, add oral rehydration solution or lightly salted rice broth; if nausea is strong, move larger liquids and soups to at least 30 minutes before or after meals.</div></div></div>
+  </div>
+
+  <!-- Monitoring Plan -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
+    <div class="flex items-center gap-2 mb-3 pb-3 border-b border-slate-100">
+      <span class="text-lg">⏱️</span>
+      <h2 class="text-sm font-bold text-slate-800">Monitoring plan</h2>
+    </div>
+    <div class="flex items-start gap-3 bg-slate-50 rounded-lg p-3 border border-slate-100"><span class="text-base mt-0.5">📌</span><div><div class="text-[11px] text-slate-500 font-medium uppercase tracking-wide">What to monitor</div><div class="text-sm text-slate-700 mt-0.5">Resting/post-activity oxygen, temperature, cough frequency, walking tolerance, and whether dyspnea shifts to rest</div></div></div>
+<div class="flex items-start gap-3 bg-slate-50 rounded-lg p-3 border border-slate-100"><span class="text-base mt-0.5">🔄</span><div><div class="text-[11px] text-slate-500 font-medium uppercase tracking-wide">How often</div><div class="text-sm text-slate-700 mt-0.5">At least morning and evening daily, plus an extra check after exertion</div></div></div>
+<div class="flex items-start gap-3 bg-slate-50 rounded-lg p-3 border border-slate-100"><span class="text-base mt-0.5">📅</span><div><div class="text-[11px] text-slate-500 font-medium uppercase tracking-wide">Next check-in</div><div class="text-sm text-slate-700 mt-0.5">Trial-team review within 24 hours, with HRCT-directed escalation if symptoms progress</div></div></div>
+  </div>
+
+  <!-- Nearest Care + Map -->
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
+    <div class="flex items-center gap-2 mb-3 pb-3 border-b border-slate-100">
+      <span class="text-lg">🏥</span>
+      <h2 class="text-sm font-bold text-slate-800">Getting to care</h2>
+    </div>
+    <p class="text-sm text-slate-700 leading-relaxed mb-3">SpO2 &lt; 92%, resting dyspnea, fever, or chest pain - contact the trial team immediately.</p>
+  </div>
+  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3"><div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100"><span class="text-lg">📍</span><h2 class="text-sm font-bold text-slate-800">Nearby hospitals</h2></div><p class="text-sm text-slate-600 mb-3">Nearby hospitals are shown below. If your symptoms worsen, please go to the nearest one or call 911.</p><div class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 mb-3">Set GOOGLE_MAPS_API_KEY to render the interactive map.</div><a class="block rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm font-semibold text-blue-700 hover:bg-blue-100 text-center" href="https://www.google.com/maps/search/hospitals/@42.2766632,-71.8079906,14z" target="_blank" rel="noopener">🏥 Search nearby hospitals</a></div>
+
+  <!-- Guardrail -->
+  <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
+    <p class="text-xs text-amber-800 leading-relaxed">This page is a patient-facing summary for a clinical-trial safety review scenario. It supports next-step understanding but does not replace emergency care or formal medical judgment.</p>
+  </div>
+
+  <div class="text-center text-xs text-slate-400 pb-6">AI health companion · emergency guidance only; follow your clinician's advice</div>
+</div>
+</body>
+</html>

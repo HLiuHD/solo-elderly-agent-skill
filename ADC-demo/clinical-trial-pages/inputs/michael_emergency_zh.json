@@ -1,0 +1,40 @@
+{
+  "payload": {
+    "meta": {
+      "current_time": "2026-06-22 11:36"
+    },
+    "location": {}
+  },
+  "llm_result": {
+    "structured_output": {
+      "patient_status": "at_risk",
+      "conditions": [
+        "高血压",
+        "冠心病",
+        "化疗期间"
+      ],
+      "situation_summary": "自上个周期起新发阵发性心悸,伴心率漂移与血压不稳,并出现新发乏力及轻度活动后气短。 当前更像：Treatment-emergent arrhythmia / autonomic effect；Early reduced cardiac reserve / LVEF decline；Anemia, electrolyte (K/Mg) or thyroid abnormality；Tumor-related deconditioning or QT-prolonging co-meds (to exclude)。",
+      "physician_status": "notified",
+      "physician_note": "试验团队建议在 24 小时内完成心电图、超声心动图和趋势记录复核；在结果明确前，按早期心脏毒性信号处理更稳妥。",
+      "latest_vitals": {
+        "blood_pressure": "148/92",
+        "heart_rate": "104",
+        "blood_oxygen": "96",
+        "blood_glucose": ""
+      },
+      "immediate_actions": [
+        "今天开始记录心悸持续时间、发生时的心率/血压，以及是否伴随胸闷、头晕或气短。",
+        "继续按原处方服用美托洛尔和降压药，不要自行加量或停药。",
+        "若心悸持续数分钟以上、出现胸痛、晕厥、静息气短或踝部肿胀，立即联系试验团队或前往急诊。",
+        "饮食先按 ADC 胃肠道友好的方式执行：少量多餐、清淡高蛋白；若有腹泻要补口服补液盐（或米汤加少量盐），若恶心明显则把大量液体和汤水放到餐前或餐后 30 分钟以上。"
+      ],
+      "monitoring_plan": {
+        "what_to_monitor": "心率、血压、心悸持续时间、活动后气短、踝部水肿",
+        "frequency": "今天开始每次发作时记录，至少早晚各复测一次",
+        "next_checkin": "24 小时内完成试验团队/心内方向复核"
+      },
+      "nearest_care_instructions": "胸痛、晕厥、持续超过数分钟的心悸、静息气短或踝部水肿 — 紧急联系。",
+      "guardrail": "此页为临床试验安全审核场景下的患者提示页，仅帮助整理下一步行动，不替代急诊与正式医疗判断。"
+    }
+  }
+}

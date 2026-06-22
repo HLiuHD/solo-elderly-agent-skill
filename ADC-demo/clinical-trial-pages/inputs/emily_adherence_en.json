@@ -1,0 +1,327 @@
+{
+  "payload": {
+    "meta": {
+      "current_time": "2026-06-22 11:36",
+      "user_id": "ct_emily"
+    },
+    "memory": {
+      "patient_long_term_profile": "Emily Carter, 58-year-old female. Baseline conditions: HER2-positive metastatic breast cancer（HER2-positive metastatic breast cancer）; Type 2 diabetes（Type 2 diabetes (~6 yrs); HbA1c 7.2%; usual fasting glucose ~7.0 mmol/L）; Reduced oral intake over the past 2 days. Current medications: ADC-047 5.4 mg/kg; metformin 1000 mg BID; ondansetron PRN.",
+      "recent_health_dynamics": "Current monitoring focus: nausea, poor oral intake, orthostatic dizziness, mild tachycardia, trending-low glucose. Mild tachycardia, orthostatic BP drop and glucose drifting low after reduced oral intake on ADC-047.",
+      "key_events": [
+        {
+          "date": "2026-06-22",
+          "type": "symptom",
+          "description": "Since the last infusion I've felt really nauseous and can barely eat. When I stand up I get dizzy."
+        },
+        {
+          "date": "2026-05-18",
+          "type": "alert",
+          "description": "HER2+ metastatic breast cancer; type 2 diabetes"
+        },
+        {
+          "date": "2026-05-26",
+          "type": "alert",
+          "description": "HbA1c 7.2%; baseline renal function on file"
+        },
+        {
+          "date": "2026-06-05",
+          "type": "alert",
+          "description": "baseline BP 122/80, usual fasting glucose ~7.0"
+        },
+        {
+          "date": "2026-05-20",
+          "type": "alert",
+          "description": "metformin 1000 mg BID; ondansetron PRN"
+        },
+        {
+          "date": "2026-06-18",
+          "type": "alert",
+          "description": "prior chemotherapy-induced nausea episodes; 2-day intake decline"
+        }
+      ],
+      "tone_profile": {
+        "condition_context": "stable_routine",
+        "preferred_name": "Emily"
+      }
+    },
+    "location": {}
+  },
+  "llm_result": {
+    "structured_output": {
+      "patient_status": "at_risk",
+      "risk_tags": [
+        "nausea",
+        "poor oral intake",
+        "orthostatic dizziness",
+        "glucose drifting low"
+      ],
+      "assistant_message_sections": [
+        {
+          "type": "good_news",
+          "title": "There is still time to get ahead of this at home",
+          "content": "The priority is to control nausea, restore fluids, and monitor glucose before this becomes a bigger dehydration or hypoglycemia event."
+        },
+        {
+          "type": "attention",
+          "title": "This is more than a poor appetite day",
+          "content": "In an ADC setting, nausea plus poor intake creates two risks at once for a diabetic patient: dehydration and unstable glucose."
+        },
+        {
+          "type": "plan",
+          "title": "Order of operations",
+          "content": "Use the antiemetic early, switch to small frequent intake, and track orthostatic BP, urine output, and fingerstick glucose together."
+        },
+        {
+          "type": "encouragement",
+          "title": "The goal is stability, not forcing big meals",
+          "content": "Even a few bites and a few sips at a time count if they help fluids and calories slowly come back up."
+        }
+      ],
+      "adherence_analysis": {
+        "period": "C1D10",
+        "medication": {
+          "status": "Needs dynamic adjustment",
+          "issues": "Continuing metformin while intake is poor can push both dehydration and low-glucose risk higher.",
+          "adjustments": "Before intake recovers, the trial team should clarify whether metformin should be held or retimed."
+        },
+        "appetite": {
+          "status": "Clearly reduced",
+          "cause_if_known": "Likely DXd-class GI toxicity layered on top of a known history of chemotherapy-related nausea.",
+          "suggestions": "Shift to 5 to 6 small eating opportunities with warm, bland, softer, higher-protein foods."
+        },
+        "exercise": {
+          "status": "Not ready to increase",
+          "barriers": "Orthostatic dizziness and mild tachycardia suggest volume depletion, so safety comes before extra activity.",
+          "plan": "Pause before standing, keep movement short and supervised, and skip intentional exercise today."
+        },
+        "monitoring": {
+          "status": "Needs immediate tightening",
+          "gaps": "Track pre/post-meal glucose, fluid intake, urine output, orthostatic BP/HR, and day-to-day weight change together."
+        }
+      },
+      "recommendations": [
+        {
+          "text": "Check orthostatic BP/HR and pre/post-meal fingerstick glucose; track fluid intake, urine output and daily weight",
+          "reason": "Pulled forward from the trial-page self-monitoring block.",
+          "category": "monitoring"
+        },
+        {
+          "text": "Sip fluids frequently and use the antiemetic as prescribed",
+          "reason": "Pulled forward from the trial-page self-monitoring block.",
+          "category": "monitoring"
+        },
+        {
+          "text": "Urgent contact if you cannot keep fluids down, glucose < 4 mmol/L or > 13.9 with ketones, fainting, or less than 500 mL urine per day",
+          "reason": "Pulled forward from the trial-page when to seek help block.",
+          "category": "lifestyle"
+        },
+        {
+          "text": "Start frequent small sips today and work fluids back toward your usual amount",
+          "reason": "Orthostatic dizziness and mild tachycardia fit early volume depletion.",
+          "category": "diet"
+        },
+        {
+          "text": "If you are barely eating, ask the trial team how to handle metformin",
+          "reason": "Poor intake plus the usual dose can increase low-glucose and dehydration risk.",
+          "category": "medication"
+        }
+      ],
+      "nutrition_advice": "Antibody-drug conjugates (ADCs) combine a targeted antibody with a potent cytotoxic payload. While they can attack tumors effectively, off-target effects or payload release may also trigger gastrointestinal, hepatic, renal, marrow, or lung toxicity. The core nutrition principles are: higher protein, easy digestion, small frequent meals, and side-effect-specific adjustments. Because ADC targets may be broadly expressed in the gastrointestinal tract, or because the gut lining turns over quickly, nausea, diarrhea, and reduced intake are common. Use small, frequent, bland meals; avoid greasy, fried, and spicy foods; and aim for 5 to 6 eating moments per day without overfilling. Prioritize steamed fish, poached chicken breast, tofu, steamed egg, and vitamin-rich gourd vegetables for higher-protein, easier-to-digest choices. If diarrhea becomes significant, watch for dehydration and electrolyte loss and use oral rehydration solution, or lightly salted rice broth. Avoid milk and dairy because lactose can worsen gut burden. If nausea is severe, avoid large amounts of fluid during meals and move soups and other liquid foods to at least 30 minutes before or after eating. Because ADC targets are widely expressed in the gastrointestinal tract, or because the gut lining turns over quickly, nausea, diarrhea, and reduced intake can show up early. The immediate priorities are smaller meals, steady hydration, and close tracking of both glucose swings and dehydration risk. Small frequent bland meals matter most: avoid greasy, fried, and spicy foods; prefer steamed fish, poached chicken breast, tofu, steamed egg, and vitamin-rich gourd vegetables.",
+      "latest_health_summary": {
+        "blood_pressure": "104/68",
+        "heart_rate": "96",
+        "blood_oxygen": "98",
+        "blood_glucose": "4.3",
+        "steps_today": ""
+      },
+      "conditions": [
+        "Type 2 diabetes",
+        "During chemotherapy"
+      ],
+      "diet_table": [
+        {
+          "condition": "General nutrition during ADC treatment",
+          "principle": "Higher protein, easy digestion, small frequent meals",
+          "recommend": "Steamed fish, chicken breast, tofu, steamed egg, mild gourd vegetables, oral rehydration solution",
+          "avoid": "Greasy spicy foods, overeating, large liquids during meals, dairy when diarrhea is active"
+        },
+        {
+          "condition": "ADC GI toxicity",
+          "principle": "Bland, soft, small frequent intake",
+          "recommend": "Steamed egg, tofu, rice porridge, steamed fish, chicken breast",
+          "avoid": "Greasy, fried, spicy, and very rich foods"
+        },
+        {
+          "condition": "Dehydration / diarrhea risk",
+          "principle": "Replace fluids and electrolytes together",
+          "recommend": "Oral rehydration solution, lightly salted rice broth, clear soups",
+          "avoid": "Only sugary drinks without any electrolyte replacement"
+        },
+        {
+          "condition": "Diabetes with poor intake",
+          "principle": "Steady carbs without long fasting",
+          "recommend": "Small starch portions paired with protein and scheduled glucose checks",
+          "avoid": "Long fasting while taking usual glucose-lowering medication unchanged"
+        }
+      ],
+      "weekly_meal_plan": [
+        {
+          "day": "Day 1",
+          "breakfast": [
+            {
+              "name": "Rice porridge with steamed egg",
+              "icon": "🥣",
+              "condition": "Nausea",
+              "benefit": "Warm, gentle, and easier to tolerate first thing in the day"
+            }
+          ],
+          "lunch": [
+            {
+              "name": "Steamed fish with soft rice",
+              "icon": "🐟",
+              "condition": "Poor intake",
+              "benefit": "Higher-protein and easier to digest than fried foods"
+            }
+          ],
+          "dinner": [
+            {
+              "name": "Tofu pumpkin soup",
+              "icon": "🍲",
+              "condition": "ADC GI toxicity",
+              "benefit": "Adds fluids while staying soft and mild"
+            }
+          ]
+        },
+        {
+          "day": "Day 2",
+          "breakfast": [
+            {
+              "name": "Plain crackers with warm soy milk",
+              "icon": "🍘",
+              "condition": "Nausea",
+              "benefit": "A small starch first can reduce empty-stomach gagging"
+            }
+          ],
+          "lunch": [
+            {
+              "name": "Poached chicken breast with gourd vegetables",
+              "icon": "🍗",
+              "condition": "Dehydration risk",
+              "benefit": "Light, higher-protein, and paired with water-rich vegetables"
+            }
+          ],
+          "dinner": [
+            {
+              "name": "Lightly salted rice broth with steamed egg",
+              "icon": "🥚",
+              "condition": "Orthostatic dizziness",
+              "benefit": "Helps replace fluids and electrolytes without a heavy meal"
+            }
+          ]
+        },
+        {
+          "day": "Day 3",
+          "breakfast": [
+            {
+              "name": "Mashed banana oatmeal",
+              "icon": "🍌",
+              "condition": "Glucose drifting low",
+              "benefit": "Adds gentle carbs to reduce morning glucose dips"
+            }
+          ],
+          "lunch": [
+            {
+              "name": "Soft noodle bowl with tofu and chicken",
+              "icon": "🍜",
+              "condition": "Poor intake",
+              "benefit": "Soft texture is easier to finish than dry solid foods"
+            }
+          ],
+          "dinner": [
+            {
+              "name": "Steamed cod with winter melon",
+              "icon": "🐟",
+              "condition": "ADC GI toxicity",
+              "benefit": "Low-fat, low-irritation, and protein-dense"
+            }
+          ]
+        }
+      ],
+      "diet_tips": [
+        {
+          "icon": "🍽️",
+          "title": "Aim for 5 to 6 eating moments",
+          "detail": "Small frequent intake is often more achievable than forcing one large meal."
+        },
+        {
+          "icon": "🥚",
+          "title": "Keep protein gentle and soft",
+          "detail": "Steamed egg, tofu, steamed fish, and chicken breast add more nutrition when total intake is low."
+        },
+        {
+          "icon": "🧂",
+          "title": "Replace salt when diarrhea is heavy",
+          "detail": "Serious diarrhea causes water and electrolyte losses, so oral rehydration solution or lightly salted rice broth fits better."
+        },
+        {
+          "icon": "🥛",
+          "title": "Pause milk and dairy for now",
+          "detail": "Lactose can add to diarrhea and gut burden while GI toxicity is active."
+        },
+        {
+          "icon": "🥣",
+          "title": "Separate larger fluids from meals",
+          "detail": "If nausea is severe, move soups and bigger drinks to at least 30 minutes before or after eating."
+        },
+        {
+          "icon": "🍽️",
+          "title": "Small frequent meals",
+          "detail": "Aim for 5 to 6 eating moments per day instead of one or two heavy meals to reduce nausea, bloating, and post-meal discomfort."
+        },
+        {
+          "icon": "🥚",
+          "title": "Higher-protein and easy to digest",
+          "detail": "Steamed fish, poached chicken breast, tofu, and steamed egg are practical ADC-treatment protein staples."
+        },
+        {
+          "icon": "🧂",
+          "title": "Replace fluids and salt during diarrhea",
+          "detail": "Significant diarrhea causes fluid and electrolyte loss, so use oral rehydration solution or lightly salted rice broth."
+        },
+        {
+          "icon": "🥛",
+          "title": "Pause dairy if diarrhea is active",
+          "detail": "Lactose in milk and dairy can add to gut burden when diarrhea is already present."
+        },
+        {
+          "icon": "🥣",
+          "title": "Separate larger liquids from meals if nausea is strong",
+          "detail": "Move soups and other liquid foods to at least 30 minutes before or after eating when nausea is severe."
+        }
+      ],
+      "reasoning": "Emily Carter is in the ADC-047 C1D10 treatment window. The core interpretation is adapted from the trial-triage rationale: Nausea/vomiting is the most common DXd-class AE; in a diabetic, reduced intake on glucose-lowering meds risks hypoglycemia and dehydration shifts glucose unpredictably. Manage proactively before a grade 2-3 dehydration / hypoglycemia event.",
+      "guardrail": "This page is restructured from clinical-trial review data for supportive understanding only. It does not replace the trial team, treating clinician, or emergency assessment.",
+      "health_guidance": {
+        "summary": "Antibody-drug conjugates (ADCs) combine a targeted antibody with a potent cytotoxic payload. While they can attack tumors effectively, off-target effects or payload release may also trigger gastrointestinal, hepatic, renal, marrow, or lung toxicity. The core nutrition principles are: higher protein, easy digestion, small frequent meals, and side-effect-specific adjustments. Emily's problem is not just 'poor appetite' — ADC GI toxicity, dehydration, and diabetes-related glucose swings are amplifying one another and need to be managed together.",
+        "tips": [
+          {
+            "text": "Break meals into 5 to 6 small eating moments",
+            "why": "Small frequent intake is often easier to tolerate than forcing one full meal and can smooth glucose swings."
+          },
+          {
+            "text": "Prioritize steamed fish, chicken breast, tofu, and steamed egg",
+            "why": "They are easier to digest and add more protein when total intake is low."
+          },
+          {
+            "text": "If nausea is strong, move soups and larger fluids away from meals",
+            "why": "Drinking a lot during meals can worsen fullness and gagging."
+          },
+          {
+            "text": "Lead with higher-protein, easy-to-digest softer foods",
+            "why": "Steamed fish, chicken breast, tofu, and steamed egg help preserve nutrition even when total intake is limited."
+          }
+        ]
+      }
+    }
+  }
+}

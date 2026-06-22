@@ -1,0 +1,39 @@
+{
+  "payload": {
+    "meta": {
+      "current_time": "2026-06-22 11:36"
+    },
+    "location": {}
+  },
+  "llm_result": {
+    "structured_output": {
+      "patient_status": "at_risk",
+      "conditions": [
+        "2型糖尿病",
+        "化疗期间"
+      ],
+      "situation_summary": "自上次输注后出现持续恶心、进食减少,伴体位性头晕及指尖血糖向低值漂移。 当前更像：DXd-class GI toxicity (nausea / reduced intake)；Early dehydration / volume depletion；Drifting hypoglycemia on metformin with poor intake；CNS metastasis, gastroenteritis, hypercalcemia, or anxiety (to exclude)。",
+      "physician_status": "notified",
+      "physician_note": "这更像 ADC 胃肠道毒性触发的双线风险：一边是脱水，一边是进食差背景下的血糖不稳。今天就要把止吐、补液和测糖同时拉起来。",
+      "latest_vitals": {
+        "blood_pressure": "104/68",
+        "heart_rate": "96",
+        "blood_oxygen": "98",
+        "blood_glucose": "4.3"
+      },
+      "immediate_actions": [
+        "按医嘱尽早使用止吐药，改成少量多餐；恶心重时把大口喝汤和大量液体放到餐前或餐后 30 分钟以上。",
+        "全天少量频饮，必要时使用口服补液盐；如果有腹泻，可用米汤加少量盐帮助补液和电解质。",
+        "今天重点记录体位性血压/心率、餐前后血糖、饮水量、尿量和体重；若无法留住液体、血糖 < 4 mmol/L、昏厥或尿量明显减少，立即联系试验团队或急诊。",
+        "饮食先按 ADC 胃肠道友好的方式执行：少量多餐、清淡高蛋白；若有腹泻要补口服补液盐（或米汤加少量盐），若恶心明显则把大量液体和汤水放到餐前或餐后 30 分钟以上。"
+      ],
+      "monitoring_plan": {
+        "what_to_monitor": "体位性血压/心率、餐前后血糖、饮水量、尿量、体重、是否能留住液体",
+        "frequency": "今天开始每餐前后和起身不适时记录；饮水与尿量全天累计",
+        "next_checkin": "24 小时内由试验团队复核，必要时安排门诊补液"
+      },
+      "nearest_care_instructions": "无法饮水、血糖 < 4 mmol/L 或 > 13.9 伴酮体、晕厥,或每日尿量 < 500 mL — 紧急联系。",
+      "guardrail": "此页为临床试验安全审核场景下的患者提示页，仅帮助整理下一步行动，不替代急诊与正式医疗判断。"
+    }
+  }
+}

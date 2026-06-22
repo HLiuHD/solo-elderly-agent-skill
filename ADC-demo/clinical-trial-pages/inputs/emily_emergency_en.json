@@ -1,0 +1,39 @@
+{
+  "payload": {
+    "meta": {
+      "current_time": "2026-06-22 11:36"
+    },
+    "location": {}
+  },
+  "llm_result": {
+    "structured_output": {
+      "patient_status": "at_risk",
+      "conditions": [
+        "Type 2 diabetes",
+        "During chemotherapy"
+      ],
+      "situation_summary": "Persistent nausea with reduced oral intake since the last infusion, with orthostatic dizziness and a low-trending fingerstick glucose. The most likely working explanations right now are: DXd-class GI toxicity (nausea / reduced intake); Early dehydration / volume depletion; Drifting hypoglycemia on metformin with poor intake; CNS metastasis, gastroenteritis, hypercalcemia, or anxiety (to exclude).",
+      "physician_status": "notified",
+      "physician_note": "This behaves like DXd-class GI toxicity creating a two-front problem: dehydration on one side and unstable glucose on the other. Antiemetics, hydration, and glucose checks all need to start today.",
+      "latest_vitals": {
+        "blood_pressure": "104/68",
+        "heart_rate": "96",
+        "blood_oxygen": "98",
+        "blood_glucose": "4.3"
+      },
+      "immediate_actions": [
+        "Use the antiemetic early, switch to small frequent meals, and if nausea is strong, move larger fluids to at least 30 minutes before or after eating.",
+        "Sip fluids all day and use oral rehydration solution if needed; if diarrhea appears, lightly salted rice broth can help replace both fluid and electrolytes.",
+        "Track orthostatic BP/HR, pre/post-meal glucose, fluid intake, urine output, and weight today; if you cannot keep fluids down, glucose falls below 4 mmol/L, you faint, or urine output drops sharply, contact the trial team or emergency care immediately.",
+        "Use an ADC-friendly eating pattern right away: small frequent bland higher-protein meals; if diarrhea is present, add oral rehydration solution or lightly salted rice broth; if nausea is strong, move larger liquids and soups to at least 30 minutes before or after meals."
+      ],
+      "monitoring_plan": {
+        "what_to_monitor": "Orthostatic BP/HR, pre/post-meal glucose, fluid intake, urine output, weight, and whether fluids stay down",
+        "frequency": "Start today with checks around meals and whenever standing symptoms occur; total fluids and urine should be tracked through the day",
+        "next_checkin": "Trial-team review within 24 hours, with outpatient hydration if needed"
+      },
+      "nearest_care_instructions": "Cannot keep fluids down, glucose < 4 mmol/L or > 13.9 with ketones, syncope, or < 500 mL urine/day - urgent contact.",
+      "guardrail": "This page is a patient-facing summary for a clinical-trial safety review scenario. It supports next-step understanding but does not replace emergency care or formal medical judgment."
+    }
+  }
+}

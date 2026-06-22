@@ -1,0 +1,886 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ADC 临床试验毒性审核 - MediAssist</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+            letter-spacing: 0;
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
+    </style>
+</head>
+
+<body class="bg-slate-50/50 text-slate-800">
+    <div id="app"></div>
+
+    <script>
+        // ---------- URL params ----------
+        const params = new URLSearchParams(window.location.search);
+        const TASK_ID = params.get('task_id') || '';
+        const USER_ID = params.get('user_id') || '';
+        const SCENARIO_ID = params.get('scenario_id') || '';
+        const DOCTOR_ID = params.get('doctor_id') || '';
+        let currentLang = (params.get('lang') || 'zh').trim() || 'zh';
+
+        const REVIEW_KEY = 'adc_ct_review_v1';
+        const SELECT_KEY = 'adc_ct_selections_v1';
+        let chartInstances = [];
+
+        // ---------- static UI labels (bilingual) ----------
+        const copy = {
+            en: {
+                htmlLang: 'en',
+                title: 'ADC Trial Toxicity Review - MediAssist',
+                headerMode: 'Clinical-Trial Safety Review',
+                reviewer: 'Reviewer',
+                sex: { '男': 'Male', '女': 'Female' },
+                ageSuffix: ' y/o',
+                medicalHistory: 'Medical History',
+                disease: 'Diagnoses:',
+                meds: 'Current medications:',
+                allergy: 'Allergies:',
+                noAllergy: 'None reported',
+                treatmentContext: 'Trial Treatment Context',
+                vitals: { indicator: 'Indicator', trigger: 'At Review', previous: 'Previous 1h', baseline: 'Baseline', trend: 'Trend', bp: 'Blood Pressure', hr: 'Heart Rate', spo2: 'SpO2', temp: 'Temperature' },
+                signalTitle: 'Signal Charts',
+                aeTitle: 'Current Adverse Event',
+                aeOnset: 'Onset:', aeSymptoms: 'Symptoms:', aeAxis: 'Vulnerability axis:', sysSymptoms: 'System-identified symptoms:',
+                reportTitle: 'Model Safety Assessment',
+                urgencyLabel: 'Urgency Level:', actionLabel: 'Recommended Action:', rationaleTitle: 'Clinical Rationale', causesTitle: 'Likely Causes',
+                aiPickPrefix: 'AI: ', modifiedTag: 'doctor-modified',
+                patientRec: 'Patient Recommendations', doctorRec: 'Physician Review Items',
+                urgencyOptions: ['Stable · routine trial follow-up', 'Attention · enhanced surveillance', 'Urgent · immediate intervention', 'Critical · emergent'],
+                actionOptions: ['Home observation', 'Trial-team follow-up (within 24h)', 'Schedule outpatient visit', 'Urgent contact with trial team', 'Emergency department'],
+                dialogueTitle: 'Dialogue History', turns: (n) => `${n} turns`,
+                individualTitle: 'Individual Toxicity Trajectory',
+                evidenceTitle: 'Observation → inference', obs: 'Observation:', inf: '→ Inference:',
+                projectionTitle: 'Short-term trajectory (48–72h)', surveillanceTitle: 'Surveillance · data to collect',
+                redFlagPatient: 'Red flags — tell the patient:', redFlagPhysician: 'Red flags — physician side:',
+                cohortTitle: 'Cohort Inference · Population Toxicity Map',
+                onDrug: 'On drug', symptomatic: 'Symptomatic', asymptomatic: 'Asymptomatic',
+                mapAxis: 'Axis', mapTox: 'Organ toxicity', mapExemplar: 'Exemplar', mapTraits: 'Risk traits', thisPatient: 'this patient',
+                watchTitle: 'Watch list', escalationTitle: 'Escalation',
+                memoryTitle: 'Memory Evidence', memRelevance: 'Relevance:',
+                review: { title: 'Doctor Review & Submit', comment: 'Review Comment:', commentPlaceholder: 'Enter review comment...', agreeLabel: "Agree with the system's assessment:", agree: 'Agree', disagree: 'Disagree', reset: 'Reset', submit: 'Confirm and Submit', submitSuccess: 'Review submitted to the server.', submitError: 'Failed to submit review to the server.' },
+                annotation: { add: 'Add annotation', edit: 'Edit', delete: 'Delete', label: 'Doctor annotation:', placeholder: 'Enter annotation...', save: 'Save', cancel: 'Cancel' },
+                loading: 'Loading clinical-trial review…',
+                errTitle: 'Unable to load review data',
+                errMissingTrial: 'trial_context is missing for this scenario; the page cannot render the trial modules.'
+            },
+            zh: {
+                htmlLang: 'zh-CN',
+                title: 'ADC 临床试验毒性审核 - MediAssist',
+                headerMode: '临床试验安全审核',
+                reviewer: '审核医师',
+                sex: { '男': '男', '女': '女' },
+                ageSuffix: ' 岁',
+                medicalHistory: '病史',
+                disease: '诊断：',
+                meds: '当前用药：',
+                allergy: '过敏史：',
+                noAllergy: '无',
+                treatmentContext: '临床试验用药背景',
+                vitals: { indicator: '指标', trigger: '审核时', previous: '前 1h', baseline: '基线值', trend: '趋势', bp: '血压', hr: '心率', spo2: '血氧', temp: '体温' },
+                signalTitle: '信号趋势图',
+                aeTitle: '当前不良事件',
+                aeOnset: '起病：', aeSymptoms: '症状：', aeAxis: '易感轴：', sysSymptoms: '系统识别症状：',
+                reportTitle: '模型安全评估',
+                urgencyLabel: '紧急程度：', actionLabel: '建议措施：', rationaleTitle: '临床判断理由', causesTitle: '可能原因',
+                aiPickPrefix: '系统建议：', modifiedTag: '医生已修改',
+                patientRec: '患者建议', doctorRec: '医生复核事项',
+                urgencyOptions: ['稳定 · 常规试验随访', '关注 · 加强监护', '紧急 · 立即介入', '危急 · 急诊处理'],
+                actionOptions: ['居家观察', '试验团队随访（24h 内）', '预约门诊就诊', '紧急联系试验团队', '急诊就诊'],
+                dialogueTitle: '对话实录', turns: (n) => `${n} 轮`,
+                individualTitle: '个体毒性轨迹推断',
+                evidenceTitle: '现象 → 推断', obs: '现象：', inf: '→ 推断：',
+                projectionTitle: '短期轨迹推断（48–72h）', surveillanceTitle: '监护 · 待补数据',
+                redFlagPatient: '红线 —— 嘱患者：', redFlagPhysician: '红线 —— 医生侧：',
+                cohortTitle: '群体推演 · 群体毒性图谱',
+                onDrug: '在组用药', symptomatic: '有症状', asymptomatic: '无症状',
+                mapAxis: '轴', mapTox: '器官毒性', mapExemplar: '代表病例', mapTraits: '风险特征', thisPatient: '本患者',
+                watchTitle: '监测清单', escalationTitle: '升级触发',
+                memoryTitle: '记忆证据', memRelevance: '关联性：',
+                review: { title: '医生审核与提交', comment: '审核意见：', commentPlaceholder: '请输入审核意见...', agreeLabel: '是否同意系统评估结论：', agree: '同意', disagree: '不同意', reset: '重置', submit: '确认并提交', submitSuccess: '审核已提交至服务器。', submitError: '提交审核到服务器失败。' },
+                annotation: { add: '添加批注', edit: '编辑', delete: '删除', label: '医生批注：', placeholder: '输入批注...', save: '保存', cancel: '取消' },
+                loading: '正在加载临床试验审核…',
+                errTitle: '无法加载审核数据',
+                errMissingTrial: '该场景缺少 trial_context，无法渲染试验相关模块。'
+            }
+        };
+
+        // ---------- helpers ----------
+        const escapeHtml = (value) => String(value == null ? '' : value)
+            .replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
+            .replaceAll('"', '&quot;').replaceAll("'", '&#039;');
+
+        // bilingual {en,zh} field picker — falls back gracefully to plain strings
+        function L(field) {
+            if (field == null) return '';
+            if (typeof field === 'object' && (field.en !== undefined || field.zh !== undefined)) {
+                return field[currentLang] != null ? field[currentLang] : (field.zh != null ? field.zh : field.en);
+            }
+            return field;
+        }
+
+        const reviewStore = () => JSON.parse(localStorage.getItem(REVIEW_KEY) || '{}');
+        const saveReviewStore = (s) => localStorage.setItem(REVIEW_KEY, JSON.stringify(s));
+        const selectionStore = () => JSON.parse(localStorage.getItem(SELECT_KEY) || '{}');
+        const saveSelectionStore = (s) => localStorage.setItem(SELECT_KEY, JSON.stringify(s));
+
+        // ---------- annotation store (per-section doctor notes) ----------
+        // In-memory map { <data-ann-id> : "<note text>" }, hydrated from the server
+        // on load and re-built into modifications[] on submit. Survives lang switches.
+        let annotations = {};
+        // timestamps per annotation id (ISO) — preserved across reloads/edits
+        let annotationTimes = {};
+        // empty placeholder under each annotatable section
+        const annotationBox = (id) => `<div class="annotation-control mt-2" data-annotation-for="${id}"></div>`;
+
+        function checklist(items, color = 'text-blue-500') {
+            return `<ul class="space-y-1 text-xs text-slate-600 leading-relaxed">${items.map(i =>
+                `<li class="flex items-start gap-1.5"><span class="${color} mt-0.5">✓</span><span>${i}</span></li>`).join('')}</ul>`;
+        }
+        function ordered(items) {
+            return `<ol class="list-decimal list-inside space-y-1.5 text-xs text-slate-700 leading-relaxed">${items.map(i => `<li>${i}</li>`).join('')}</ol>`;
+        }
+
+        // ---------- templates ----------
+        function headerTemplate(t) {
+            return `
+                <header class="h-16 bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+                    <div class="max-w-[1600px] mx-auto h-full px-6 flex items-center justify-between">
+                        <div class="flex items-center gap-6 min-w-0">
+                            <div class="flex items-center gap-2.5 shrink-0">
+                                <div class="bg-blue-600 p-1.5 rounded-lg text-white shadow-md shadow-blue-600/20">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+                                </div>
+                                <span class="font-bold text-slate-800 text-lg tracking-tight">MediAssist</span>
+                            </div>
+                            <div class="h-6 w-px bg-slate-200"></div>
+                            <div class="flex items-center gap-2 text-sm text-slate-500 min-w-0">
+                                <span class="px-2 py-1 bg-slate-100 rounded text-slate-600 font-medium shrink-0">${t.headerMode}</span>
+                                <span class="text-slate-300">/</span>
+                                <span class="font-mono text-slate-400 truncate">${escapeHtml(TASK_ID || SCENARIO_ID)}</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="flex items-center gap-1 bg-slate-50 p-1 rounded-lg border border-slate-200">
+                                <button data-lang="zh" class="lang-btn px-3 py-1 text-xs font-medium rounded border ${currentLang === 'zh' ? 'bg-white shadow-sm text-slate-700 border-slate-200' : 'text-slate-500 border-transparent'}">中文</button>
+                                <button data-lang="en" class="lang-btn px-3 py-1 text-xs font-medium rounded border ${currentLang === 'en' ? 'bg-white shadow-sm text-slate-700 border-slate-200' : 'text-slate-500 border-transparent'}">English</button>
+                            </div>
+                            <div class="h-6 w-px bg-slate-200 mx-1 hidden sm:block"></div>
+                            <div class="flex items-center gap-3 pl-2">
+                                <div class="text-right hidden sm:block">
+                                    <p class="text-xs font-bold text-slate-700">${t.reviewer}</p>
+                                    <p class="text-[10px] text-slate-400 uppercase">Dr. Emily Chen</p>
+                                </div>
+                                <div class="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs font-bold">EC</div>
+                            </div>
+                        </div>
+                    </div>
+                </header>`;
+        }
+
+        function patientTemplate(t, data) {
+            const p = data.patient || {};
+            const demo = p.demographics || {};
+            const trial = (data.trial_context && data.trial_context.trial) || {};
+            const patientName = (data.trial_context && data.trial_context.patient_name) || USER_ID || SCENARIO_ID;
+            const drug = trial.drug || '';
+            const cycle = trial.cycle || '';
+            const badge = (drug || cycle) ? `${escapeHtml(drug)} ${escapeHtml(cycle)}`.trim() : '';
+            const sexRaw = demo['性别'] || '';
+            const sex = (t.sex && t.sex[sexRaw]) || sexRaw;
+            const age = (demo['年龄'] != null) ? (demo['年龄'] + t.ageSuffix) : '';
+            const diagnoses = (p.medical_history && p.medical_history.diagnoses) || [];
+            const diagText = diagnoses.length ? diagnoses.join('；')
+                : ((p.medical_history && p.medical_history.diagnoses_str) || '');
+            const meds = (p.meds || []).join('，');
+            const allergy = p.allergy_history || {};
+            const allergyText = (allergy.none || !(allergy.items && allergy.items.length))
+                ? t.noAllergy : allergy.items.join('，');
+            const ctxText = trial.context_text ? L(trial.context_text) : '';
+
+            const vs = (data.signals && data.signals.vital_signs) || {};
+            const ranges = vs.ranges || {};
+            const baselines = vs.baselines || {};
+            const bpBase = baselines.blood_pressure || {};
+            const bpRange = ranges.blood_pressure || {};
+            const r = (o, k) => (o && o[k]) ? `${o[k].min}-${o[k].max}` : '';
+            const vitalsRows = [
+                { label: t.vitals.bp,
+                  current: (vs.sbp != null && vs.dbp != null) ? `${vs.sbp}/${vs.dbp}mmHg` : '',
+                  previous: (bpRange.systolic && bpRange.diastolic) ? `${bpRange.systolic.min}-${bpRange.systolic.max}/${bpRange.diastolic.min}-${bpRange.diastolic.max}mmHg` : '',
+                  baseline: (bpBase.systolic != null) ? `${bpBase.systolic}/${bpBase.diastolic}mmHg` : '', trend: '→', color: 'text-slate-400' },
+                { label: t.vitals.hr,
+                  current: vs.heartrate != null ? `${vs.heartrate}bpm` : '',
+                  previous: r(ranges, 'heart_rate') ? `${r(ranges, 'heart_rate')}bpm` : '',
+                  baseline: baselines.heart_rate != null ? `${baselines.heart_rate}bpm` : '', trend: '↑', color: 'text-amber-500', valueClass: 'text-amber-600' },
+                { label: t.vitals.spo2,
+                  current: vs.o2sat != null ? `${vs.o2sat}%` : '',
+                  previous: r(ranges, 'spo2') ? `${r(ranges, 'spo2')}%` : '',
+                  baseline: baselines.spo2 != null ? `${baselines.spo2}%` : '', trend: '↓', color: 'text-blue-500', valueClass: 'text-blue-600' },
+                { label: t.vitals.temp,
+                  current: vs.temperature != null ? `${vs.temperature}C` : '',
+                  previous: r(ranges, 'temperature') ? `${r(ranges, 'temperature')}C` : '',
+                  baseline: baselines.temperature != null ? `${baselines.temperature}C` : '', trend: '→', color: 'text-slate-400' }
+            ];
+
+            return `
+                <section class="bg-white px-4 py-3 rounded-xl border border-slate-200 shadow-sm flex flex-col xl:flex-row justify-between xl:items-center gap-4 annotatable" data-ann-id="patient-profile">
+                    <div class="flex items-start gap-3">
+                        <div class="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 border-2 border-slate-50 shadow-inner shrink-0">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        </div>
+                        <div class="min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <h1 class="text-xl font-bold text-slate-900">${escapeHtml(patientName)}</h1>
+                                ${sex ? `<span class="px-1.5 py-0.5 bg-slate-100 rounded font-semibold text-slate-600 text-xs">${escapeHtml(sex)}</span>` : ''}
+                                ${age ? `<span class="px-1.5 py-0.5 bg-slate-100 rounded font-semibold text-slate-600 text-xs">${escapeHtml(age)}</span>` : ''}
+                                ${badge ? `<span class="px-1.5 py-0.5 bg-indigo-50 border border-indigo-100 rounded font-semibold text-indigo-700 text-xs">${badge}</span>` : ''}
+                            </div>
+                            <div class="mt-2 pt-2 border-t border-slate-100">
+                                <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">${t.medicalHistory}</div>
+                                <div class="text-xs text-slate-600 space-y-0.5">
+                                    <div><span class="font-medium">${t.disease}</span><span>${escapeHtml(diagText)}</span></div>
+                                    <div><span class="font-medium">${t.meds}</span><span>${escapeHtml(meds)}</span></div>
+                                    <div><span class="font-medium">${t.allergy}</span><span>${escapeHtml(allergyText)}</span></div>
+                                </div>
+                                ${ctxText ? `<div class="mt-2 p-2 bg-indigo-50 border border-indigo-100 rounded text-xs text-indigo-800 leading-relaxed">
+                                    <span class="font-semibold">${t.treatmentContext}:</span> <span>${escapeHtml(ctxText)}</span>
+                                </div>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="w-full max-w-md annotatable" data-ann-id="vital-table">
+                        <div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
+                            <table class="w-full text-xs">
+                                <thead class="bg-slate-50">
+                                    <tr>
+                                        <th class="px-2 py-1.5 text-left font-semibold text-slate-600 text-[10px] uppercase">${t.vitals.indicator}</th>
+                                        <th class="px-2 py-1.5 text-right font-semibold text-slate-600 text-[10px] uppercase">${t.vitals.trigger}</th>
+                                        <th class="px-2 py-1.5 text-right font-semibold text-slate-600 text-[10px] uppercase">${t.vitals.previous}</th>
+                                        <th class="px-2 py-1.5 text-right font-semibold text-slate-600 text-[10px] uppercase">${t.vitals.baseline}</th>
+                                        <th class="px-2 py-1.5 text-center font-semibold text-slate-600 text-[10px] uppercase">${t.vitals.trend}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${vitalsRows.map(row => `
+                                        <tr class="border-t border-slate-100">
+                                            <td class="px-2 py-2 font-medium text-slate-700">${row.label}</td>
+                                            <td class="px-2 py-2 text-right font-semibold ${row.valueClass || 'text-slate-900'}">${escapeHtml(row.current)}</td>
+                                            <td class="px-2 py-2 text-right text-slate-500 text-[10px]">${escapeHtml(row.previous)}</td>
+                                            <td class="px-2 py-2 text-right text-slate-500">${escapeHtml(row.baseline)}</td>
+                                            <td class="px-2 py-2 text-center ${row.color} font-bold">${row.trend}</td>
+                                        </tr>`).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                        ${annotationBox('vital-table')}
+                    </div>
+                    ${annotationBox('patient-profile')}
+                </section>`;
+        }
+
+        function signalChartsTemplate(t, data) {
+            const series = (data.trial_context && data.trial_context.chart_series) || [];
+            const colorDot = { amber: 'bg-amber-500', blue: 'bg-blue-500', red: 'bg-red-500', emerald: 'bg-emerald-500' };
+            return `
+                <section class="bg-white rounded-xl border border-slate-200 shadow-sm annotatable" data-ann-id="signal-charts">
+                    <div class="px-4 py-2.5 border-b border-slate-100 flex items-center gap-2 bg-slate-50/30">
+                        <div class="bg-emerald-100 p-1 rounded text-emerald-600">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+                        </div>
+                        <h2 class="font-bold text-slate-800 text-sm">${t.signalTitle}</h2>
+                    </div>
+                    <div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+                        ${series.map((s, i) => `
+                            <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <div class="w-2 h-2 rounded-full ${colorDot[s.color] || 'bg-slate-500'}"></div>
+                                    <span class="text-xs font-semibold text-slate-700">${escapeHtml(L(s.label))}</span>
+                                </div>
+                                <div class="h-[180px]"><canvas id="ctChart${i}"></canvas></div>
+                            </div>`).join('')}
+                    </div>
+                    <div class="px-4 pb-4">${annotationBox('signal-charts')}</div>
+                </section>`;
+        }
+
+        function adverseEventTemplate(t, data) {
+            const ae = (data.trial_context && data.trial_context.adverse_event) || {};
+            const sysSym = (data.symptoms && data.symptoms.system_identified) || [];
+            const aeSym = (ae.symptoms || []).map(s => L(s));
+            return `
+                <section class="bg-white rounded-xl border border-slate-200 shadow-sm annotatable" data-ann-id="adverse-event">
+                    <div class="px-4 py-2.5 border-b border-slate-100 flex items-center gap-2 bg-slate-50/30">
+                        <div class="bg-amber-100 p-1 rounded text-amber-600">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                        </div>
+                        <h2 class="font-bold text-slate-800 text-sm">${t.aeTitle}</h2>
+                    </div>
+                    <div class="p-4 space-y-3 text-xs text-slate-700 leading-relaxed">
+                        ${ae.onset ? `<div><span class="font-semibold text-slate-900">${t.aeOnset}</span> ${escapeHtml(L(ae.onset))}</div>` : ''}
+                        ${ae.axis ? `<div><span class="font-semibold text-slate-900">${t.aeAxis}</span> <span class="px-2 py-0.5 bg-amber-50 border border-amber-200 text-amber-800 rounded">${escapeHtml(L(ae.axis))}</span></div>` : ''}
+                        ${aeSym.length ? `<div><span class="font-semibold text-slate-900">${t.aeSymptoms}</span><div class="flex flex-wrap gap-2 mt-1">${aeSym.map(s => `<span class="px-2.5 py-1 bg-white border border-amber-200 text-amber-700 rounded-md font-medium">${escapeHtml(s)}</span>`).join('')}</div></div>` : ''}
+                        ${sysSym.length ? `<div><span class="font-semibold text-slate-900">${t.sysSymptoms}</span><div class="flex flex-wrap gap-2 mt-1">${sysSym.map(s => `<span class="px-2.5 py-1 bg-blue-50 border border-blue-200 text-blue-700 rounded-md font-medium">${escapeHtml(s)}</span>`).join('')}</div></div>` : ''}
+                        ${annotationBox('adverse-event')}
+                    </div>
+                </section>`;
+        }
+
+        // Doctor-editable disposition dropdown (stores option index; language-independent)
+        function dispositionField(t, id, label, options, defaultIdx) {
+            const store = selectionStore();
+            const currentIdx = store[id] !== undefined ? store[id] : defaultIdx;
+            const modified = store[id] !== undefined && store[id] !== defaultIdx;
+            const selectCls = modified ? 'border-blue-400 bg-blue-50 text-blue-900' : 'border-slate-200 bg-slate-50 text-slate-700';
+            return `
+                <div data-disposition-field>
+                    <label class="text-xs font-medium text-slate-600 mb-1 block">${label}
+                        <span class="text-slate-400 ml-2 font-normal text-[10px]">${t.aiPickPrefix}${escapeHtml(options[defaultIdx] || '')}</span>
+                        <span data-modified-marker class="ml-2 text-[10px] text-blue-600 font-semibold" style="display:${modified ? '' : 'none'}">· ${t.modifiedTag}</span>
+                    </label>
+                    <select data-disposition-id="${id}" data-default-idx="${defaultIdx}" class="w-full p-2 border rounded text-xs cursor-pointer focus:outline-none focus:border-blue-400 ${selectCls}">
+                        ${options.map((o, idx) => `<option value="${idx}" ${idx === currentIdx ? 'selected' : ''}>${escapeHtml(o)}</option>`).join('')}
+                    </select>
+                </div>`;
+        }
+
+        // map model urgency/action strings to demo option indices
+        function indexOfMatch(options, value, fallback) {
+            if (!value) return fallback;
+            const i = options.findIndex(o => o === value || o.includes(value) || value.includes(o));
+            return i >= 0 ? i : fallback;
+        }
+
+        // flatten a suggestion group (output_json array of {category, advice[]}) into bullet strings
+        function suggestionBullets(group) {
+            const out = [];
+            ((group && group.output_json) || []).forEach(block => {
+                const cat = block.category ? `<span class="font-semibold text-slate-900">${escapeHtml(block.category)}:</span> ` : '';
+                (block.advice || []).forEach((a, i) => out.push((i === 0 ? cat : '') + escapeHtml(a)));
+            });
+            return out;
+        }
+
+        function reportTemplate(t, data) {
+            const tri = data.triage || {};
+            const sug = data.suggestions || {};
+            const patientGroup = (sug.patient && sug.patient[0]) || {};
+            const doctorGroup = (sug.doctor && sug.doctor[0]) || {};
+            const causes = (tri.likely_causes || []).map(c => escapeHtml(c));
+            const urgencyIdx = indexOfMatch(t.urgencyOptions, tri.urgency_level, 1);
+            const actionIdx = indexOfMatch(t.actionOptions, tri.next_operation, 1);
+            const patientBullets = suggestionBullets(patientGroup);
+            const doctorBullets = suggestionBullets(doctorGroup);
+            return `
+                <section class="bg-white rounded-xl border border-slate-200 shadow-sm annotatable" data-ann-id="model-assessment">
+                    <div class="px-4 py-2.5 border-b border-slate-100 flex items-center gap-2 bg-slate-50/30">
+                        <div class="bg-blue-100 p-1 rounded text-blue-600">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                        </div>
+                        <h2 class="font-bold text-slate-800 text-sm">${t.reportTitle}</h2>
+                    </div>
+                    <div class="p-4 grid grid-cols-1 xl:grid-cols-2 gap-4">
+                        <div class="space-y-3">
+                            <div class="bg-white border border-slate-200 rounded-lg p-3 space-y-2 text-xs">
+                                ${dispositionField(t, 'disposition-urgency', t.urgencyLabel, t.urgencyOptions, urgencyIdx)}
+                                ${dispositionField(t, 'disposition-action', t.actionLabel, t.actionOptions, actionIdx)}
+                            </div>
+                            <div class="bg-white border border-slate-200 rounded-lg p-3">
+                                <h3 class="text-xs font-bold mb-1.5 text-slate-700">${t.rationaleTitle}</h3>
+                                <p class="text-xs text-slate-700 leading-relaxed">${escapeHtml(tri.rationale || '')}</p>
+                            </div>
+                            ${causes.length ? `<div class="bg-white border border-slate-200 rounded-lg p-3">
+                                <h3 class="text-xs font-bold mb-1.5 text-slate-700">${t.causesTitle}</h3>${checklist(causes)}</div>` : ''}
+                        </div>
+                        <div class="space-y-3">
+                            ${patientBullets.length ? `<div class="bg-emerald-50/60 border border-emerald-100 rounded-lg p-3 text-emerald-800 annotatable" data-ann-id="patient-recommendations">
+                                <h3 class="text-xs font-bold mb-1.5">${t.patientRec}</h3>${ordered(patientBullets)}${annotationBox('patient-recommendations')}</div>` : ''}
+                            ${doctorBullets.length ? `<div class="bg-white border border-slate-200 rounded-lg p-3 text-slate-700 annotatable" data-ann-id="doctor-recommendations">
+                                <h3 class="text-xs font-bold mb-1.5">${t.doctorRec}</h3>${ordered(doctorBullets)}${annotationBox('doctor-recommendations')}</div>` : ''}
+                        </div>
+                    </div>
+                    <div class="px-4 pb-4">${annotationBox('model-assessment')}</div>
+                </section>`;
+        }
+
+        function individualTemplate(t, data) {
+            const it = (data.trial_context && data.trial_context.individual_trajectory) || null;
+            if (!it) return '';
+            const evidence = (it.evidence || []).map(e =>
+                `<li><span class="font-semibold text-slate-900">${t.obs}</span> ${escapeHtml(L(e.observation))} <span class="font-semibold text-blue-700">${t.inf}</span> ${escapeHtml(L(e.inference))}</li>`);
+            const projection = (it.projection_48_72h || []).map(p => `<li>${escapeHtml(L(p))}</li>`);
+            const surveillance = (it.surveillance || []).map(s => `<li>${escapeHtml(L(s))}</li>`);
+            const rf = it.red_flags || {};
+            const rfPatient = (rf.patient || []).map(p => escapeHtml(L(p))).join(' ');
+            const rfPhysician = (rf.physician || []).map(p => escapeHtml(L(p))).join(' ');
+            return `
+                <article class="rounded-xl border border-blue-100 bg-blue-50/50 shadow-sm annotatable" data-ann-id="individual-trajectory">
+                    <div class="p-4 border-b border-blue-100">
+                        <h3 class="font-bold text-blue-800 text-sm mb-2">${escapeHtml(L(it.title)) || t.individualTitle}</h3>
+                        <p class="text-xs text-slate-700 leading-relaxed">${escapeHtml(L(it.intro))}</p>
+                    </div>
+                    <div class="p-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div class="bg-white/75 border border-blue-100 rounded-lg p-3">
+                            <h4 class="text-xs font-bold text-blue-800 mb-2">${t.evidenceTitle}</h4>
+                            <ul class="space-y-1.5 text-xs text-slate-700 leading-relaxed">${evidence.join('')}</ul>
+                        </div>
+                        <div class="bg-white/75 border border-blue-100 rounded-lg p-3">
+                            <h4 class="text-xs font-bold text-blue-800 mb-2">${t.projectionTitle}</h4>
+                            <ul class="space-y-1.5 text-xs text-slate-700 leading-relaxed list-disc list-inside">${projection.join('')}</ul>
+                        </div>
+                        <div class="bg-white/75 border border-blue-100 rounded-lg p-3">
+                            <h4 class="text-xs font-bold text-blue-800 mb-2">${t.surveillanceTitle}</h4>
+                            <ul class="space-y-1.5 text-xs text-slate-700 leading-relaxed list-disc list-inside">${surveillance.join('')}</ul>
+                            ${rfPatient ? `<p class="mt-2 text-xs text-red-700"><span class="font-semibold">${t.redFlagPatient}</span> ${rfPatient}</p>` : ''}
+                            ${rfPhysician ? `<p class="mt-1 text-xs text-red-700"><span class="font-semibold">${t.redFlagPhysician}</span> ${rfPhysician}</p>` : ''}
+                        </div>
+                    </div>
+                    <div class="px-4 pb-4">${annotationBox('individual-trajectory')}</div>
+                </article>`;
+        }
+
+        function cohortTemplate(t, data) {
+            const ci = (data.trial_context && data.trial_context.cohort_inference) || null;
+            if (!ci) return '';
+            const pop = ci.population || {};
+            const vmap = ci.vulnerability_map || [];
+            const watch = (ci.watch_list || []).map(w => escapeHtml(L(w)));
+            const rows = vmap.map(row => {
+                const traits = (row.traits || []).map(tr => escapeHtml(L(tr))).join('；');
+                const self = row.is_self === true;
+                const rowCls = self ? 'bg-amber-100 ring-2 ring-amber-400' : 'bg-white';
+                return `<tr class="border-t border-slate-100 ${rowCls}">
+                    <td class="px-2 py-2 font-semibold text-slate-800">${escapeHtml(L(row.axis))}${self ? ` <span class="ml-1 px-1.5 py-0.5 bg-amber-500 text-white text-[9px] rounded">${t.thisPatient}</span>` : ''}</td>
+                    <td class="px-2 py-2 text-slate-700">${escapeHtml(L(row.organ_toxicity))}</td>
+                    <td class="px-2 py-2 text-slate-700">${escapeHtml(row.exemplar || '')}</td>
+                    <td class="px-2 py-2 text-slate-600 text-[11px]">${traits}</td>
+                </tr>`;
+            });
+            return `
+                <article class="rounded-xl border border-amber-100 bg-amber-50/60 shadow-sm annotatable" data-ann-id="cohort-inference">
+                    <div class="p-4 border-b border-amber-100">
+                        <h3 class="font-bold text-amber-800 text-sm mb-2">${escapeHtml(L(ci.title)) || t.cohortTitle}</h3>
+                        <p class="text-xs text-slate-700 leading-relaxed">${escapeHtml(L(ci.intro))}</p>
+                        <div class="flex gap-3 mt-3 text-xs">
+                            <span class="px-2 py-1 bg-white border border-amber-200 rounded"><span class="font-bold text-slate-900">${pop.n_on_drug ?? '-'}</span> ${t.onDrug}</span>
+                            <span class="px-2 py-1 bg-white border border-amber-200 rounded text-amber-800"><span class="font-bold">${pop.n_symptomatic ?? '-'}</span> ${t.symptomatic}</span>
+                            <span class="px-2 py-1 bg-white border border-slate-200 rounded text-slate-600"><span class="font-bold">${pop.n_asymptomatic ?? '-'}</span> ${t.asymptomatic}</span>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <div class="bg-white rounded-lg border border-amber-100 overflow-hidden">
+                            <table class="w-full text-xs">
+                                <thead class="bg-amber-50"><tr>
+                                    <th class="px-2 py-1.5 text-left font-semibold text-slate-600 text-[10px] uppercase">${t.mapAxis}</th>
+                                    <th class="px-2 py-1.5 text-left font-semibold text-slate-600 text-[10px] uppercase">${t.mapTox}</th>
+                                    <th class="px-2 py-1.5 text-left font-semibold text-slate-600 text-[10px] uppercase">${t.mapExemplar}</th>
+                                    <th class="px-2 py-1.5 text-left font-semibold text-slate-600 text-[10px] uppercase">${t.mapTraits}</th>
+                                </tr></thead>
+                                <tbody>${rows.join('')}</tbody>
+                            </table>
+                        </div>
+                        ${watch.length ? `<div class="mt-3"><h4 class="text-xs font-bold text-amber-800 mb-1.5">${t.watchTitle}</h4>${checklist(watch, 'text-amber-600')}</div>` : ''}
+                        ${ci.escalation ? `<div class="mt-3 p-2 bg-white border border-amber-200 rounded text-xs text-slate-700"><span class="font-semibold text-amber-800">${t.escalationTitle}:</span> ${escapeHtml(L(ci.escalation))}</div>` : ''}
+                        ${annotationBox('cohort-inference')}
+                    </div>
+                </article>`;
+        }
+
+        function memoryTemplate(t, data) {
+            const mem = (data.trial_context && data.trial_context.memory_evidence) || [];
+            if (!mem.length) return '';
+            return `
+                <section class="bg-white rounded-xl border border-slate-200 shadow-sm annotatable" data-ann-id="memory-evidence">
+                    <div class="px-4 py-2.5 border-b border-slate-100 flex items-center gap-2 bg-slate-50/30">
+                        <div class="bg-slate-200 p-1 rounded text-slate-600">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8V4H8"></path><rect x="4" y="8" width="16" height="12" rx="2"></rect><path d="M2 14h2M20 14h2M15 13v2M9 13v2"></path></svg>
+                        </div>
+                        <h2 class="font-bold text-slate-800 text-sm">${t.memoryTitle}</h2>
+                    </div>
+                    <div class="p-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+                        ${mem.map((m, i) => `
+                            <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs annotatable" data-ann-id="memory-evidence-${i}">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="font-semibold text-slate-700">${escapeHtml(L(m.memory_type) || '')}</span>
+                                    <span class="font-mono text-[10px] text-slate-400">${escapeHtml(m.date || '')}</span>
+                                </div>
+                                <div class="text-slate-700">${escapeHtml(L(m.content))}</div>
+                                <div class="mt-1 text-slate-500"><span class="font-medium">${t.memRelevance}</span> ${escapeHtml(L(m.relevance))}</div>
+                                ${annotationBox(`memory-evidence-${i}`)}
+                            </div>`).join('')}
+                    </div>
+                    <div class="px-4 pb-4">${annotationBox('memory-evidence')}</div>
+                </section>`;
+        }
+
+        function agentsTemplate(t, data) {
+            return `
+                <section class="bg-white rounded-xl border border-slate-200 shadow-sm">
+                    <div class="px-4 py-3 border-b border-slate-100 bg-slate-50/30">
+                        <h2 class="font-bold text-slate-800 text-sm">AI-Assisted Trial-Drug Safety Reasoning</h2>
+                    </div>
+                    <div class="p-4 space-y-4">
+                        ${individualTemplate(t, data)}
+                        ${cohortTemplate(t, data)}
+                    </div>
+                </section>`;
+        }
+
+        function dialogueTemplate(t, data) {
+            const msgs = data.dialogue_messages || [];
+            return `
+                <aside class="w-full lg:w-[380px] shrink-0 flex flex-col bg-white border border-slate-200 rounded-2xl shadow-sm max-h-[calc(100vh-8rem)] overflow-hidden">
+                    <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                        <h2 class="font-bold text-slate-800 flex items-center gap-2 text-base">
+                            <svg width="18" height="18" class="text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                            ${t.dialogueTitle}
+                        </h2>
+                        <span class="text-[10px] font-mono text-slate-400">${t.turns(msgs.length)}</span>
+                    </div>
+                    <div class="flex-1 overflow-y-auto p-4 space-y-6 bg-white custom-scrollbar">
+                        ${msgs.map((msg, index) => {
+                            const isPatient = msg.type === 'patient';
+                            return `
+                                <div class="flex flex-col ${isPatient ? 'items-end' : 'items-start'} annotatable" data-ann-id="dialogue-${index}">
+                                    <div class="flex items-end gap-2 max-w-[92%] ${isPatient ? 'flex-row-reverse' : ''}">
+                                        <div class="w-7 h-7 rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold border shadow-sm ${isPatient ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-blue-600 border-blue-100'}">${isPatient ? 'P' : 'AI'}</div>
+                                        <div class="px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed ${isPatient ? 'bg-blue-600 text-white shadow-md shadow-blue-600/10 rounded-br-none' : 'bg-slate-50 text-slate-700 border border-slate-100 rounded-bl-none'}">${escapeHtml(msg.content)}${msg.time ? `<div class="text-[9px] mt-1 ${isPatient ? 'text-blue-100' : 'text-slate-400'}">${escapeHtml(msg.time)}</div>` : ''}</div>
+                                    </div>
+                                    <div class="w-full ${isPatient ? 'pr-9 flex justify-end' : 'pl-9'}"><div class="max-w-[92%] w-full">${annotationBox(`dialogue-${index}`)}</div></div>
+                                </div>`;
+                        }).join('')}
+                    </div>
+                </aside>`;
+        }
+
+        function reviewFooterTemplate(t) {
+            const store = reviewStore();
+            const comment = store.comment || '';
+            const agree = store.agree || 'true';
+            return `
+                <section class="bg-white rounded-xl border border-slate-200 shadow-sm">
+                    <div class="px-4 py-3 border-b border-slate-100 bg-slate-50/30 flex items-center gap-2">
+                        <div class="bg-slate-800 p-1 rounded text-white">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                        </div>
+                        <h2 class="font-bold text-slate-800 text-sm">${t.review.title}</h2>
+                    </div>
+                    <div class="p-4 space-y-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1.5">${t.review.comment}</label>
+                            <textarea id="doctorComment" placeholder="${t.review.commentPlaceholder}" class="w-full min-h-[60px] p-2.5 border-2 border-slate-200 rounded-lg text-xs resize-y focus:outline-none focus:border-blue-400">${escapeHtml(comment)}</textarea>
+                        </div>
+                        <div class="max-w-xs">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1.5">${t.review.agreeLabel}</label>
+                            <select id="doctorAgree" class="w-full p-2.5 border-2 border-slate-200 rounded-lg text-xs cursor-pointer focus:outline-none focus:border-blue-400">
+                                <option value="true" ${agree === 'true' ? 'selected' : ''}>${t.review.agree}</option>
+                                <option value="false" ${agree === 'false' ? 'selected' : ''}>${t.review.disagree}</option>
+                            </select>
+                        </div>
+                        <div id="reviewSubmitMessage" class="hidden"></div>
+                    </div>
+                    <div class="p-3 border-t border-slate-100 bg-slate-50 flex items-center justify-end gap-2 rounded-b-xl">
+                        <button id="reviewReset" class="px-4 py-1.5 bg-white border border-slate-300 text-slate-600 rounded-lg shadow-sm hover:bg-slate-50 text-xs font-medium">${t.review.reset}</button>
+                        <button id="reviewSubmit" class="px-4 py-1.5 bg-slate-900 text-white rounded-lg shadow-lg hover:bg-slate-800 flex items-center gap-1.5 text-xs font-medium">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                            <span>${t.review.submit}</span>
+                        </button>
+                    </div>
+                </section>`;
+        }
+
+        // ---------- annotation render / edit (ported from adc_toxicity_demo.html) ----------
+        function renderAnnotations() {
+            const t = copy[currentLang].annotation;
+            document.querySelectorAll('[data-annotation-for]').forEach(container => {
+                const id = container.dataset.annotationFor;
+                const note = annotations[id] || '';
+                container.innerHTML = note
+                    ? `<div class="p-2 bg-blue-50 border border-blue-200 rounded text-xs">
+                            <div class="text-[10px] font-semibold text-blue-700 mb-1">${t.label}</div>
+                            <div class="text-xs text-blue-900 whitespace-pre-wrap">${escapeHtml(note)}</div>
+                            <div class="flex justify-end mt-1 gap-2">
+                                <button class="annotation-edit text-[10px] text-blue-600 hover:text-blue-700" data-id="${id}">${t.edit}</button>
+                                <button class="annotation-delete text-[10px] text-red-600 hover:text-red-700" data-id="${id}">${t.delete}</button>
+                            </div>
+                        </div>`
+                    : `<button class="annotation-add text-xs text-blue-600 hover:text-blue-700 flex items-center gap-1 mt-1" data-id="${id}">${t.add}</button>`;
+            });
+
+            document.querySelectorAll('.annotation-add, .annotation-edit').forEach(button => {
+                button.addEventListener('click', () => showAnnotationEditor(button.dataset.id));
+            });
+            document.querySelectorAll('.annotation-delete').forEach(button => {
+                button.addEventListener('click', () => {
+                    delete annotations[button.dataset.id];
+                    delete annotationTimes[button.dataset.id];
+                    renderAnnotations();
+                });
+            });
+        }
+
+        function showAnnotationEditor(id) {
+            const t = copy[currentLang].annotation;
+            const container = document.querySelector(`[data-annotation-for="${id}"]`);
+            if (!container) return;
+            container.innerHTML = `
+                <div class="p-2 bg-slate-50 border border-slate-200 rounded text-xs">
+                    <textarea class="annotation-textarea w-full text-xs p-2 bg-white border border-slate-200 rounded shadow-sm focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100" placeholder="${t.placeholder}">${escapeHtml(annotations[id] || '')}</textarea>
+                    <div class="flex justify-end mt-2 gap-2">
+                        <button class="annotation-cancel text-xs px-2 py-1 text-slate-500 hover:text-slate-700">${t.cancel}</button>
+                        <button class="annotation-save text-xs bg-blue-600 text-white px-2.5 py-1 rounded hover:bg-blue-700 shadow-sm">${t.save}</button>
+                    </div>
+                </div>`;
+            container.querySelector('.annotation-cancel').addEventListener('click', renderAnnotations);
+            container.querySelector('.annotation-save').addEventListener('click', () => {
+                const value = container.querySelector('.annotation-textarea').value.trim();
+                if (value) {
+                    annotations[id] = value;
+                    annotationTimes[id] = new Date().toISOString();
+                } else {
+                    delete annotations[id];
+                    delete annotationTimes[id];
+                }
+                renderAnnotations();
+            });
+            container.querySelector('.annotation-textarea').focus();
+        }
+
+        // Build the 2b-ready modifications[] array from the in-memory annotation map.
+        function buildModifications() {
+            return Object.keys(annotations).map(id => ({
+                target_path: id,
+                target_id: SCENARIO_ID || TASK_ID,
+                target_kind: 'clinical_trial_section',
+                annotation_type: 'annotation',
+                original_value: null,
+                modified_value: null,
+                annotation_text: annotations[id],
+                annotated_at: annotationTimes[id] || new Date().toISOString()
+            }));
+        }
+
+        function renderCharts(data) {
+            if (!window.Chart) return;
+            chartInstances.forEach(c => c.destroy());
+            chartInstances = [];
+            Chart.defaults.font.family = 'Inter';
+            const palette = { amber: '#f59e0b', blue: '#3b82f6', red: '#ef4444', emerald: '#10b981' };
+            const fill = { amber: 'rgba(245,158,11,0.12)', blue: 'rgba(59,130,246,0.12)', red: 'rgba(239,68,68,0.12)', emerald: 'rgba(16,185,129,0.12)' };
+            const series = (data.trial_context && data.trial_context.chart_series) || [];
+            series.forEach((s, i) => {
+                const el = document.getElementById('ctChart' + i);
+                if (!el) return;
+                const c = palette[s.color] || '#64748b';
+                const f = fill[s.color] || 'rgba(100,116,139,0.12)';
+                chartInstances.push(new Chart(el, {
+                    type: 'line',
+                    data: { labels: s.labels || [], datasets: [{ data: s.data || [], borderColor: c, backgroundColor: f, fill: true, tension: 0.35, pointRadius: 2 }] },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { grid: { color: '#f1f5f9' }, ticks: { color: '#64748b', font: { size: 10 } } },
+                            y: { grid: { color: '#eef2f7' }, ticks: { color: '#64748b', font: { size: 10 } }, min: s.min, max: s.max }
+                        }
+                    }
+                }));
+            });
+        }
+
+        // ---------- error / loading UI ----------
+        function renderError(message) {
+            const t = copy[currentLang];
+            document.getElementById('app').innerHTML = `
+                ${headerTemplate(t)}
+                <main class="max-w-3xl mx-auto p-8">
+                    <div class="bg-white rounded-xl border border-red-200 shadow-sm p-6">
+                        <h2 class="text-lg font-bold text-red-700 mb-2">${t.errTitle}</h2>
+                        <p class="text-sm text-slate-600">${escapeHtml(message)}</p>
+                    </div>
+                </main>`;
+            bindLangButtons();
+        }
+
+        function bindLangButtons() {
+            document.querySelectorAll('.lang-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    currentLang = button.dataset.lang;
+                    if (window.__ctData) renderPage(window.__ctData);
+                });
+            });
+        }
+
+        function renderPage(data) {
+            window.__ctData = data;
+            const t = copy[currentLang];
+            document.documentElement.lang = t.htmlLang;
+            document.title = t.title;
+
+            if (!data.trial_context) {
+                renderError(t.errMissingTrial);
+                return;
+            }
+
+            document.getElementById('app').innerHTML = `
+                ${headerTemplate(t)}
+                <main class="max-w-[1600px] mx-auto p-4">
+                    <div class="flex flex-col lg:flex-row gap-4">
+                        <section class="flex-1 min-w-0 space-y-3">
+                            ${patientTemplate(t, data)}
+                            ${signalChartsTemplate(t, data)}
+                            ${adverseEventTemplate(t, data)}
+                            ${reportTemplate(t, data)}
+                            ${agentsTemplate(t, data)}
+                            ${memoryTemplate(t, data)}
+                            ${reviewFooterTemplate(t)}
+                        </section>
+                        ${dialogueTemplate(t, data)}
+                    </div>
+                </main>`;
+
+            bindLangButtons();
+
+            // disposition dropdowns
+            document.querySelectorAll('[data-disposition-id]').forEach(select => {
+                select.addEventListener('change', () => {
+                    const store = selectionStore();
+                    const id = select.dataset.dispositionId;
+                    const defaultIdx = parseInt(select.dataset.defaultIdx, 10);
+                    const idx = parseInt(select.value, 10);
+                    if (idx === defaultIdx) { delete store[id]; } else { store[id] = idx; }
+                    saveSelectionStore(store);
+                    const modified = idx !== defaultIdx;
+                    const field = select.closest('[data-disposition-field]');
+                    const marker = field && field.querySelector('[data-modified-marker]');
+                    if (marker) marker.style.display = modified ? '' : 'none';
+                });
+            });
+
+            // review footer wiring: comment/agree mirrored to localStorage for refresh-resilience;
+            // the authoritative persistence is the server POST below.
+            const commentEl = document.getElementById('doctorComment');
+            if (commentEl) commentEl.addEventListener('input', () => { const s = reviewStore(); s.comment = commentEl.value; saveReviewStore(s); });
+            const agreeEl = document.getElementById('doctorAgree');
+            if (agreeEl) agreeEl.addEventListener('change', () => { const s = reviewStore(); s.agree = agreeEl.value; saveReviewStore(s); });
+            const resetEl = document.getElementById('reviewReset');
+            if (resetEl) resetEl.addEventListener('click', () => { const s = reviewStore(); delete s.comment; delete s.agree; saveReviewStore(s); renderPage(data); });
+            const submitEl = document.getElementById('reviewSubmit');
+            if (submitEl) submitEl.addEventListener('click', () => {
+                const s = reviewStore();
+                const disp = selectionStore();
+                const t2 = copy[currentLang];
+                // 2b-ready submit shape; modifications[] carries the per-section annotations.
+                const payload = {
+                    task_id: TASK_ID,
+                    scenario_id: SCENARIO_ID,
+                    decision: {
+                        doctor_comment: s.comment || '',
+                        doctor_agree_with_system: (s.agree || 'true') === 'true',
+                        urgency_level: disp['disposition-urgency'],
+                        next_operation: disp['disposition-action']
+                    },
+                    modifications: buildModifications()
+                };
+                const msg = document.getElementById('reviewSubmitMessage');
+                // TODO: 2b swap POST target to /api/diagnosis-system/triage-review/submit + seed scenario_session
+                fetch('/openapi/clinical-trial/review', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                })
+                    .then(resp => resp.json().then(body => ({ ok: resp.ok, body })))
+                    .then(({ ok, body }) => {
+                        if (ok && body && body.success === true) {
+                            if (msg) { msg.className = 'p-2 rounded-lg text-xs bg-emerald-50 text-emerald-800 border border-emerald-200'; msg.textContent = t2.review.submitSuccess; }
+                        } else {
+                            if (msg) { msg.className = 'p-2 rounded-lg text-xs bg-red-50 text-red-800 border border-red-200'; msg.textContent = (body && body.error) || t2.review.submitError; }
+                        }
+                    })
+                    .catch(err => {
+                        if (msg) { msg.className = 'p-2 rounded-lg text-xs bg-red-50 text-red-800 border border-red-200'; msg.textContent = t2.review.submitError + ' ' + String(err); }
+                    });
+            });
+
+            renderAnnotations();
+            renderCharts(data);
+        }
+
+        // ---------- bootstrap: fetch by-task data ----------
+        function showLoading() {
+            const t = copy[currentLang];
+            document.getElementById('app').innerHTML = `
+                ${headerTemplate(t)}
+                <main class="max-w-3xl mx-auto p-8"><div class="text-center text-slate-500 text-sm py-12">${t.loading}</div></main>`;
+            bindLangButtons();
+        }
+
+        // Hydrate the in-memory annotation map + review/disposition fields from a
+        // previously saved server-side review. Graceful no-op if none / on error.
+        function hydrateFromSavedReview(saved) {
+            if (!saved) return;
+            annotations = {};
+            annotationTimes = {};
+            (saved.modifications || []).forEach(m => {
+                if (m && m.target_path && m.annotation_text) {
+                    annotations[m.target_path] = m.annotation_text;
+                    if (m.annotated_at) annotationTimes[m.target_path] = m.annotated_at;
+                }
+            });
+            const d = saved.decision || {};
+            const rs = reviewStore();
+            if (d.doctor_comment !== undefined) rs.comment = d.doctor_comment;
+            if (d.doctor_agree_with_system !== undefined) rs.agree = d.doctor_agree_with_system ? 'true' : 'false';
+            saveReviewStore(rs);
+            const ss = selectionStore();
+            if (d.urgency_level !== undefined && d.urgency_level !== null) ss['disposition-urgency'] = d.urgency_level;
+            if (d.next_operation !== undefined && d.next_operation !== null) ss['disposition-action'] = d.next_operation;
+            saveSelectionStore(ss);
+        }
+
+        (function init() {
+            showLoading();
+            const qs = new URLSearchParams({
+                task_id: TASK_ID, user_id: USER_ID, scenario_id: SCENARIO_ID, lang: currentLang
+            });
+            if (DOCTOR_ID) qs.set('doctor_id', DOCTOR_ID);
+            fetch('/api/diagnosis-system/triage-view/by-task?' + qs.toString())
+                .then(resp => resp.json().then(body => ({ ok: resp.ok, body })))
+                .then(({ ok, body }) => {
+                    if (!ok || !body || body.success !== true || !body.data) {
+                        renderError((body && (body.error || body.raw_error)) || 'Request failed.');
+                        return;
+                    }
+                    const data = body.data;
+                    // Load saved server-side review (annotations + decision), then render.
+                    const loadSaved = TASK_ID
+                        ? fetch('/openapi/clinical-trial/review?' + new URLSearchParams({ task_id: TASK_ID }).toString())
+                            .then(r => r.json().then(b => ({ ok: r.ok, b })))
+                            .then(({ ok: rok, b }) => { if (rok && b && b.success === true && b.data) hydrateFromSavedReview(b.data); })
+                            .catch(() => { /* graceful: no saved review */ })
+                        : Promise.resolve();
+                    loadSaved.finally(() => renderPage(data));
+                })
+                .catch(err => renderError(String(err)));
+        })();
+    </script>
+</body>
+
+</html>
+

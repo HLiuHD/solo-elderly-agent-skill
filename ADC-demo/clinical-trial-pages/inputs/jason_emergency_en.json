@@ -1,0 +1,39 @@
+{
+  "payload": {
+    "meta": {
+      "current_time": "2026-06-22 11:36"
+    },
+    "location": {}
+  },
+  "llm_result": {
+    "structured_output": {
+      "patient_status": "at_risk",
+      "conditions": [
+        "Reduced pulmonary reserve",
+        "During chemotherapy"
+      ],
+      "situation_summary": "New, insidious-onset exertional dyspnea with a dry cough emerging in the early ADC-047 exposure window (C1D15). The most likely working explanations right now are: Early drug-induced ILD / pneumonitis (DXd-class signature DLT); Tumor progression of metastatic NSCLC; Deconditioning / treatment-related fatigue; Infection or anemia.",
+      "physician_status": "notified",
+      "physician_note": "This is not acute respiratory failure right now, but it does fit the early pattern of DXd-class lung toxicity that needs active tracking; any further oxygen drop or fever should trigger a lower threshold to escalate.",
+      "latest_vitals": {
+        "blood_pressure": "132/84",
+        "heart_rate": "88",
+        "blood_oxygen": "95",
+        "blood_glucose": ""
+      },
+      "immediate_actions": [
+        "Start tracking resting and post-activity oxygen, heart rate, temperature, cough frequency, and whether the same walking distance feels harder.",
+        "Keep activity slower for the next few days and avoid stairs, brisk walking, or anything that clearly provokes dyspnea.",
+        "If oxygen falls below 92%, or resting shortness of breath, fever, or chest pain appears, contact the trial team or emergency care immediately.",
+        "Use an ADC-friendly eating pattern right away: small frequent bland higher-protein meals; if diarrhea is present, add oral rehydration solution or lightly salted rice broth; if nausea is strong, move larger liquids and soups to at least 30 minutes before or after meals."
+      ],
+      "monitoring_plan": {
+        "what_to_monitor": "Resting/post-activity oxygen, temperature, cough frequency, walking tolerance, and whether dyspnea shifts to rest",
+        "frequency": "At least morning and evening daily, plus an extra check after exertion",
+        "next_checkin": "Trial-team review within 24 hours, with HRCT-directed escalation if symptoms progress"
+      },
+      "nearest_care_instructions": "SpO2 < 92%, resting dyspnea, fever, or chest pain - contact the trial team immediately.",
+      "guardrail": "This page is a patient-facing summary for a clinical-trial safety review scenario. It supports next-step understanding but does not replace emergency care or formal medical judgment."
+    }
+  }
+}

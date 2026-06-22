@@ -1,0 +1,652 @@
+﻿{
+  "data": {
+    "data_paths": {
+      "doctor_recommendations": "bundle.data.suggestions.doctor",
+      "likely_causes": "bundle.data.triage.output_json.likely_causes",
+      "next_operation": "bundle.data.triage.output_json.next_operation",
+      "patient_recommendations": "bundle.data.suggestions.patient",
+      "rationale": "bundle.data.triage.output_json.rationale",
+      "signals_metrics": "signals.data[0].metrics_json.output_json.metrics_json",
+      "signals_summary": "signals.data[0].summary_text",
+      "urgency_level": "bundle.data.triage.output_json.urgency_level"
+    },
+    "dialogue_messages": [
+      {
+        "content": "My heart has been racing and skipping on and off since the last cycle, and I feel unusually tired.",
+        "kind": "",
+        "message_index": 0,
+        "target_path": "messages[0].content",
+        "time": "12:50",
+        "type": "patient"
+      },
+      {
+        "content": "Any chest pain, fainting, breathlessness lying flat, or ankle swelling? How long do the palpitations last?",
+        "kind": "",
+        "message_index": 1,
+        "target_path": "messages[1].content",
+        "time": "12:51",
+        "type": "ai"
+      },
+      {
+        "content": "No chest pain or fainting. They last a minute or two and then settle. I do get a little short of breath climbing stairs now.",
+        "kind": "",
+        "message_index": 2,
+        "target_path": "messages[2].content",
+        "time": "12:52",
+        "type": "patient"
+      },
+      {
+        "content": "Is this new since starting ADC-047, and have you kept taking your metoprolol and blood-pressure pills?",
+        "kind": "",
+        "message_index": 3,
+        "target_path": "messages[3].content",
+        "time": "12:53",
+        "type": "ai"
+      },
+      {
+        "content": "Yes, new this cycle. I've taken all my pills. The tiredness is the part that worries me most.",
+        "kind": "",
+        "message_index": 4,
+        "target_path": "messages[4].content",
+        "time": "12:54",
+        "type": "patient"
+      }
+    ],
+    "doctor_id": "zvcm4rxslu90la7gcdj83a",
+    "doctor_info": null,
+    "patient": {
+      "allergy_history": {
+        "items": [],
+        "none": true,
+        "severe": false
+      },
+      "baseline_vitals": {
+        "\u4f53\u6e29": 36.5,
+        "\u5fc3\u7387": 70,
+        "\u8840\u538b": {
+          "\u6536\u7f29\u538b": 134,
+          "\u8212\u5f20\u538b": 82
+        },
+        "\u8840\u6c27\u9971\u548c\u5ea6": 97
+      },
+      "chief_complaint": "My heart has been racing and skipping on and off since the last cycle, and I feel unusually tired.",
+      "demographics": {
+        "\u5e74\u9f84": 66,
+        "\u6027\u522b": "\u7537"
+      },
+      "medical_history": {
+        "diagnoses": [
+          "Metastatic gastric cancer (HER2 amplification)\uff08Metastatic gastric cancer; HER2 amplification\uff09",
+          "Hypertension\uff08Hypertension (~10 yrs)\uff09",
+          "Prior coronary artery disease; baseline low-normal LVEF\uff08Prior CAD; baseline LVEF 54% (low-normal); baseline ECG sinus rhythm, QTc 430 ms\uff09"
+        ],
+        "diagnoses_str": "Metastatic gastric cancer (HER2 amplification)\uff08Metastatic gastric cancer; HER2 amplification\uff09\u3001Hypertension\uff08Hypertension (~10 yrs)\uff09\u3001Prior coronary artery disease; baseline low-normal LVEF\uff08Prior CAD; baseline LVEF 54% (low-normal); baseline ECG sinus rhythm, QTc 430 ms\uff09"
+      },
+      "meds": [
+        "ADC-047 6.4 mg/kg",
+        "metoprolol 47.5 mg QD",
+        "amlodipine 5 mg QD",
+        "aspirin 100 mg QD"
+      ]
+    },
+    "raw_signals": [],
+    "resources": [
+      {
+        "evidence": "\u5efa\u8bae\u4e2d\u51fa\u73b0'\u5fc3\u7535\u56fe'",
+        "id": "DX-ECG-001",
+        "name": "12\u5bfc\u8054\u5fc3\u7535\u56fe"
+      },
+      {
+        "evidence": "\u5efa\u8bae\u4e2d\u51fa\u73b0'\u808c\u9499\u86cb\u767d'",
+        "id": "DX-TROP-001",
+        "name": "\u808c\u9499\u86cb\u767d\u68c0\u67e5"
+      },
+      {
+        "evidence": "\u5efa\u8bae\u4e2d\u51fa\u73b0'\u5fc3\u810f\u5f69\u8d85'",
+        "id": "DX-ECHO-001",
+        "name": "\u5fc3\u810f\u5f69\u8d85"
+      }
+    ],
+    "scenario": {
+      "chief_complaint": "Episodic palpitations and fatigue with HR/BP drift",
+      "initial_query": "My heart has been racing and skipping on and off since the last cycle, and I feel unusually tired.",
+      "scenario_id": "clinical_trial_michael",
+      "trigger_type": "patient_self_report",
+      "user_id": "ct_michael"
+    },
+    "signals": {
+      "metrics": {},
+      "signals_list": [
+        {
+          "metrics_json": {
+            "anomalies": [
+              "\u5fc3\u7387\u6f02\u79fb\u4f34\u9635\u53d1\u5fc3\u60b8",
+              "\u8840\u538b\u4e0d\u7a33"
+            ],
+            "detection_summary": {
+              "\u4f53\u6e29": {
+                "mean": 36.6
+              },
+              "\u5fc3\u7387": {
+                "mean": 104
+              },
+              "\u8840\u538b": {
+                "\u6536\u7f29\u538b": {
+                  "mean": 148
+                },
+                "\u8212\u5f20\u538b": {
+                  "mean": 92
+                }
+              },
+              "\u8840\u6c27\u9971\u548c\u5ea6": {
+                "mean": 96
+              }
+            },
+            "overall_summary": {
+              "\u4f53\u6e29": {
+                "max": 36.7,
+                "min": 36.5
+              },
+              "\u5fc3\u7387": {
+                "max": 104,
+                "min": 72
+              },
+              "\u8840\u538b": {
+                "\u6536\u7f29\u538b": {
+                  "max": 150,
+                  "min": 132
+                },
+                "\u8212\u5f20\u538b": {
+                  "max": 94,
+                  "min": 80
+                }
+              },
+              "\u8840\u6c27\u9971\u548c\u5ea6": {
+                "max": 97,
+                "min": 96
+              }
+            }
+          },
+          "metrics_json_en": {
+            "anomalies": [
+              "HR drift with episodic palpitations",
+              "labile BP"
+            ]
+          },
+          "summary_text": "HR drift with episodic palpitations and labile BP this cycle in a patient with prior CAD and low-normal LVEF."
+        }
+      ],
+      "summary_text": "HR drift with episodic palpitations and labile BP this cycle in a patient with prior CAD and low-normal LVEF.",
+      "vital_signs": {
+        "baselines": {
+          "blood_pressure": {
+            "diastolic": 82,
+            "systolic": 134
+          },
+          "heart_rate": 70,
+          "temperature": 36.5
+        },
+        "dbp": 92,
+        "heartrate": 104,
+        "o2sat": 96,
+        "ranges": {
+          "blood_pressure": {
+            "diastolic": {
+              "max": 94,
+              "min": 80
+            },
+            "systolic": {
+              "max": 150,
+              "min": 132
+            }
+          },
+          "heart_rate": {
+            "max": 104,
+            "min": 72
+          },
+          "spo2": {
+            "max": 97,
+            "min": 96
+          },
+          "temperature": {
+            "max": 36.7,
+            "min": 36.5
+          }
+        },
+        "sbp": 148,
+        "temperature": 36.6
+      }
+    },
+    "suggestions": {
+      "doctor": [
+        {
+          "output_json": [
+            {
+              "advice": [
+                "Read as an early treatment-emergent cardiac signal (LVEF / arrhythmia / QTc) to objectify, not simple treatment fatigue, given prior CAD and low-normal baseline LVEF"
+              ],
+              "category": "Assessment"
+            },
+            {
+              "advice": [
+                "12-lead \u5fc3\u7535\u56fe (rhythm + QTc) now and on symptoms; \u5fc3\u810f\u5f69\u8d85 for LVEF vs baseline 54%; BP/HR trend log",
+                "CBC (anemia), electrolytes (K/Mg), TFT; \u808c\u9499\u86cb\u767d/BNP if it progresses; review QT-prolonging co-medications"
+              ],
+              "category": "Surveillance"
+            },
+            {
+              "advice": [
+                "If LVEF drop >=10% to <50% or sustained arrhythmia, hold the next dose, involve cardiology, and treat as >=G2 cardiac AE"
+              ],
+              "category": "Escalation"
+            }
+          ]
+        }
+      ],
+      "patient": [
+        {
+          "output_json": [
+            {
+              "advice": [
+                "Keep a BP/HR trend log and note how long palpitations last",
+                "Continue metoprolol and blood-pressure medications as prescribed"
+              ],
+              "category": "Self-monitoring"
+            },
+            {
+              "advice": [
+                "Urgent contact for chest pain, fainting, sustained palpitations beyond a few minutes, breathlessness at rest, or ankle swelling"
+              ],
+              "category": "When to seek help"
+            }
+          ]
+        }
+      ]
+    },
+    "symptoms": {
+      "chief_complaint": "My heart has been racing and skipping on and off since the last cycle, and I feel unusually tired.",
+      "patient_feedback": [
+        "My heart races and skips for a minute or two on and off since this cycle; no chest pain or fainting; a little short of breath on stairs; the tiredness worries me most."
+      ],
+      "raw_patient_feedback": [
+        "My heart races and skips for a minute or two on and off since this cycle; no chest pain or fainting; a little short of breath on stairs; the tiredness worries me most."
+      ],
+      "selected_symptoms": [],
+      "selection_status": "",
+      "system_identified": [
+        "episodic palpitations",
+        "fatigue",
+        "mild exertional dyspnea",
+        "HR/BP drift"
+      ]
+    },
+    "task_type": "clinical_trial_adc_safety",
+    "triage": {
+      "esi_level": 4,
+      "likely_causes": [
+        "Treatment-emergent arrhythmia / autonomic effect",
+        "Early reduced cardiac reserve / LVEF decline",
+        "Anemia, electrolyte (K/Mg) or thyroid abnormality",
+        "Tumor-related deconditioning or QT-prolonging co-meds (to exclude)"
+      ],
+      "next_operation": "Trial-team follow-up (within 24h) + cardiology referral",
+      "path": "home",
+      "rationale": "DXd-class ADCs carry a cardiac monitoring signal (LVEF decline, QTc); Michael's CV history lowers his threshold. Fatigue may be treatment-related, cardiac, or anemia - objective LVEF/ECG/labs separate them before the next dose.",
+      "urgency_level": "\u5173\u6ce8"
+    },
+    "triage_id": "ct_triage_michael",
+    "trial_context": {
+      "adverse_event": {
+        "axis": {
+          "en": "cardiac axis",
+          "zh": "\u5fc3\u810f\u8f74"
+        },
+        "onset": {
+          "en": "New-onset episodic palpitations with HR drift and labile BP since the last cycle, plus new fatigue and mild exertional dyspnea.",
+          "zh": "\u81ea\u4e0a\u4e2a\u5468\u671f\u8d77\u65b0\u53d1\u9635\u53d1\u6027\u5fc3\u60b8,\u4f34\u5fc3\u7387\u6f02\u79fb\u4e0e\u8840\u538b\u4e0d\u7a33,\u5e76\u51fa\u73b0\u65b0\u53d1\u4e4f\u529b\u53ca\u8f7b\u5ea6\u6d3b\u52a8\u540e\u6c14\u77ed\u3002"
+        },
+        "symptoms": [
+          {
+            "en": "episodic palpitations",
+            "zh": "\u9635\u53d1\u6027\u5fc3\u60b8"
+          },
+          {
+            "en": "fatigue",
+            "zh": "\u4e4f\u529b"
+          },
+          {
+            "en": "mild exertional dyspnea",
+            "zh": "\u8f7b\u5ea6\u6d3b\u52a8\u540e\u6c14\u77ed"
+          },
+          {
+            "en": "HR/BP drift (HR 70 to 104, labile BP)",
+            "zh": "\u5fc3\u7387/\u8840\u538b\u6f02\u79fb(\u5fc3\u7387 70 \u81f3 104,\u8840\u538b\u4e0d\u7a33)"
+          }
+        ]
+      },
+      "chart_series": [
+        {
+          "color": "amber",
+          "data": [
+            72,
+            78,
+            88,
+            96,
+            102,
+            104
+          ],
+          "key": "hr",
+          "label": {
+            "en": "Heart Rate (bpm)",
+            "zh": "\u5fc3\u7387 (bpm)"
+          },
+          "labels": [
+            "12:00",
+            "12:10",
+            "12:20",
+            "12:30",
+            "12:40",
+            "12:50"
+          ],
+          "max": 120,
+          "min": 60,
+          "unit": "bpm"
+        },
+        {
+          "color": "rose",
+          "data": [
+            134,
+            138,
+            142,
+            146,
+            148,
+            148
+          ],
+          "key": "sbp",
+          "label": {
+            "en": "Systolic BP (mmHg)",
+            "zh": "\u6536\u7f29\u538b (mmHg)"
+          },
+          "labels": [
+            "12:00",
+            "12:10",
+            "12:20",
+            "12:30",
+            "12:40",
+            "12:50"
+          ],
+          "max": 160,
+          "min": 110,
+          "unit": "mmHg"
+        }
+      ],
+      "cohort_inference": {
+        "escalation": {
+          "en": "A second comparable cardiac signal within the cardiac axis triggers a PI safety review plus a protocol-permitted dose hold for that subgroup.",
+          "zh": "\u5fc3\u810f\u8f74\u5185\u51fa\u73b0\u7b2c\u4e8c\u4e2a\u53ef\u6bd4\u7684\u5fc3\u810f\u4fe1\u53f7\u5373\u89e6\u53d1 PI \u5b89\u5168\u5ba1\u67e5\u5e76\u5bf9\u8be5\u5b50\u7fa4\u542f\u52a8\u534f\u8bae\u5141\u8bb8\u7684\u5242\u91cf\u6682\u505c\u3002"
+        },
+        "intro": {
+          "en": "Michael occupies the cardiac axis, the 3rd of 3 cycle-1 signals across the 8-person cohort and again a different organ system (lung / GI-metabolic / cardiac). Inference: three different organ toxicities in cycle 1 within one 8-person cohort means ADC-047's toxicity is multi-system and driven by each participant's baseline vulnerability, not a single shared signal. Among the 5 asymptomatic, those with CV history / abnormal baseline ECG / borderline LVEF are the subgroup most likely to reproduce Michael's cardiac signal.",
+          "zh": "Michael \u5360\u636e\u5fc3\u810f\u8f74,\u662f 8 \u4eba\u961f\u5217\u4e2d 3 \u4e2a\u7b2c 1 \u5468\u671f\u4fe1\u53f7\u4e2d\u7684\u7b2c 3 \u4e2a,\u540c\u6837\u5c5e\u4e8e\u4e0d\u540c\u5668\u5b98\u7cfb\u7edf(\u80ba / \u6d88\u5316-\u4ee3\u8c22 / \u5fc3\u810f)\u3002\u63a8\u65ad:\u4e00\u4e2a 8 \u4eba\u961f\u5217\u4e2d\u7b2c 1 \u5468\u671f\u51fa\u73b0\u4e09\u79cd\u4e0d\u540c\u5668\u5b98\u6bd2\u6027,\u610f\u5473\u7740 ADC-047 \u7684\u6bd2\u6027\u662f\u591a\u7cfb\u7edf\u7684\u3001\u7531\u5404\u53d7\u8bd5\u8005\u57fa\u7ebf\u6613\u611f\u6027\u9a71\u52a8,\u800c\u975e\u5355\u4e00\u5171\u4eab\u4fe1\u53f7\u30025 \u540d\u65e0\u75c7\u72b6\u8005\u4e2d,\u6709\u5fc3\u8840\u7ba1\u75c5\u53f2 / \u57fa\u7ebf\u5fc3\u7535\u56fe\u5f02\u5e38 / LVEF \u4e34\u754c\u8005\u662f\u6700\u53ef\u80fd\u590d\u73b0 Michael \u5fc3\u810f\u4fe1\u53f7\u7684\u5b50\u7fa4\u3002"
+        },
+        "population": {
+          "n_asymptomatic": 5,
+          "n_on_drug": 8,
+          "n_symptomatic": 3
+        },
+        "title": {
+          "en": "Susceptible subgroup among co-treated participants",
+          "zh": "\u540c\u836f\u53d7\u8bd5\u8005\u6613\u611f\u5b50\u7fa4\u63a8\u65ad"
+        },
+        "vulnerability_map": [
+          {
+            "axis": {
+              "en": "lung-reserve",
+              "zh": "\u80ba\u50a8\u5907"
+            },
+            "exemplar": "Jason Miller",
+            "is_self": false,
+            "organ_toxicity": {
+              "en": "ILD / pneumonitis",
+              "zh": "ILD / \u80ba\u708e"
+            },
+            "traits": [
+              {
+                "en": "reduced pulmonary reserve (metastatic NSCLC, age 72, prior platinum)",
+                "zh": "\u80ba\u50a8\u5907\u4e0b\u964d(\u8f6c\u79fb\u6027 NSCLC\u300172 \u5c81\u3001\u65e2\u5f80\u542b\u94c2\u5316\u7597)"
+              }
+            ]
+          },
+          {
+            "axis": {
+              "en": "GI + metabolic",
+              "zh": "\u6d88\u5316\u9053+\u4ee3\u8c22"
+            },
+            "exemplar": "Emily Carter",
+            "is_self": false,
+            "organ_toxicity": {
+              "en": "GI toxicity + dehydration / glycemic instability",
+              "zh": "GI \u6bd2\u6027 + \u8131\u6c34/\u8840\u7cd6\u5931\u7a33"
+            },
+            "traits": [
+              {
+                "en": "type 2 diabetes; reduced metabolic reserve and poor oral intake",
+                "zh": "2 \u578b\u7cd6\u5c3f\u75c5;\u4ee3\u8c22\u50a8\u5907\u4e0b\u964d\u3001\u8fdb\u98df\u51cf\u5c11"
+              }
+            ]
+          },
+          {
+            "axis": {
+              "en": "cardiac",
+              "zh": "\u5fc3\u810f"
+            },
+            "exemplar": "Michael Chen",
+            "is_self": true,
+            "organ_toxicity": {
+              "en": "cardiac signal (LVEF / QTc / arrhythmia)",
+              "zh": "\u5fc3\u810f\u4fe1\u53f7 (LVEF / QTc / \u5fc3\u5f8b)"
+            },
+            "traits": [
+              {
+                "en": "prior CAD, hypertension, low-normal baseline LVEF",
+                "zh": "\u65e2\u5f80\u51a0\u5fc3\u75c5\u3001\u9ad8\u8840\u538b\u3001\u57fa\u7ebf LVEF \u4f4e\u9650"
+              }
+            ]
+          }
+        ],
+        "watch_list": [
+          {
+            "en": "For the cardiac-axis subgroup, set a baseline + on-treatment ECG/echo schedule, electrolyte optimization, and a QT-drug review around the dosing window.",
+            "zh": "\u5bf9\u5fc3\u810f\u8f74\u5b50\u7fa4,\u8bbe\u5b9a\u57fa\u7ebf + \u6cbb\u7597\u4e2d ECG/\u8d85\u58f0\u5fc3\u52a8\u8ba1\u5212\u3001\u7535\u89e3\u8d28\u4f18\u5316,\u5e76\u5728\u7ed9\u836f\u7a97\u524d\u540e\u590d\u6838\u5ef6\u957f QT \u7684\u836f\u7269\u3002"
+          },
+          {
+            "en": "Flag participants with CV history, abnormal baseline ECG, or borderline LVEF for closer cardiac monitoring.",
+            "zh": "\u6807\u8bb0\u6709\u5fc3\u8840\u7ba1\u75c5\u53f2\u3001\u57fa\u7ebf\u5fc3\u7535\u56fe\u5f02\u5e38\u6216 LVEF \u4e34\u754c\u7684\u53d7\u8bd5\u8005\u4ee5\u52a0\u5f3a\u5fc3\u810f\u76d1\u6d4b\u3002"
+          }
+        ]
+      },
+      "individual_trajectory": {
+        "evidence": [
+          {
+            "inference": {
+              "en": "Possible treatment-emergent arrhythmia / autonomic effect; self-limited and hemodynamically tolerated so far.",
+              "zh": "\u53ef\u80fd\u4e3a\u6cbb\u7597\u76f8\u5173\u5fc3\u5f8b\u5931\u5e38 / \u81ea\u4e3b\u795e\u7ecf\u6548\u5e94;\u76ee\u524d\u81ea\u9650\u4e14\u8840\u6d41\u52a8\u529b\u5b66\u53ef\u8010\u53d7\u3002"
+            },
+            "observation": {
+              "en": "New episodic palpitations + HR 70 to 104 + labile BP this cycle",
+              "zh": "\u672c\u5468\u671f\u65b0\u53d1\u9635\u53d1\u6027\u5fc3\u60b8 + \u5fc3\u7387 70 \u81f3 104 + \u8840\u538b\u4e0d\u7a33"
+            }
+          },
+          {
+            "inference": {
+              "en": "Early reduced cardiac reserve cannot be excluded.",
+              "zh": "\u4e0d\u80fd\u6392\u9664\u65e9\u671f\u5fc3\u810f\u50a8\u5907\u4e0b\u964d\u3002"
+            },
+            "observation": {
+              "en": "Fatigue + mild exertional dyspnea on a low-normal baseline LVEF",
+              "zh": "\u5728 LVEF \u4f4e\u9650\u57fa\u7ebf\u4e0a\u51fa\u73b0\u4e4f\u529b + \u8f7b\u5ea6\u6d3b\u52a8\u540e\u6c14\u77ed"
+            }
+          },
+          {
+            "inference": {
+              "en": "Anemia, electrolyte (K/Mg) abnormality, thyroid, tumor-related deconditioning, QT-prolonging co-meds.",
+              "zh": "\u8d2b\u8840\u3001\u7535\u89e3\u8d28(K/Mg)\u5f02\u5e38\u3001\u7532\u72b6\u817a\u3001\u80bf\u7624\u76f8\u5173\u4f53\u80fd\u4e0b\u964d\u3001\u5ef6\u957f QT \u7684\u5408\u5e76\u7528\u836f\u3002"
+            },
+            "observation": {
+              "en": "Confounders to exclude",
+              "zh": "\u9700\u6392\u9664\u7684\u6df7\u6742\u56e0\u7d20"
+            }
+          }
+        ],
+        "intro": {
+          "en": "Palpitations + fatigue + HR/BP drift are not acutely unstable, but in a participant with prior CAD and low-normal LVEF they may be the early face of a treatment-emergent cardiac toxicity (LVEF decline / arrhythmia / QTc), which is monitored across the DXd class. Read as a cardiac signal to objectify, not simple treatment fatigue.",
+          "zh": "\u5fc3\u60b8 + \u4e4f\u529b + \u5fc3\u7387/\u8840\u538b\u6f02\u79fb\u5e76\u975e\u6025\u6027\u5931\u7a33,\u4f46\u5728\u65e2\u5f80\u51a0\u5fc3\u75c5\u3001LVEF \u4f4e\u9650\u7684\u53d7\u8bd5\u8005\u4e2d,\u53ef\u80fd\u662f\u6cbb\u7597\u76f8\u5173\u5fc3\u810f\u6bd2\u6027(LVEF \u4e0b\u964d / \u5fc3\u5f8b\u5931\u5e38 / QTc)\u7684\u65e9\u671f\u8868\u73b0,\u8be5\u6bd2\u6027\u5728 DXd \u7c7b\u4e2d\u9700\u76d1\u6d4b\u3002\u5e94\u4f5c\u4e3a\u9700\u5ba2\u89c2\u5316\u7684\u5fc3\u810f\u4fe1\u53f7\u5224\u8bfb,\u800c\u975e\u5355\u7eaf\u6cbb\u7597\u6027\u4e4f\u529b\u3002"
+        },
+        "projection_48_72h": [
+          {
+            "en": "Benign course: palpitations decrease, HR/BP return to baseline, no LVEF change, fatigue stable.",
+            "zh": "\u826f\u6027\u75c5\u7a0b:\u5fc3\u60b8\u51cf\u5c11,\u5fc3\u7387/\u8840\u538b\u56de\u5230\u57fa\u7ebf,LVEF \u65e0\u53d8\u5316,\u4e4f\u529b\u7a33\u5b9a\u3002"
+          },
+          {
+            "en": "Progression: sustained tachyarrhythmia, resting dyspnea/orthopnea, edema, LVEF drop >=10% to <50%, rising troponin/BNP.",
+            "zh": "\u8fdb\u5c55:\u6301\u7eed\u6027\u5feb\u901f\u6027\u5fc3\u5f8b\u5931\u5e38,\u9759\u606f\u6c14\u77ed/\u7aef\u5750\u547c\u5438,\u6c34\u80bf,LVEF \u4e0b\u964d >=10% \u81f3 <50%,\u808c\u9499\u86cb\u767d/BNP \u5347\u9ad8\u3002"
+          }
+        ],
+        "red_flags": {
+          "patient": [
+            {
+              "en": "Chest pain, syncope, sustained palpitations > a few minutes, breathlessness at rest, or ankle swelling - urgent contact.",
+              "zh": "\u80f8\u75db\u3001\u6655\u53a5\u3001\u6301\u7eed\u8d85\u8fc7\u6570\u5206\u949f\u7684\u5fc3\u60b8\u3001\u9759\u606f\u6c14\u77ed\u6216\u8e1d\u90e8\u6c34\u80bf \u2014 \u7d27\u6025\u8054\u7cfb\u3002"
+            }
+          ],
+          "physician": [
+            {
+              "en": "If LVEF drop >=10% to <50% or sustained arrhythmia: hold the next dose, involve cardiology, treat as >=G2 cardiac AE.",
+              "zh": "\u82e5 LVEF \u4e0b\u964d >=10% \u81f3 <50% \u6216\u6301\u7eed\u6027\u5fc3\u5f8b\u5931\u5e38:\u6682\u505c\u4e0b\u4e00\u5242\u91cf,\u8bf7\u5fc3\u5185\u79d1\u4f1a\u8bca,\u6309 >=G2 \u5fc3\u810f\u4e0d\u826f\u4e8b\u4ef6\u5904\u7406\u3002"
+            }
+          ]
+        },
+        "surveillance": [
+          {
+            "en": "12-lead ECG (rhythm + QTc) now and on symptoms; echocardiogram for LVEF vs baseline 54%; BP/HR trend log.",
+            "zh": "12 \u5bfc\u8054\u5fc3\u7535\u56fe(\u5fc3\u5f8b + QTc)\u73b0\u5728\u53ca\u6709\u75c7\u72b6\u65f6;\u8d85\u58f0\u5fc3\u52a8\u8bc4\u4f30 LVEF \u5bf9\u6bd4\u57fa\u7ebf 54%;\u8840\u538b/\u5fc3\u7387\u8d8b\u52bf\u8bb0\u5f55\u3002"
+          },
+          {
+            "en": "CBC (anemia), electrolytes (K/Mg), TFT; troponin/BNP if it progresses; review QT-prolonging co-medications.",
+            "zh": "CBC(\u8d2b\u8840)\u3001\u7535\u89e3\u8d28(K/Mg)\u3001\u7532\u529f;\u8fdb\u5c55\u65f6\u67e5\u808c\u9499\u86cb\u767d/BNP;\u590d\u6838\u5ef6\u957f QT \u7684\u5408\u5e76\u7528\u836f\u3002"
+          }
+        ],
+        "title": {
+          "en": "Projected cardiac signal trajectory",
+          "zh": "\u6f5c\u5728\u5fc3\u810f\u4fe1\u53f7\u8f68\u8ff9\u63a8\u65ad"
+        }
+      },
+      "memory_evidence": [
+        {
+          "content": {
+            "en": "HER2-amplified metastatic gastric cancer; hypertension; prior CAD",
+            "zh": "HER2 \u6269\u589e\u8f6c\u79fb\u6027\u80c3\u764c;\u9ad8\u8840\u538b;\u65e2\u5f80\u51a0\u5fc3\u75c5"
+          },
+          "date": "2026-05-15",
+          "memory_type": {
+            "en": "Primary condition",
+            "zh": "\u4e3b\u8981\u75be\u75c5\u4fe1\u606f"
+          },
+          "relevance": {
+            "en": "The cardiovascular history defines the cardiac vulnerability axis behind the projection.",
+            "zh": "\u5fc3\u8840\u7ba1\u75c5\u53f2\u5b9a\u4e49\u4e86\u8be5\u63a8\u65ad\u80cc\u540e\u7684\u5fc3\u810f\u6613\u611f\u8f74\u3002"
+          }
+        },
+        {
+          "content": {
+            "en": "baseline LVEF 54%, baseline ECG QTc 430 ms, BP 134/82, HR 70",
+            "zh": "\u57fa\u7ebf LVEF 54%\u3001\u57fa\u7ebf ECG QTc 430 ms\u3001\u8840\u538b 134/82\u3001\u5fc3\u7387 70"
+          },
+          "date": "2026-06-05",
+          "memory_type": {
+            "en": "Vital-sign baseline",
+            "zh": "\u751f\u547d\u4f53\u5f81\u57fa\u7ebf"
+          },
+          "relevance": {
+            "en": "Provides the LVEF/QTc/HR baselines against which the cardiac signal is judged.",
+            "zh": "\u63d0\u4f9b\u5224\u65ad\u5fc3\u810f\u4fe1\u53f7\u6240\u4f9d\u636e\u7684 LVEF/QTc/\u5fc3\u7387\u57fa\u7ebf\u3002"
+          }
+        },
+        {
+          "content": {
+            "en": "metoprolol, amlodipine, aspirin",
+            "zh": "\u7f8e\u6258\u6d1b\u5c14\u3001\u6c28\u6c2f\u5730\u5e73\u3001\u963f\u53f8\u5339\u6797"
+          },
+          "date": "2026-05-20",
+          "memory_type": {
+            "en": "Medication orders",
+            "zh": "\u7528\u836f\u533b\u5631\u4fe1\u606f"
+          },
+          "relevance": {
+            "en": "Confirms adherence to rate/BP control, so HR 70 to 104 despite beta-blockade is notable.",
+            "zh": "\u786e\u8ba4\u6b63\u5728\u4f7f\u7528\u63a7\u7387/\u964d\u538b\u836f,\u56e0\u6b64\u5728 \u03b2 \u53d7\u4f53\u963b\u6ede\u4e0b\u5fc3\u7387\u4ecd 70 \u81f3 104 \u503c\u5f97\u6ce8\u610f\u3002"
+          }
+        },
+        {
+          "content": {
+            "en": "prior cardiac event + baseline echocardiogram on file",
+            "zh": "\u65e2\u5f80\u5fc3\u810f\u4e8b\u4ef6 + \u5df2\u6709\u57fa\u7ebf\u8d85\u58f0\u5fc3\u52a8"
+          },
+          "date": "2026-04-30",
+          "memory_type": {
+            "en": "Visit history",
+            "zh": "\u5c31\u8bca\u8bb0\u5f55\u53f2"
+          },
+          "relevance": {
+            "en": "Prior cardiac event and baseline echo anchor the comparison for any LVEF decline.",
+            "zh": "\u65e2\u5f80\u5fc3\u810f\u4e8b\u4ef6\u4e0e\u57fa\u7ebf\u8d85\u58f0\u5fc3\u52a8\u4e3a\u4efb\u4f55 LVEF \u4e0b\u964d\u951a\u5b9a\u6bd4\u8f83\u57fa\u51c6\u3002"
+          }
+        },
+        {
+          "content": {
+            "en": "new-onset palpitations + HR drift this cycle",
+            "zh": "\u672c\u5468\u671f\u65b0\u53d1\u5fc3\u60b8 + \u5fc3\u7387\u6f02\u79fb"
+          },
+          "date": "2026-06-20",
+          "memory_type": {
+            "en": "Abnormal-event history",
+            "zh": "\u5f02\u5e38\u5386\u53f2\u603b\u7ed3"
+          },
+          "relevance": {
+            "en": "Marks the palpitations as new this cycle, supporting a treatment-emergent reading.",
+            "zh": "\u6807\u8bb0\u5fc3\u60b8\u4e3a\u672c\u5468\u671f\u65b0\u53d1,\u652f\u6301\u6cbb\u7597\u76f8\u5173\u7684\u5224\u8bfb\u3002"
+          }
+        }
+      ],
+      "patient_name": "Michael Chen",
+      "trial": {
+        "context_text": {
+          "en": "ADC-047 Phase 1b multi-tumor safety cohort: a small early-phase basket across HER2/EGFR-altered solid tumors. 8 participants are currently on ADC-047; 3 are now symptomatic in cycle 1. DXd-class ADCs carry a cardiac monitoring signal (LVEF decline, QTc), and drug-induced ILD / pneumonitis is the signature DLT watched for in every participant.",
+          "zh": "ADC-047 1b \u671f\u591a\u7624\u79cd\u5b89\u5168\u961f\u5217:\u9488\u5bf9 HER2/EGFR \u6539\u53d8\u5b9e\u4f53\u7624\u7684\u65e9\u671f\u5c0f\u578b\u7bee\u5f0f\u961f\u5217\u3002\u76ee\u524d 8 \u540d\u53d7\u8bd5\u8005\u5728\u7528 ADC-047,\u5176\u4e2d 3 \u540d\u5728\u7b2c 1 \u5468\u671f\u5df2\u51fa\u73b0\u75c7\u72b6\u3002DXd \u7c7b ADC \u5e26\u6709\u5fc3\u810f\u76d1\u6d4b\u4fe1\u53f7(LVEF \u4e0b\u964d\u3001QTc),\u800c\u836f\u7269\u76f8\u5173 ILD / \u80ba\u708e\u662f\u9700\u5728\u6bcf\u4f4d\u53d7\u8bd5\u8005\u4e2d\u76d1\u6d4b\u7684\u6807\u5fd7\u6027 DLT\u3002"
+        },
+        "cycle": "C1D14",
+        "dose": "6.4 mg/kg",
+        "drug": "ADC-047",
+        "drug_class": {
+          "en": "deruxtecan-class ADC (topoisomerase-I payload, DXd-class)",
+          "zh": "deruxtecan \u7c7b ADC\uff08topoisomerase-I \u8f7d\u8377\uff0cDXd \u7c7b\uff09"
+        },
+        "trial_id": "ADC-047-1B"
+      }
+    },
+    "trigger_context": {
+      "ai_exclusions": [],
+      "ai_risks": [],
+      "patient_feedback": "My heart has been racing and skipping on and off since the last cycle, and I feel unusually tired.",
+      "trigger_reason": [
+        "\u5fc3\u7387\u6f02\u79fb\u4f34\u9635\u53d1\u5fc3\u60b8",
+        "\u8840\u538b\u4e0d\u7a33"
+      ],
+      "trigger_type": "patient_self_report"
+    }
+  },
+  "signal_window_days": 10,
+  "source": "fixture",
+  "success": true,
+  "task_id": "QSzoLZ4eqimNsIzsQzLQ1D"
+}
