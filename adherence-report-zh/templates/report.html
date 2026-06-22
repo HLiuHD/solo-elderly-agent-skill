@@ -5,73 +5,66 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{report_title}</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<script type="text/javascript" src="https://api.map.baidu.com/api?v=3.0&ak={baidu_map_ak}"></script>
+{maps_script}
 <style>
-  * {{ box-sizing:border-box; }}
-  html, body {{ width:100%; max-width:100%; overflow-x:hidden !important; }}
-  body {{ font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background:#f5f4fa !important; color:#17151f; letter-spacing:0; }}
-  p, span, div, button, td, th {{ overflow-wrap:anywhere; }}
-  .max-w-2xl {{ max-width:720px; }}
-  .flex-1, .meal-card, .bg-white, table {{ min-width:0; }}
-  .bg-white.rounded-xl {{
-    border-radius:20px !important;
-    border-color:#e5e2ef !important;
-    box-shadow:0 10px 26px rgba(35,31,60,.075) !important;
+  body {{ font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; margin:0; padding:0; -webkit-text-size-adjust:100%; }}
+  * {{ box-sizing: border-box; }}
+  .meal-card {{ transition: all .2s; }}
+  .meal-card:hover {{ transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.08); }}
+  .feedback-actions {{ display:flex; flex-direction:column; gap:6px; align-self:stretch; }}
+  .feedback-btn {{
+    opacity:1;
+    cursor:pointer;
+    border:1px solid #d8dee8;
+    background:#fff;
+    color:#475569;
+    font-size:.76rem;
+    line-height:1.1;
+    padding:8px 11px;
+    border-radius:999px;
+    min-height:36px;
+    min-width:92px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    font-weight:750;
+    box-shadow:0 2px 8px rgba(15,23,42,.05);
+    white-space:nowrap;
+    transition:background .18s ease, border-color .18s ease, color .18s ease, box-shadow .18s ease, transform .18s ease;
   }}
-  .bg-gradient-to-br {{
-    background:#ffffff !important;
-    color:#17151f !important;
-    border:1px solid #e4def7;
-    border-top:5px solid #5b3fd6;
-    box-shadow:0 12px 28px rgba(75,46,191,.11) !important;
+  .feedback-btn:hover {{ transform:translateY(-1px); border-color:#cbd5e1; background:#f8fafc; }}
+  .feedback-btn.like {{ color:#047857; border-color:#bbf7d0; background:#f0fdf4; }}
+  .feedback-btn.like:hover {{ background:#dcfce7; border-color:#86efac; }}
+  .feedback-btn.feedback-skip {{ color:#475569; border-color:#e2e8f0; background:#fff; box-shadow:none; }}
+  .feedback-btn.feedback-skip:hover {{ background:#f8fafc; border-color:#cbd5e1; }}
+  .feedback-btn.liked {{ color:#fff; background:#059669; border-color:#059669; box-shadow:0 0 0 3px rgba(5,150,105,.16); }}
+  .feedback-btn.disliked {{ color:#fff; background:#64748b; border-color:#64748b; box-shadow:0 0 0 3px rgba(100,116,139,.16); }}
+  .section-card[data-section="meal_plan"] #mealContent .grid {{
+    grid-template-columns:1fr !important;
+    gap:12px !important;
   }}
-  .bg-gradient-to-br p {{ color:#6b5bbd !important; }}
-  .bg-gradient-to-br > .flex {{ flex-wrap:wrap; }}
-  h1, h2 {{ color:#17151f; font-weight:800; }}
-  .text-emerald-700, .text-emerald-800, .text-emerald-600 {{ color:#5b3fd6 !important; }}
-  .bg-emerald-600 {{ background:#5b3fd6 !important; }}
-  .hover\:bg-emerald-700:hover {{ background:#4b32bc !important; }}
-  .bg-emerald-50 {{ background:#f4f1ff !important; }}
-  .border-emerald-100, .border-emerald-200 {{ border-color:#ded6ff !important; }}
-  .border-l-4, [style*="border-left:3px solid #10b981"] {{ border-left-color:#5b3fd6 !important; }}
-  .bg-white.rounded-xl > .flex.items-center.gap-2 > span.text-lg:first-child {{
-    width:44px; height:44px; border-radius:50%;
-    display:inline-flex; align-items:center; justify-content:center;
-    background:#eee9ff; color:#5b3fd6; flex-shrink:0;
+  .section-card[data-section="meal_plan"] .meal-card {{
+    display:grid !important;
+    grid-template-columns:auto minmax(0,1fr);
+    align-items:start;
+    gap:12px;
+    padding:14px !important;
   }}
-  .bg-white.rounded-xl > .flex.items-center.gap-2 {{
-    border-bottom-color:#ece8f4 !important;
+  .section-card[data-section="meal_plan"] .meal-card > div:last-child {{
+    grid-column:1 / -1;
+    display:grid !important;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:8px !important;
+    width:100%;
+    margin-top:4px;
   }}
-  .meal-period-label {{ color:#5f5870 !important; letter-spacing:.02em !important; font-weight:850 !important; }}
-  .meal-card {{ position:relative; background:#fff !important; border:1px solid #e7e3f0 !important; border-radius:18px !important; padding:14px !important; transition:all .18s ease; box-shadow:0 7px 18px rgba(35,31,60,.055); }}
-  .meal-card:hover {{ transform:translateY(-2px); border-color:#d5ccff !important; box-shadow:0 12px 24px rgba(35,31,60,.09); }}
-  .meal-icon-bubble {{ width:50px; height:50px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; background:linear-gradient(135deg,#dcfbff 0%,#eee9ff 100%); box-shadow:inset 0 0 0 1px rgba(91,63,214,.08); flex-shrink:0; }}
-  .meal-title {{ color:#17151f !important; font-size:.96rem !important; line-height:1.32; font-weight:850 !important; }}
-  .meal-reason {{ color:#6557bc !important; font-size:.78rem !important; line-height:1.45; font-style:normal !important; margin-top:5px !important; }}
-  .feedback-actions {{ align-self:stretch; }}
-  .feedback-btn {{ opacity:1; transition:transform .18s ease, filter .18s ease, box-shadow .18s ease; cursor:pointer; border:1px solid #ded6ff; background:#fff; color:#5b3fd6; font-size:0.76rem; line-height:1; padding:9px 12px; border-radius:14px; min-height:40px; min-width:108px; display:inline-flex; align-items:center; justify-content:center; gap:7px; flex-shrink:0; font-weight:850; box-shadow:0 5px 13px rgba(91,63,214,.08); white-space:nowrap; }}
-  .meal-card:hover .feedback-btn {{ opacity:1; }}
-  .feedback-btn:hover {{ transform:translateY(-1px); border-color:#b9aaff; background:#f7f4ff; }}
-  .feedback-btn.liked, .feedback-action-positive.liked {{
-    background-color:#5b3fd6 !important;
-    background-image:none !important;
-    color:#fff !important;
-    border-color:#5b3fd6 !important;
-    box-shadow:0 0 0 3px rgba(91,63,214,.18), 0 8px 18px rgba(91,63,214,.22) !important;
+  .section-card[data-section="meal_plan"] .meal-card .feedback-btn {{
+    opacity:1 !important;
+    width:100%;
+    min-width:0;
+    min-height:40px;
   }}
-  .feedback-btn.disliked, .feedback-action-negative.disliked {{
-    background-color:#b5472b !important;
-    background-image:none !important;
-    color:#fff !important;
-    border-color:#b5472b !important;
-    box-shadow:0 0 0 3px rgba(181,71,43,.18), 0 8px 18px rgba(181,71,43,.18) !important;
-  }}
-  .feedback-btn.liked:hover, .feedback-btn.disliked:hover {{ filter:brightness(.98); }}
-  .feedback-action-negative {{ color:#655f73; border-color:#e3dfeb; box-shadow:none; }}
-  .feedback-action-dot {{ width:18px; height:18px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; background:#eee9ff; color:#5b3fd6; font-size:.72rem; font-weight:900; flex-shrink:0; }}
-  .feedback-action-negative .feedback-action-dot {{ background:#f5f2f0; color:#7b7285; }}
-  .feedback-btn.liked .feedback-action-dot {{ background:rgba(255,255,255,.22); color:#fff; }}
-  .feedback-btn.disliked .feedback-action-dot {{ background:rgba(255,255,255,.22); color:#fff; }}
   .feedback-modal {{ position:fixed; inset:0; background:rgba(0,0,0,.4); display:flex; align-items:center; justify-content:center; z-index:9999; }}
   .feedback-modal-box {{ background:#fff; border-radius:16px; padding:24px; max-width:320px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,.2); }}
   .feedback-reason {{ display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0; border:1px solid #e2e8f0; border-radius:10px; background:#f8fafc; font-size:0.85em; cursor:pointer; transition:all .15s; }}
@@ -83,153 +76,211 @@
   .cuisine-chip.selected .chip-x {{ opacity:0.6; }}
   .cuisine-chip.selected .chip-x:hover {{ opacity:1; background:#fecaca; color:#991b1b; }}
 
-  @media (max-width: 640px) {{
-    .feedback-btn {{ opacity:1 !important; font-size:0.82em !important; padding:9px 12px !important; min-height:40px; }}
-    .cuisine-chip {{ padding:10px 16px; font-size:0.9em; }}
-    .feedback-modal-box {{ padding:28px; max-width:92%; }}
-    .feedback-reason {{ padding:14px 16px; font-size:1em; margin:8px 0; }}
-    #exportFeedbackBtn {{ padding:12px 20px !important; font-size:0.9em !important; white-space:normal; max-width:100%; }}
-    #customCuisineInput {{ font-size:1em !important; padding:10px 14px !important; }}
+  /* ─── Card/Accordion Layout (Message Center Style) ─── */
+  .section-card {{
+    border-radius: 18px;
+    overflow: hidden;
+    margin-bottom: 14px;
+    border: 2px solid #e8ecf0;
+    background: #fff;
+    transition: border-color .25s, box-shadow .25s, transform .15s;
+    box-shadow: 0 2px 8px rgba(0,0,0,.04);
   }}
-  @media (max-width: 640px) {{
-    body {{ font-size:16px; line-height:1.58; }}
-    .max-w-2xl {{ max-width:100%; padding-left:14px !important; padding-right:14px !important; }}
-    .p-5 {{ padding:16px !important; }}
-    .p-6 {{ padding:18px !important; }}
-    .rounded-xl, .rounded-2xl {{ border-radius:18px !important; }}
-    .grid-cols-3, .grid-cols-5, .sm\:grid-cols-4, .sm\:grid-cols-5 {{ grid-template-columns:repeat(2,minmax(0,1fr)) !important; }}
-    .sm\:grid-cols-2 {{ grid-template-columns:1fr !important; }}
-    .meal-card {{ max-width:100%; overflow:hidden; }}
-    .meal-item-card {{ display:grid !important; grid-template-columns:auto minmax(0,1fr); align-items:start; }}
-    .meal-card > .flex {{ flex-wrap:wrap; min-width:0; }}
-    .meal-card > div:last-child, .meal-card .feedback-actions, .meal-card .flex-shrink-0 {{ grid-column:1 / -1; width:100%; min-width:0; flex:0 0 100%; flex-direction:row !important; justify-content:flex-start; margin-top:8px; }}
-    .feedback-actions, .meal-card > .flex > div.flex-shrink-0 {{ display:grid !important; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px !important; }}
-    .feedback-btn {{ opacity:1 !important; font-size:.92rem !important; padding:8px 10px !important; min-width:0; width:100%; }}
-    .overflow-x-auto {{ overflow-x:auto; -webkit-overflow-scrolling:touch; }}
-    table {{ min-width:620px; }}
-    #dayTabs {{ flex-wrap:wrap; overflow-x:visible; gap:6px !important; padding-bottom:0 !important; }}
-    #dayTabs button {{ white-space:normal !important; min-width:44px; }}
-    #customCuisineInput {{ min-width:0; }}
-    #cuisineChips {{ gap:8px; }}
-    .cuisine-chip {{ max-width:100%; white-space:normal; }}
+  .section-card:active {{ transform: scale(0.985); }}
+  .section-card.expanded {{
+    border-color: #6ee7b7;
+    box-shadow: 0 6px 24px rgba(16,185,129,.12);
   }}
-  @media (max-width: 380px) {{
-    .grid-cols-3, .grid-cols-5, .sm\:grid-cols-4, .sm\:grid-cols-5 {{ grid-template-columns:1fr !important; }}
-    .max-w-2xl {{ padding-left:10px !important; padding-right:10px !important; }}
-    .text-xl {{ font-size:1.1rem !important; }}
-    .meal-icon-bubble {{ width:44px; height:44px; }}
-    .feedback-btn {{ font-size:.86rem !important; }}
+  .section-card-header {{
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 22px;
+    cursor: pointer;
+    user-select: none;
+    min-height: 88px;
+  }}
+  .section-card-header:hover {{ background: #fafbfc; }}
+  .section-card-icon {{
+    font-size: 1.8em;
+    flex-shrink: 0;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16px;
+  }}
+  .section-card-title {{
+    font-size: 1.2em;
+    font-weight: 800;
+    color: #1a202c;
+    line-height: 1.3;
+  }}
+  .section-card-summary {{
+    font-size: 0.88em;
+    color: #64748b;
+    margin-top: 4px;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }}
+  .section-card-arrow {{
+    margin-left: auto;
+    font-size: 1.1em;
+    color: #94a3b8;
+    transition: transform .3s ease;
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #f1f5f9;
+  }}
+  .section-card.expanded .section-card-arrow {{
+    transform: rotate(180deg);
+    background: #d1fae5;
+    color: #065f46;
+  }}
+  .section-card-body {{
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .4s ease, padding .3s ease;
+    padding: 0 22px;
+  }}
+  .section-card.expanded .section-card-body {{
+    max-height: 8000px;
+    padding: 0 22px 22px 22px;
+    border-top: 1px solid #f1f5f9;
+  }}
+
+  /* ─── Sub-card (nested tap-to-expand items) ─── */
+  .sub-card {{
+    border-radius: 12px;
+    margin-bottom: 8px;
+    border: 1px solid #f1f5f9;
+    background: #f8fafc;
+    overflow: hidden;
+    transition: border-color .2s, box-shadow .2s;
+  }}
+  .sub-card.open {{
+    border-color: #d1d5db;
+    box-shadow: 0 2px 8px rgba(0,0,0,.04);
+  }}
+  .sub-card-header {{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    cursor: pointer;
+    user-select: none;
+    min-height: 52px;
+  }}
+  .sub-card-header:active {{ background: #f1f5f9; }}
+  .sub-card-icon {{ font-size: 1.3em; flex-shrink: 0; }}
+  .sub-card-label {{ font-size: 0.82em; color: #64748b; line-height: 1.2; }}
+  .sub-card-value {{ font-size: 1.05em; font-weight: 700; color: #1e293b; line-height: 1.3; }}
+  .sub-card-arrow {{ margin-left: auto; font-size: 0.7em; color: #94a3b8; transition: transform .3s; }}
+  .sub-card.open .sub-card-arrow {{ transform: rotate(90deg); color: #475569; }}
+  .sub-card-body {{
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .35s ease, padding .25s ease;
+    padding: 0 16px;
+    border-top: 0px solid transparent;
+  }}
+  .sub-card.open .sub-card-body {{
+    max-height: 3000px;
+    padding: 12px 16px 14px 16px;
+    border-top: 1px solid #e8ecf0;
+  }}
+
+  /* ─── Mobile-First App Layout ─── */
+  @media (max-width: 640px) {{
+    body {{ font-size: 16px; line-height: 1.6; }}
+    .max-w-md {{ max-width: 100% !important; padding: 0 !important; }}
+
+    /* Section cards full width, less rounded */
+    .section-card {{ border-radius: 14px; margin-bottom: 10px; }}
+    .section-card-header {{ padding: 16px 14px; min-height: 72px; gap: 12px; }}
+    .section-card-icon {{ width: 46px; height: 46px; font-size: 1.5em; border-radius: 12px; }}
+    .section-card-title {{ font-size: 1.05em; }}
+    .section-card-summary {{ font-size: 0.8em; }}
+    .section-card-body {{ padding-left: 14px !important; padding-right: 14px !important; }}
+
+    /* Sub-cards touch-friendly */
+    .sub-card {{ border-radius: 10px; margin-bottom: 6px; }}
+    .sub-card-header {{ padding: 14px 14px; min-height: 50px; }}
+    .sub-card-value {{ font-size: 1em; }}
+    .sub-card-label {{ font-size: 0.85em; }}
+    .sub-card-body .text-sm {{ font-size: 0.95em; }}
+
+    /* Feedback */
+    .feedback-btn {{ opacity: 1 !important; font-size: .78rem !important; padding: 8px 10px !important; min-width: 0; min-height: 38px; }}
+    .feedback-modal-box {{ padding: 24px; max-width: 94%; }}
+    .feedback-reason {{ padding: 14px 16px; font-size: 1em; }}
+
+    /* Meal tabs */
+    #dayTabs button {{ padding: 8px 12px !important; font-size: 0.82em !important; }}
+
+    /* Cuisine chips */
+    .cuisine-chip {{ padding: 9px 14px; font-size: 0.88em; }}
+    #customCuisineInput {{ font-size: 1em !important; padding: 10px 14px !important; }}
+
+    /* Grids */
+    .sm\\:grid-cols-2 {{ grid-template-columns: 1fr !important; }}
+  }}
+
+  /* ─── Larger screens (tablet+): slightly more breathing room ─── */
+  @media (min-width: 641px) {{
+    .max-w-md {{ max-width: 480px; }}
+    body {{ font-size: 15px; }}
   }}
 </style>
 </head>
-<body class="bg-slate-50 text-slate-800">
-<div class="max-w-2xl mx-auto px-4 py-6">
+<body class="bg-slate-100 text-slate-800">
+<div class="max-w-md mx-auto px-0 py-0 {layout_class}" style="min-height:100vh">
 
-  <!-- Header -->
-  <div class="bg-gradient-to-br from-emerald-600 to-teal-700 text-white rounded-2xl p-6 mb-4 shadow-lg">
-    <h1 class="text-xl font-bold">{header_greeting}</h1>
-    <p class="text-emerald-100 text-sm mt-1">您的依从性报告 · {current_time}</p>
-    <div class="flex items-center gap-2 mt-3">
-      <span class="inline-flex items-center gap-1 {status_badge_class} px-3 py-1 rounded-full text-xs font-semibold">{status_icon} {status_text}</span>
-      {condition_badges}
+  <!-- App Header (compact, sticky) -->
+  <div class="sticky top-0 z-50 bg-white border-b border-slate-200 px-4 py-3 shadow-sm">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-lg font-bold text-slate-900">{header_greeting}</h1>
+        <p class="text-xs text-slate-500">{current_time}</p>
+      </div>
+      <span class="inline-flex items-center gap-1 {status_badge_class} px-3 py-1.5 rounded-full text-xs font-semibold">{status_icon} {status_text}</span>
+    </div>
+    <div class="flex gap-1.5 mt-2 flex-wrap">{condition_badges}</div>
+  </div>
+
+  <!-- Escalation Banners -->
+  <div class="px-3 pt-3">{escalation_html}</div>
+
+  <!-- AI Message (modular sub-cards) -->
+  <div class="px-3 pt-3 pb-1">
+    <div class="bg-white rounded-2xl border border-slate-200 p-3 shadow-sm">
+      <div class="flex items-center gap-2 mb-2 px-1">
+        <span class="text-base">🤖</span>
+        <span class="text-xs font-bold text-slate-600 uppercase tracking-wide">AI 健康管家</span>
+      </div>
+      {ai_message_html}
     </div>
   </div>
 
-  <!-- AI Message -->
-  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
-    <div class="flex items-center gap-2 mb-3 pb-3 border-b border-slate-100">
-      <span class="text-lg">🤖</span>
-      <h2 class="text-sm font-bold text-slate-800">AI 健康管家</h2>
-    </div>
-    <p class="text-sm text-slate-700 leading-relaxed">{ai_message}</p>
+  <!-- Cards -->
+  <div class="px-3 pt-2 pb-3">
+    {cards_html}
   </div>
 
-  <!-- Health Guidance -->
-  {health_guidance_html}
-
-  <!-- Vitals -->
-  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
-    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
-      <span class="text-lg">📊</span>
-      <h2 class="text-sm font-bold text-slate-800">最新健康数据</h2>
-    </div>
-    <div class="grid grid-cols-3 sm:grid-cols-5 gap-2">
-      {vitals_html}
-    </div>
+  <!-- Guardrail (slim footer) -->
+  <div class="px-4 py-3 bg-slate-50 border-t border-slate-200">
+    <p class="text-[11px] text-slate-400 text-center leading-relaxed">{guardrail}</p>
   </div>
 
-  <!-- Adherence Analysis -->
-  {adherence_html}
-
-  <!-- Risk Tags & Recommendations -->
-  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
-    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
-      <span class="text-lg">💡</span>
-      <h2 class="text-sm font-bold text-slate-800">健康建议</h2>
-    </div>
-    <div class="flex flex-wrap gap-2 mb-4">{risk_tags_html}</div>
-    <div class="space-y-2">{recommendations_html}</div>
-    {reasoning_html}
-  </div>
-
-  <!-- Nutrition Advice -->
-  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
-    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
-      <span class="text-lg">🥗</span>
-      <h2 class="text-sm font-bold text-slate-800">营养建议</h2>
-    </div>
-    <div class="text-sm text-slate-700 bg-emerald-50 rounded-lg p-3 leading-relaxed" style="border-left:3px solid #10b981">{nutrition_advice}</div>
-  </div>
-
-  <!-- Diet Table -->
-  {diet_table_html}
-
-  <!-- Cuisine Preference -->
-  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
-    <div class="flex items-center gap-2 mb-3 pb-3 border-b border-slate-100">
-      <span class="text-lg">🍜</span>
-      <h2 class="text-sm font-bold text-slate-800">您的口味偏好</h2>
-    </div>
-    <p class="text-xs text-slate-500 mb-3">选择您喜欢的菜系，下次食谱会尽量参考您的口味。</p>
-    <div class="flex flex-wrap gap-2 mb-3" id="cuisineChips"></div>
-    <div class="flex items-center gap-2">
-      <input id="customCuisineInput" type="text" placeholder="添加其他菜系..."
-        class="flex-1 text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-200">
-      <button onclick="addCustomCuisine()" class="px-3 py-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium hover:bg-emerald-100">+ 添加</button>
-    </div>
-  </div>
-
-  <!-- Weekly Meal Plan -->
-  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
-    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
-      <span class="text-lg">📅</span>
-      <h2 class="text-sm font-bold text-slate-800">一周营养食谱</h2>
-    </div>
-    <div class="flex gap-2 mb-4 overflow-x-auto pb-2" id="dayTabs"></div>
-    <div id="mealContent"></div>
-  </div>
-
-  <!-- Diet Tips -->
-  {diet_tips_html}
-
-  <!-- Map -->
-  {map_html}
-
-  <!-- Submit Preferences -->
-  <div class="text-center mb-4">
-    <button id="exportFeedbackBtn" onclick="exportFeedbackJSON()" style="display:none"
-      class="px-6 py-3 rounded-full text-sm font-bold bg-emerald-600 text-white shadow-md hover:bg-emerald-700 active:scale-95 transition-all">
-      ✓ 提交我的偏好
-    </button>
-    <p class="text-xs text-slate-400 mt-2" id="submitHint" style="display:none">您的选择会先保存在本地，等待后续接入</p>
-  </div>
-
-  <!-- Guardrail -->
-  <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
-    <p class="text-xs text-amber-800 leading-relaxed">{guardrail}</p>
-  </div>
-
-  <div class="text-center text-xs text-slate-400 pb-6">AI 健康管家 · 仅供参考，请遵医嘱</div>
 </div>
 
 <script>
@@ -239,52 +290,40 @@ const rawMeals = {meal_data_json};
 const meals = DAYS.map((d, i) => ({{ ...rawMeals[i % rawMeals.length], day: d }}));
 let activeDay = 0;
 
-const MEAL_FEEDBACK_REASONS = ["不喜欢口味", "过敏/不耐受", "买不到食材", "准备起来太麻烦", "其他"];
-const GENERAL_FEEDBACK_REASONS = ["不适合我", "做起来太难", "我已经在做", "不同意这个建议", "其他"];
+const MEAL_FEEDBACK_REASONS = [
+  "不喜欢口味",
+  "过敏/不耐受",
+  "买不到食材",
+  "准备起来太麻烦",
+  "其他"
+];
+const GENERAL_FEEDBACK_REASONS = [
+  "不适合我",
+  "做起来太难",
+  "我已经在做",
+  "不同意这个建议",
+  "其他"
+];
 let feedbackStore = JSON.parse(localStorage.getItem("mealFeedback") || "{{}}");
 const pendingFeedbackSubmits = {{}};
 
-function feedbackKey(dayIdx, mealType, itemName) {{
-  return `${{dayIdx}}-${{mealType}}-${{itemName}}`;
-}}
-
-function saveLikeFromButton(btn) {{
-  saveLike(Number(btn.dataset.dayIdx), btn.dataset.mealType, btn.dataset.itemName);
-}}
-
-function showFeedbackModalFromButton(btn) {{
-  showFeedbackModal(Number(btn.dataset.dayIdx), btn.dataset.mealType, btn.dataset.itemName);
-}}
-
-function refreshStaticFeedbackButtons() {{
-  document.querySelectorAll("[data-feedback-key][data-feedback-type]").forEach((btn) => {{
-    const fb = feedbackStore[btn.dataset.feedbackKey];
-    const selected = Boolean(fb && fb.sentiment === btn.dataset.feedbackType);
-    btn.classList.toggle("liked", selected && btn.dataset.feedbackType === "like");
-    btn.classList.toggle("disliked", selected && btn.dataset.feedbackType === "dislike");
-    btn.setAttribute("aria-pressed", selected ? "true" : "false");
-  }});
-}}
-
 function saveFeedback(dayIdx, mealType, itemName, reason) {{
-  const key = feedbackKey(dayIdx, mealType, itemName);
+  const key = `${{dayIdx}}-${{mealType}}-${{itemName}}`;
   feedbackStore[key] = {{ sentiment: "dislike", reason, timestamp: new Date().toISOString() }};
   localStorage.setItem("mealFeedback", JSON.stringify(feedbackStore));
-  refreshStaticFeedbackButtons();
   updateExportBadge();
 }}
 
 function saveLike(dayIdx, mealType, itemName) {{
-  const key = feedbackKey(dayIdx, mealType, itemName);
+  const key = `${{dayIdx}}-${{mealType}}-${{itemName}}`;
   feedbackStore[key] = {{ sentiment: "like", reason: null, timestamp: new Date().toISOString() }};
   localStorage.setItem("mealFeedback", JSON.stringify(feedbackStore));
-  if (dayIdx >= 0) renderMeals();
-  refreshStaticFeedbackButtons();
+  renderMeals();
   updateExportBadge();
 }}
 
 function getFeedback(dayIdx, mealType, itemName) {{
-  return feedbackStore[feedbackKey(dayIdx, mealType, itemName)];
+  return feedbackStore[`${{dayIdx}}-${{mealType}}-${{itemName}}`];
 }}
 
 function buildPreferencePayload() {{
@@ -295,7 +334,9 @@ function buildPreferencePayload() {{
     if (val.sentiment === "like") likes.push(entry);
     else dislikes.push(entry);
   }}
-  const selectedCuisines = Object.entries(cuisinePrefs).map(([name, meta]) => ({{ cuisine: name, ...meta }}));
+  const selectedCuisines = Object.entries(cuisinePrefs).map(([name, meta]) => ({{
+    cuisine: name, ...meta
+  }}));
   return {{
     user_id: "{patient_id}",
     data_type: "scenario",
@@ -353,7 +394,9 @@ function updateExportBadge() {{
   const btn = document.getElementById("exportFeedbackBtn");
   const hint = document.getElementById("submitHint");
   if (!btn) return;
-  const total = Object.keys(feedbackStore).length + Object.keys(cuisinePrefs || {{}}).length;
+  const fbCount = Object.keys(feedbackStore).length;
+  const cuisineCount = Object.keys(cuisinePrefs).length;
+  const total = fbCount + cuisineCount;
   if (total > 0) {{
     btn.textContent = "✓ 提交我的偏好 (" + total + ")";
     btn.style.display = "inline-block";
@@ -387,11 +430,10 @@ function showFeedbackModal(dayIdx, mealType, itemName) {{
     saveFeedback(dayIdx, mealType, itemName, reason);
     modal.remove();
     if (isMeal) renderMeals();
-    else refreshStaticFeedbackButtons();
+    e.target.closest('.feedback-modal').remove();
   }});
   document.body.appendChild(modal);
 }}
-
 
 function renderTabs() {{
   const container = document.getElementById("dayTabs");
@@ -413,22 +455,24 @@ function renderMeals() {{
   for (const [key, label] of Object.entries(MEAL_LABELS)) {{
     const items = day[key] || [];
     if (!items.length) continue;
-    html += `<div class="mb-4"><div class="meal-period-label text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">${{label}}</div><div class="grid grid-cols-1 sm:grid-cols-2 gap-2">`;
+    html += `<div class="mb-4"><div class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">${{label}}</div><div class="grid grid-cols-1 sm:grid-cols-2 gap-2">`;
     for (const it of items) {{
       const fb = getFeedback(activeDay, key, it.name);
       const likeClass = fb && fb.sentiment === "like" ? "liked" : "";
       const dislikeClass = fb && fb.sentiment === "dislike" ? "disliked" : "";
       const safeName = it.name.replace(/'/g, "&#39;");
-      const reason = it.condition && it.benefit ? "适合" + it.condition + "：" + it.benefit : (it.benefit || "");
-      html += `<div class="meal-card meal-item-card flex items-start gap-3 bg-slate-50 rounded-lg p-3 border border-slate-100">
-        <span class="meal-icon-bubble text-2xl mt-0.5">${{it.icon || "🍽️"}}</span>
+      const reason = it.condition && it.benefit
+        ? "适合" + it.condition + "：" + it.benefit
+        : (it.benefit || "");
+      html += `<div class="meal-card flex items-start gap-3 bg-slate-50 rounded-lg p-3 border border-slate-100">
+        <span class="text-2xl mt-0.5">${{it.icon || "🍽️"}}</span>
         <div class="flex-1 min-w-0">
-          <div class="meal-title text-sm font-semibold text-slate-800">${{it.name}}</div>
-          <div class="meal-reason text-xs text-emerald-600 mt-0.5 leading-relaxed italic">${{reason}}</div>
+          <div class="text-sm font-semibold text-slate-800">${{it.name}}</div>
+          <div class="text-xs text-emerald-600 mt-0.5 leading-relaxed italic">${{reason}}</div>
         </div>
-        <div class="feedback-actions flex flex-col gap-1">
-          <button class="feedback-btn feedback-action feedback-action-positive like ${{likeClass}}" title="喜欢" onclick="saveLike(${{activeDay}},'${{key}}','${{safeName}}')"><span class="feedback-action-dot">✓</span>适合我</button>
-          <button class="feedback-btn feedback-action feedback-action-negative ${{dislikeClass}}" title="不想要" onclick="showFeedbackModal(${{activeDay}},'${{key}}','${{safeName}}')"><span class="feedback-action-dot">−</span>不适合</button>
+        <div class="feedback-actions">
+          <button class="feedback-btn like ${{likeClass}}" title="保留这个餐食建议" onclick="saveLike(${{activeDay}},'${{key}}','${{safeName}}')">适合我</button>
+          <button class="feedback-btn feedback-skip ${{dislikeClass}}" title="这个不适合我" onclick="showFeedbackModal(${{activeDay}},'${{key}}','${{safeName}}')">不适合</button>
         </div>
       </div>`;
     }}
@@ -456,7 +500,9 @@ function renderCuisineChips() {{
   if (!container) return;
   const allCuisines = [...DEFAULT_CUISINES];
   const customNames = Object.keys(cuisinePrefs).filter(n => !DEFAULT_CUISINES.some(d => d.name === n));
-  for (const cn of customNames) allCuisines.push({{ name: cn, icon: "🍽️" }});
+  for (const cn of customNames) {{
+    allCuisines.push({{ name: cn, icon: "🍽️" }});
+  }}
   container.innerHTML = allCuisines.map(c => {{
     const sel = cuisinePrefs[c.name] ? "selected" : "";
     return `<span class="cuisine-chip ${{sel}}" onclick="toggleCuisine('${{c.name.replace(/'/g,"&#39;")}}')">${{c.icon}} ${{c.name}}<span class="chip-x" onclick="event.stopPropagation();removeCuisine('${{c.name.replace(/'/g,"&#39;")}}')">✕</span></span>`;
@@ -465,8 +511,11 @@ function renderCuisineChips() {{
 }}
 
 function toggleCuisine(name) {{
-  if (cuisinePrefs[name]) delete cuisinePrefs[name];
-  else cuisinePrefs[name] = {{ selected_at: new Date().toISOString() }};
+  if (cuisinePrefs[name]) {{
+    delete cuisinePrefs[name];
+  }} else {{
+    cuisinePrefs[name] = {{ selected_at: new Date().toISOString() }};
+  }}
   localStorage.setItem("cuisinePrefs", JSON.stringify(cuisinePrefs));
   renderCuisineChips();
   showCuisineToast();
@@ -511,8 +560,28 @@ document.getElementById("customCuisineInput").addEventListener("keydown", functi
 renderCuisineChips();
 renderTabs();
 renderMeals();
-refreshStaticFeedbackButtons();
 updateExportBadge();
+
+// ─── Card Accordion Toggle ───
+document.querySelectorAll(".section-card-header").forEach(function(header) {{
+  header.addEventListener("click", function() {{
+    const card = header.closest(".section-card");
+    if (!card) return;
+    const wasExpanded = card.classList.contains("expanded");
+    card.classList.toggle("expanded");
+    if (!wasExpanded) {{
+      setTimeout(function() {{ card.scrollIntoView({{ behavior: "smooth", block: "start" }}); }}, 100);
+    }}
+  }});
+}});
+
+// ─── Sub-card Toggle (tap item to expand its details) ───
+document.querySelectorAll(".sub-card-header").forEach(function(header) {{
+  header.addEventListener("click", function(e) {{
+    e.stopPropagation();
+    header.closest(".sub-card").classList.toggle("open");
+  }});
+}});
 </script>
 </body>
 </html>

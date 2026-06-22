@@ -24,12 +24,26 @@ scripts:
   1. `latest_health` — 最新体征（血压、心率、血氧、血糖、步数）
   2. `memory.patient_long_term_profile` — 基本信息、病史、用药
   3. `memory.recent_health_dynamics` — 近期健康动态
-  4. `memory.key_events` — timestamped events（手术、反复症状、告警）
-  5. `adherence_analysis` — 用药/饮食/运动/监测依从性
-  5. `signals` — 设备信号、异常标签
-  6. `outlier_analysis` — 异常分析
-  7. `location` — 位置信息
-  8. `user_preference`（可选）— 过往收集的患者偏好：菜系偏好、喜欢的建议/食物、不喜欢的建议/食物及原因
+  4. `memory.tone_profile`（可选）— 患者沟通风格与当前状态上下文：
+     - `condition_context`: `"feeling_unwell"` | `"post_chemotherapy"` | `"post_surgery_recovering"` | `"stable_routine"` — **控制页面信息密度**：
+       - `feeling_unwell` → 简化页面（仅：指导 + 体征 + 食谱），患者此时不适合读太多。
+       - `post_chemotherapy` → 更安抚的语气，强调营养和休息（隐藏：依从性分析、diet table、地图）。
+       - `post_surgery_recovering` → 大多数 section 可见，语气鼓励。
+       - `stable_routine` → 展示完整页面。
+     - `style`: `"warm_encouraging"` | `"direct_practical"` | `"authority_based"` | `"gentle_patient"` — 决定整体语气。
+     - `preferred_name`: 患者希望被如何称呼。
+     - `age_group`: `"elderly_70plus"` | `"senior_60_70"` | `"middle_aged"` — 影响语言复杂度和鼓励程度。
+     - `personality_notes`: 照护者/医生关于如何与患者沟通的自由文本。
+     - `communication_preferences`: `formality`, `motivation_style` (`positive_reinforcement` | `accountability` | `authority_trust`), `information_density` (`simple_focused` | `moderate` | `detailed`), `reference_authority`（为 true 时，可表述为「您的医生建议……」）。
+  5. `memory.key_events` — timestamped events（手术、反复症状、告警）
+  6. `adherence_analysis` — 用药/饮食/运动/监测依从性
+  7. `signals` — 设备信号、异常标签
+  8. `outlier_analysis` — 异常分析
+  9. `location` — 位置信息
+  10. `user_preference`（可选）— 过往收集的患者偏好：
+      - `cuisine_preferences`: 菜系偏好数组（如 `["粤菜", "清淡家常菜"]`）— 用于指导 `weekly_meal_plan`
+      - `liked`: 患者之前标记为喜欢/有帮助的建议或食物 — 优先给出相似建议
+      - `disliked`: 患者拒绝的建议或食物及原因 — 避免相似建议
 - 若 `latest_health` 为空或全为 null，从 `memory.recent_health_dynamics` 或 `signals.summary_text` 推断最新值并填入 `latest_health_summary`。
 - 某维度无数据时，使用空字符串或空数组，不要编造。
 - 当 `user_preference.cuisine_preferences` 存在时，`weekly_meal_plan` 必须体现这些菜系偏好。
@@ -42,7 +56,11 @@ scripts:
 - `structured_output`：对象，包含：
   - `patient_status`：只允许 `"stable"` | `"at_risk"`（不含 `"critical"`——那属于 emergency-instruction）
   - `risk_tags`：字符串数组，如 `["活动量偏低", "食欲下降"]`
-  - `assistant_message_patient`：温暖段落（**中文**，约 100–200 字）：近期依从性总结 + 鼓励 + 关键调整
+  - `assistant_message_patient`：温暖段落（**中文**，约 100–200 字）：近期依从性总结 + 鼓励 + 关键调整（当 `assistant_message_sections` 缺失时作为 fallback）
+  - `assistant_message_sections`：结构化消息块数组，每项包含：
+    - `type`: `"good_news"` | `"attention"` | `"plan"` | `"encouragement"` — 决定 icon 和颜色
+    - `title`: 简短标签（如「好消息」「需要留意」「我们准备了什么」「您已经做得很好」）
+    - `content`: 该部分 1–2 句话
   - `adherence_analysis`：对象，包含：
     - `period`：字符串，如 `"过去 14 天"`
     - `medication`：对象 `{ "status": "...", "issues": "...", "adjustments": "..." }`
@@ -65,11 +83,19 @@ scripts:
 ## 表达约束
 
 - **语言**：默认中文；若 `meta.lang` 明确设为其他语言则跟随。
-- 语气：支持性、个性化。引用 payload 中的具体近期事件（如「过去两周，您的食欲比平时低一些……」）。
+- **语气自适应（基于 `memory.tone_profile`）：**
+  - `warm_encouraging`: 像关心患者的家人，肯定小进步，温和提醒。适合担心给家人添麻烦的老人。
+  - `direct_practical`: 直接、务实，少情绪化表达，强调「要做什么、为什么」。
+  - `authority_based`: 以照护团队/医生建议的方式表达，如「您的医生建议……」「根据照护团队评估……」。
+  - `gentle_patient`: 更轻柔、更有耐心，重复关键点，如「慢慢来」「不用着急，但……」。
+  - `tone_profile` 缺失时默认 `warm_encouraging`。
+  - `health_guidance.summary` 和 `health_guidance.tips[].why` 必须体现所选语气。
+- 引用 payload 中的具体近期事件（如「过去两周，您的食欲比平时低一些……」）。
 - 称呼用「您」。
 - 不添加 payload 未支持的诊断。
 - 数据源矛盾时在 `reasoning` 中说明。
 - 食谱：恰好 **3 天**；每条 `benefit` 保持简短。
+- 页面附近服务使用百度地图 API（`BAIDU_MAP_AK`）；除此之外，renderer 行为应与英文版保持一致。
 
 ## 参考资料
 

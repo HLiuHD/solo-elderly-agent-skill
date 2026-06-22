@@ -8,6 +8,18 @@
     "memory": {
       "patient_long_term_profile": "Margaret Chen, female, 71 years old. Diagnosed with hypertension (8 years), type 2 diabetes (4 years), hyperlipidemia. Post-surgery recovery (knee replacement, 6 weeks ago). Medications: amlodipine 5mg qd, metformin 500mg bid, atorvastatin 20mg qn. Lives alone, daughter visits weekly.",
       "recent_health_dynamics": "Over the past 14 days: appetite noticeably decreased, likely related to metformin side effects and post-surgery discomfort. Steps dropped from average 4,000/day to about 1,500/day. Blood pressure stable around 138/85. Blood glucose slightly elevated at 7.0-7.4 fasting. Reports feeling tired and not wanting to eat much.",
+      "tone_profile": {
+        "style": "warm_encouraging",
+        "preferred_name": "Margaret",
+        "age_group": "elderly_70plus",
+        "personality_notes": "Margaret 适合温暖、鼓励式表达。她担心给女儿添麻烦，更喜欢把建议说成小进步，而不是严格要求。",
+        "communication_preferences": {
+          "formality": "informal_caring",
+          "motivation_style": "positive_reinforcement",
+          "information_density": "simple_focused",
+          "reference_authority": false
+        }
+      },
       "key_events": [
         {
           "date": "2026-03-28",
@@ -30,9 +42,19 @@
           "description": "服用二甲双胍后反复恶心"
         },
         {
+          "date": "2026-05-03",
+          "type": "symptom",
+          "description": "再次出现中度头痛，持续约 2 小时"
+        },
+        {
           "date": "2026-05-05",
           "type": "symptom",
           "description": "食欲明显下降，经常不吃午餐"
+        },
+        {
+          "date": "2026-05-09",
+          "type": "symptom",
+          "description": "第三次报告头痛，服用了对乙酰氨基酚"
         },
         {
           "date": "2026-05-10",
@@ -114,7 +136,7 @@
     }
   },
   "llm_result": {
-    "message": "Your adherence report is ready.",
+    "message": "您的依从性报告已生成。",
     "structured_output": {
       "patient_status": "at_risk",
       "risk_tags": [
@@ -122,7 +144,29 @@
         "Low activity level",
         "Glucose monitoring gaps"
       ],
-      "assistant_message_patient": "Hello Margaret! We've been keeping an eye on how you've been doing over the past two weeks, and we want to share a few observations with you. First, the good news: your blood pressure has been pretty steady, and you've been taking most of your medications on time — great job! However, we've noticed your appetite has been lower than usual, and you mentioned feeling nauseous sometimes. This might be related to your metformin — your doctor is aware and may adjust the timing or dosage. Your walking has also slowed down since your knee surgery, which is understandable. We've put together some gentle suggestions and a meal plan that focuses on easy-to-digest, nutrient-rich foods to help you get your strength back. Small steps count!",
+      "assistant_message_patient": "Margaret，过去两周我们一直在关注您的恢复情况。好消息是，您的血压整体比较稳定，大多数药也按时吃了，这一点做得很好。需要留意的是，您的食欲比之前低一些，也提到过服用二甲双胍后恶心；这可能和药物胃肠道反应以及术后恢复期疲劳有关。您最近走路变少，膝盖术后疼痛会影响活动，这是可以理解的。我们为您准备了更温和的用药、饮食和活动建议，还有容易入口、营养密度高的餐食灵感。慢慢来，每一小步都算数。",
+      "assistant_message_sections": [
+        {
+          "type": "good_news",
+          "title": "好消息",
+          "content": "您的血压近期比较稳定，大多数药也按时吃了，这一点值得肯定。"
+        },
+        {
+          "type": "attention",
+          "title": "需要留意",
+          "content": "您的食欲下降，并且多次提到服用二甲双胍后恶心；近期头痛也反复出现，需要继续记录和关注。"
+        },
+        {
+          "type": "plan",
+          "title": "我们准备了什么",
+          "content": "下面的建议会尽量减轻胃部不适，兼顾术后恢复、血糖稳定和低盐低油饮食。"
+        },
+        {
+          "type": "encouragement",
+          "title": "慢慢来",
+          "content": "每天能多吃几口、稍微活动一下，都是对恢复有帮助的小进步。"
+        }
+      ],
       "adherence_analysis": {
         "period": "Past 14 days",
         "medication": {
