@@ -240,6 +240,112 @@
     .max-w-md {{ max-width: 480px; }}
     body {{ font-size: 15px; }}
   }}
+  .hero-vitals {{
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid #e2e8f0;
+    border-radius: 22px;
+    box-shadow: 0 12px 32px rgba(15,23,42,.06);
+    padding: 18px;
+  }}
+  .hero-vitals-grid {{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:12px;
+  }}
+  .hero-vital-card {{
+    border-radius:18px;
+    padding:14px;
+    border:1px solid #e2e8f0;
+    background:#fff;
+    min-height:132px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }}
+  .hero-vital-card.good {{
+    background:linear-gradient(180deg,#f0fdf4 0%,#ffffff 100%);
+    border-color:#bbf7d0;
+  }}
+  .hero-vital-card.caution {{
+    background:linear-gradient(180deg,#fff7ed 0%,#ffffff 100%);
+    border-color:#fed7aa;
+  }}
+  .hero-vital-card.alert {{
+    background:linear-gradient(180deg,#fef2f2 0%,#ffffff 100%);
+    border-color:#fecaca;
+  }}
+  .hero-vital-top {{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:10px;
+  }}
+  .hero-vital-icon {{
+    width:42px;
+    height:42px;
+    border-radius:14px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:1.3em;
+    background:#f8fafc;
+  }}
+  .hero-vital-label {{
+    font-size:.78em;
+    color:#64748b;
+    font-weight:700;
+    letter-spacing:.01em;
+  }}
+  .hero-vital-value {{
+    font-size:1.45em;
+    font-weight:800;
+    color:#0f172a;
+    line-height:1.1;
+  }}
+  .hero-vital-range {{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:.74em;
+    color:#475569;
+    background:#f8fafc;
+    border:1px solid #e2e8f0;
+    border-radius:999px;
+    padding:5px 9px;
+    width:max-content;
+  }}
+  .hero-vital-note {{
+    font-size:.82em;
+    line-height:1.55;
+    color:#475569;
+  }}
+  .module-subsection {{
+    border-top:1px solid #edf2f7;
+    padding-top:14px;
+    margin-top:14px;
+  }}
+  .module-subsection:first-child {{
+    border-top:none;
+    padding-top:0;
+    margin-top:0;
+  }}
+  .module-subsection-head {{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:10px;
+  }}
+  .module-subsection-title {{
+    font-size:.96em;
+    font-weight:800;
+    color:#0f172a;
+  }}
+  .module-subsection-copy {{
+    font-size:.8em;
+    color:#64748b;
+    line-height:1.5;
+    margin-bottom:10px;
+  }}
 </style>
 </head>
 <body class="bg-slate-100 text-slate-800">
@@ -256,6 +362,8 @@
     </div>
     <div class="flex gap-1.5 mt-2 flex-wrap">{condition_badges}</div>
   </div>
+
+  <div class="px-3 pt-3">{hero_vitals_html}</div>
 
   <!-- Escalation Banners -->
   <div class="px-3 pt-3">{escalation_html}</div>
@@ -304,20 +412,22 @@ const GENERAL_FEEDBACK_REASONS = [
   "Don't agree with this",
   "Other"
 ];
-let feedbackStore = JSON.parse(localStorage.getItem("mealFeedback") || "{{}}");
+const FEEDBACK_STORAGE_KEY = "mealFeedback_en";
+const CUISINE_STORAGE_KEY = "cuisinePrefs_en";
+let feedbackStore = JSON.parse(localStorage.getItem(FEEDBACK_STORAGE_KEY) || "{{}}");
 const pendingFeedbackSubmits = {{}};
 
 function saveFeedback(dayIdx, mealType, itemName, reason) {{
   const key = `${{dayIdx}}-${{mealType}}-${{itemName}}`;
   feedbackStore[key] = {{ sentiment: "dislike", reason, timestamp: new Date().toISOString() }};
-  localStorage.setItem("mealFeedback", JSON.stringify(feedbackStore));
+  localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(feedbackStore));
   updateExportBadge();
 }}
 
 function saveLike(dayIdx, mealType, itemName) {{
   const key = `${{dayIdx}}-${{mealType}}-${{itemName}}`;
   feedbackStore[key] = {{ sentiment: "like", reason: null, timestamp: new Date().toISOString() }};
-  localStorage.setItem("mealFeedback", JSON.stringify(feedbackStore));
+  localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(feedbackStore));
   renderMeals();
   updateExportBadge();
 }}
@@ -461,9 +571,11 @@ function renderMeals() {{
       const likeClass = fb && fb.sentiment === "like" ? "liked" : "";
       const dislikeClass = fb && fb.sentiment === "dislike" ? "disliked" : "";
       const safeName = it.name.replace(/'/g, "&#39;");
-      const reason = it.condition && it.benefit
-        ? "For your " + it.condition.toLowerCase() + ": " + it.benefit.toLowerCase()
-        : (it.benefit || "");
+      const reason = it.adc_reason || (
+        it.condition && it.benefit
+          ? "For your " + it.condition.toLowerCase() + ": " + it.benefit.toLowerCase()
+          : (it.benefit || "")
+      );
       html += `<div class="meal-card flex items-start gap-3 bg-slate-50 rounded-lg p-3 border border-slate-100">
         <span class="text-2xl mt-0.5">${{it.icon || "🍽️"}}</span>
         <div class="flex-1 min-w-0">
@@ -490,14 +602,14 @@ const DEFAULT_CUISINES = [
   {{ name: "Mexican", icon: "🌮" }},
   {{ name: "Indian", icon: "🍛" }},
   {{ name: "Mediterranean", icon: "🫒" }},
-  {{ name: "Sichuan (川菜)", icon: "🌶️" }},
-  {{ name: "Cantonese (粤菜)", icon: "🥡" }},
+  {{ name: "Sichuan", icon: "🌶️" }},
+  {{ name: "Cantonese", icon: "🥡" }},
   {{ name: "Thai", icon: "🍜" }},
   {{ name: "French", icon: "🥐" }},
   {{ name: "Vietnamese", icon: "🍲" }},
 ];
 
-let cuisinePrefs = JSON.parse(localStorage.getItem("cuisinePrefs") || "{{}}");
+let cuisinePrefs = JSON.parse(localStorage.getItem(CUISINE_STORAGE_KEY) || "{{}}");
 
 function renderCuisineChips() {{
   const container = document.getElementById("cuisineChips");
@@ -520,7 +632,7 @@ function toggleCuisine(name) {{
   }} else {{
     cuisinePrefs[name] = {{ selected_at: new Date().toISOString() }};
   }}
-  localStorage.setItem("cuisinePrefs", JSON.stringify(cuisinePrefs));
+  localStorage.setItem(CUISINE_STORAGE_KEY, JSON.stringify(cuisinePrefs));
   renderCuisineChips();
   showCuisineToast();
 }}
@@ -543,7 +655,7 @@ function showCuisineToast() {{
 
 function removeCuisine(name) {{
   delete cuisinePrefs[name];
-  localStorage.setItem("cuisinePrefs", JSON.stringify(cuisinePrefs));
+  localStorage.setItem(CUISINE_STORAGE_KEY, JSON.stringify(cuisinePrefs));
   renderCuisineChips();
 }}
 
@@ -552,7 +664,7 @@ function addCustomCuisine() {{
   const name = (input.value || "").trim();
   if (!name) return;
   cuisinePrefs[name] = {{ selected_at: new Date().toISOString(), custom: true }};
-  localStorage.setItem("cuisinePrefs", JSON.stringify(cuisinePrefs));
+  localStorage.setItem(CUISINE_STORAGE_KEY, JSON.stringify(cuisinePrefs));
   input.value = "";
   renderCuisineChips();
 }}

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 from html import escape
 from datetime import datetime
@@ -266,28 +267,114 @@ def _load_env() -> None:
                 os.environ.setdefault(key.strip(), value.strip())
 
 
+def _extract_numbers(value: object) -> list[float]:
+    if value is None:
+        return []
+    return [float(part) for part in re.findall(r"\d+(?:\.\d+)?", str(value))]
+
+
 def _render_vitals(summary: dict) -> str:
-    parts = []
-    for key, label, unit, icon in _VITAL_DEFS:
-        val = summary.get(key)
-        if val is not None and val != "":
-            parts.append(
-                f'<div class="bg-slate-50 rounded-lg p-3 text-center border border-slate-100">'
-                f'<div class="text-lg mb-0.5">{icon}</div>'
-                f'<div class="text-[11px] text-slate-500 font-medium mb-1">{label}</div>'
-                f'<div class="text-xl font-bold text-slate-800">{escape(str(val))}</div>'
-                f'<div class="text-[10px] text-slate-400">{unit}</div>'
-                f'</div>'
-            )
-        else:
-            parts.append(
-                f'<div class="bg-slate-50 rounded-lg p-3 text-center border border-slate-100">'
-                f'<div class="text-lg mb-0.5">{icon}</div>'
-                f'<div class="text-[11px] text-slate-500 font-medium mb-1">{label}</div>'
-                f'<div class="text-base text-slate-300">--</div>'
-                f'</div>'
-            )
-    return "\n".join(parts)
+    if not summary:
+        return ""
+
+    metrics = [
+        ("blood_pressure", "血压", "🩺", "90-120 / 60-80 mmHg"),
+        ("heart_rate", "心率", "🫀", "60-100 bpm"),
+        ("blood_oxygen", "血氧", "🫁", "95-100%"),
+        ("blood_glucose", "血糖", "🧪", "3.9-7.8 mmol/L"),
+        ("steps_today", "今日步数", "👟", "建议 6000-10000 步/日"),
+    ]
+
+    cards = []
+    for key, label, icon, normal_range in metrics:
+        raw_value = summary.get(key)
+        if raw_value in (None, ""):
+            continue
+
+        status = "good"
+        note = "您的数据整体平稳，继续保持当前的健康习惯。"
+        numbers = _extract_numbers(raw_value)
+
+        if key == "blood_pressure" and len(numbers) >= 2:
+            systolic, diastolic = numbers[0], numbers[1]
+            if systolic >= 140 or diastolic >= 90:
+                status = "alert"
+                note = "您的血压偏高，建议减少盐分摄入、规律监测，并按医嘱复诊。"
+            elif systolic > 120 or diastolic > 80:
+                status = "caution"
+                note = "您的血压略高，近期注意休息、少盐饮食，并持续观察。"
+            elif systolic < 90 or diastolic < 60:
+                status = "caution"
+                note = "您的血压偏低，如伴头晕乏力，请及时联系医生。"
+            else:
+                note = "您的血压在正常范围内，非常健康，继续保持。"
+        elif key == "heart_rate" and numbers:
+            value = numbers[0]
+            if value < 50 or value > 110:
+                status = "alert"
+                note = "您的心率波动较明显，若伴胸闷、心悸或不适，请尽快联系医生。"
+            elif value < 60 or value > 100:
+                status = "caution"
+                note = "您的心率略偏离常见范围，建议结合休息、情绪和近期活动继续观察。"
+            else:
+                note = "您的心率处于常见健康范围，当前状态不错。"
+        elif key == "blood_oxygen" and numbers:
+            value = numbers[0]
+            if value < 93:
+                status = "alert"
+                note = "您的血氧偏低，如有气短、胸闷或乏力，请尽快联系医生。"
+            elif value < 95:
+                status = "caution"
+                note = "您的血氧略低，建议减少剧烈活动并持续监测。"
+            else:
+                note = "您的血氧在正常范围内，呼吸状态较稳定。"
+        elif key == "blood_glucose" and numbers:
+            value = numbers[0]
+            if value < 3.9 or value > 11:
+                status = "alert"
+                note = "您的血糖偏离较明显，建议尽快复测，并按医嘱调整饮食或用药。"
+            elif value > 7.8:
+                status = "caution"
+                note = "您的血糖略高，近期可优先选择清淡、低糖、规律分餐。"
+            else:
+                note = "您的血糖在参考范围内，继续保持规律饮食与监测。"
+        elif key == "steps_today" and numbers:
+            value = numbers[0]
+            if value < 3000:
+                status = "caution"
+                note = "今天活动量偏少，若身体允许，可分次增加轻度步行。"
+            elif value < 6000:
+                status = "caution"
+                note = "今天活动量还有提升空间，循序渐进会更容易坚持。"
+            else:
+                note = "今天的活动量不错，继续维持规律运动节奏。"
+
+        cards.append(
+            f'<div class="hero-vital-card {status}">'
+            f'<div class="hero-vital-top">'
+            f'<div><div class="hero-vital-label">{label}</div><div class="hero-vital-value">{escape(str(raw_value))}</div></div>'
+            f'<div class="hero-vital-icon">{icon}</div>'
+            f'</div>'
+            f'<div class="hero-vital-range">参考范围 {escape(normal_range)}</div>'
+            f'<div class="hero-vital-note">{escape(note)}</div>'
+            f'</div>'
+        )
+
+    if not cards:
+        return ""
+
+    return (
+        '<section class="hero-vitals">'
+        '<div class="flex items-center justify-between gap-3 mb-3">'
+        '<div>'
+        '<div class="text-sm font-bold text-slate-900">您最新的健康情况</div>'
+        '<div class="text-xs text-slate-500 mt-1">先看看这里，就能快速知道今天身体的大致状态。</div>'
+        '</div>'
+        '<div class="text-xl">📊</div>'
+        '</div>'
+        f'<div class="hero-vitals-grid">{"".join(cards)}</div>'
+        '</section>'
+    )
 
 
 def _render_condition_badges(conditions: list[str]) -> str:
@@ -722,12 +809,7 @@ def _render_diet_table(diet_table: list[dict]) -> str:
             f'</tr>'
         )
     return (
-        '<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">'
-        '<div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">'
-        '<span class="text-lg">📋</span>'
-        '<h2 class="text-sm font-bold text-slate-800">疾病饮食对照</h2>'
-        '</div>'
-        '<div class="overflow-x-auto">'
+        '<div class="overflow-x-auto rounded-xl border border-slate-200 bg-white">'
         '<table class="w-full text-sm">'
         '<thead><tr class="bg-slate-50">'
         '<th class="px-4 py-2 text-left text-xs font-semibold text-slate-500">疾病</th>'
@@ -736,7 +818,7 @@ def _render_diet_table(diet_table: list[dict]) -> str:
         '<th class="px-4 py-2 text-left text-xs font-semibold text-slate-500">避免</th>'
         '</tr></thead>'
         f'<tbody class="divide-y divide-slate-100">{rows}</tbody>'
-        '</table></div></div>'
+        '</table></div>'
     )
 
 
@@ -1105,8 +1187,48 @@ def main() -> None:
 
     patient_id = meta.get("user_id") or payload.get("user_id") or payload.get("patient_id") or "unknown"
 
-    header_greeting = ctx.get("header_greeting") or "您好！"
+    preferred_name = (tone_profile or {}).get("preferred_name") or ""
+    base_greeting = ctx.get("header_greeting") or "您好！"
+    if preferred_name:
+        base_trimmed = base_greeting.rstrip("！!。,.， ")
+        header_greeting = f"{base_trimmed}，{preferred_name}"
+    else:
+        header_greeting = base_greeting
     layout_class = ""
+
+    def _module_subsection(title: str, description: str, content: str) -> str:
+        if not content or not content.strip():
+            return ""
+        description_html = (
+            f'<div class="module-subsection-copy">{escape(description)}</div>'
+            if description else ""
+        )
+        return (
+            '<div class="module-subsection">'
+            '<div class="module-subsection-head">'
+            f'<div class="module-subsection-title">{escape(title)}</div>'
+            '</div>'
+            f'{description_html}'
+            f'{content}'
+            '</div>'
+        )
+
+    def _section_card(section_key: str, icon: str, bg_color: str, title: str, summary: str, content: str) -> str:
+        if not content or not content.strip():
+            return ""
+        return (
+            f'<div class="section-card" data-section="{section_key}">'
+            f'<div class="section-card-header">'
+            f'<div class="section-card-icon" style="background:{bg_color}">{icon}</div>'
+            f'<div class="flex-1 min-w-0">'
+            f'<div class="section-card-title">{escape(title)}</div>'
+            f'<div class="section-card-summary">{escape(summary)}</div>'
+            f'</div>'
+            f'<div class="section-card-arrow">&#9662;</div>'
+            f'</div>'
+            f'<div class="section-card-body">{content}</div>'
+            f'</div>'
+        )
 
     def _vitals_subcards() -> str:
         vd = so.get("latest_health_summary") or {}
@@ -1323,13 +1445,76 @@ def main() -> None:
             f'<div class="section-card-title">{title}</div>'
             f'<div class="section-card-summary">{summary}</div>'
             f'</div>'
-            f'<div class="section-card-arrow">▼</div>'
+            f'<div class="section-card-arrow">&#9662;</div>'
             f'</div>'
             f'<div class="section-card-body">{content}</div>'
             f'</div>'
         )
 
     cards_html = "\n".join(cards_html_parts)
+
+    nutrition_text = (
+        '<div class="rounded-xl bg-emerald-50 border border-emerald-100 px-4 py-4 '
+        'text-[0.95em] leading-7 text-slate-700">'
+        + escape(so.get("nutrition_advice") or "保持均衡饮食，多吃新鲜蔬菜，注意适量饮水。")
+        + '</div>'
+    )
+    cuisine_html = (
+        '<p class="text-sm text-slate-500 mb-3">选择您喜欢的菜系，后续餐食灵感会尽量参考您的口味。</p>'
+        '<div class="flex flex-wrap gap-2 mb-3" id="cuisineChips"></div>'
+        '<div class="flex items-center gap-2">'
+        '<input id="customCuisineInput" type="text" placeholder="添加其他菜系..." '
+        'class="flex-1 text-sm border border-slate-200 rounded-lg px-3 py-2 '
+        'focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-200">'
+        '<button onclick="addCustomCuisine()" class="px-3 py-2 rounded-lg bg-emerald-50 '
+        'border border-emerald-200 text-emerald-700 text-sm font-medium hover:bg-emerald-100">'
+        '+ 添加</button></div>'
+    )
+    meal_plan_html = (
+        '<div class="flex gap-2 mb-4 overflow-x-auto pb-2" id="dayTabs"></div>'
+        '<div id="mealContent"></div>'
+    )
+    submit_html = (
+        '<button id="exportFeedbackBtn" onclick="exportFeedbackJSON()" style="display:none" '
+        'class="w-full px-6 py-3 rounded-full text-sm font-bold bg-emerald-600 text-white shadow-md '
+        'hover:bg-emerald-700 active:scale-95 transition-all">'
+        '✓ 提交我的偏好</button>'
+        '<p class="text-xs text-slate-400 mt-2 text-center" id="submitHint" style="display:none">'
+        '您的选择会用于下次生成更合适的建议</p>'
+    )
+
+    hero_vitals_html = _render_vitals(so.get("latest_health_summary") or {}) if "vitals" in visible else ""
+
+    regrouped_cards = []
+    health_html = "".join([
+        _module_subsection("依从性概览", "先看看最近用药、饮食、活动和监测的大致情况。", _adherence_subcards()) if "adherence" in visible else "",
+        _module_subsection("健康指导", "结合您最近的感受，整理出现在最值得留意的重点。", _render_health_guidance(so.get("health_guidance") or {}, conditions, tone_profile=tone_profile)) if "guidance" in visible else "",
+        _module_subsection("健康建议", "这些是现在更适合您去做的小步骤。", _recs_subcards()) if "recommendations" in visible else "",
+        _module_subsection("健康记录", "这里可以回看近期变化和之前的重要记录。", _render_memory(memory)) if "memory" in visible else "",
+    ])
+    if health_html:
+        regrouped_cards.append(_section_card("health_hub", "💚", "#d1fae5", "健康管理", "您现在最需要看的提醒和近况，都放在这里。", health_html))
+
+    nutrition_html = "".join([
+        _module_subsection("营养建议", "先看这段时间吃什么会更适合您。", nutrition_text) if "nutrition" in visible else "",
+        _module_subsection("疾病饮食对照", "哪些食物更适合，哪些先少吃一点。", _render_diet_table(so.get("diet_table") or [])) if "diet_table" in visible else "",
+    ])
+    if nutrition_html:
+        regrouped_cards.append(_section_card("nutrition_hub", "🥗", "#ecfdf5", "营养与疾病饮食", "这里整理了更适合您现在状态的吃法和食物选择。", nutrition_html))
+
+    meal_html = "".join([
+        _module_subsection("口味偏好", "选一些您平时更愿意吃的口味，后面的建议会更贴近您。", cuisine_html) if "cuisine" in visible else "",
+        _module_subsection("一周餐食灵感", "给您一些这周更容易照着吃的早、中、晚餐想法。", meal_plan_html) if "meal_plan" in visible else "",
+        _module_subsection("饮食小贴士", "都是些更容易用得上的小提醒。", _render_diet_tips(so.get("diet_tips") or [])) if "diet_tips" in visible else "",
+        _module_subsection("提交偏好", "把适合您的选择记下来，下次页面会更贴近您。", submit_html) if "submit" in visible else "",
+    ])
+    if meal_html:
+        regrouped_cards.append(_section_card("meal_hub", "🍽️", "#eff6ff", "口味偏好与餐食灵感", "吃什么、怎么搭配、哪些更适合您，这里一起看会更方便。", meal_html))
+
+    if "map" in visible and map_section.strip():
+        regrouped_cards.append(_section_card("map", "🏥", "#f0f9ff", "附近医疗与公园", "如果想就医或出门走一走，附近地点可以直接在这里看。", map_section))
+
+    cards_html = "\n".join(part for part in regrouped_cards if part)
 
     report_title = "依从性报告"
     html = template.format(
@@ -1342,6 +1527,7 @@ def main() -> None:
         status_icon=status_icon,
         status_text=status_text,
         condition_badges=_render_condition_badges(conditions),
+        hero_vitals_html=hero_vitals_html,
         escalation_html=_render_escalation_banner(escalations) if "escalation" in visible else "",
         ai_message_html=_render_ai_message(so),
         cards_html=cards_html,

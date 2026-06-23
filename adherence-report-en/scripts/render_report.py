@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 from html import escape
 from datetime import datetime
@@ -245,28 +246,114 @@ def _load_env() -> None:
                 os.environ.setdefault(key.strip(), value.strip())
 
 
+def _extract_numbers(value: object) -> list[float]:
+    if value is None:
+        return []
+    return [float(part) for part in re.findall(r"\d+(?:\.\d+)?", str(value))]
+
+
 def _render_vitals(summary: dict) -> str:
-    parts = []
-    for key, label, unit, icon in _VITAL_DEFS:
-        val = summary.get(key)
-        if val is not None and val != "":
-            parts.append(
-                f'<div class="bg-slate-50 rounded-lg p-3 text-center border border-slate-100">'
-                f'<div class="text-lg mb-0.5">{icon}</div>'
-                f'<div class="text-[11px] text-slate-500 font-medium mb-1">{label}</div>'
-                f'<div class="text-xl font-bold text-slate-800">{escape(str(val))}</div>'
-                f'<div class="text-[10px] text-slate-400">{unit}</div>'
-                f'</div>'
-            )
-        else:
-            parts.append(
-                f'<div class="bg-slate-50 rounded-lg p-3 text-center border border-slate-100">'
-                f'<div class="text-lg mb-0.5">{icon}</div>'
-                f'<div class="text-[11px] text-slate-500 font-medium mb-1">{label}</div>'
-                f'<div class="text-base text-slate-300">--</div>'
-                f'</div>'
-            )
-    return "\n".join(parts)
+    if not summary:
+        return ""
+
+    metrics = [
+        ("blood_pressure", "Blood pressure", "🩺", "90-120 / 60-80 mmHg"),
+        ("heart_rate", "Heart rate", "🫀", "60-100 bpm"),
+        ("blood_oxygen", "Blood oxygen", "🫁", "95-100%"),
+        ("blood_glucose", "Glucose", "🧪", "3.9-7.8 mmol/L"),
+        ("steps_today", "Steps today", "👟", "Goal 6000-10000 steps/day"),
+    ]
+
+    cards = []
+    for key, label, icon, normal_range in metrics:
+        raw_value = summary.get(key)
+        if raw_value in (None, ""):
+            continue
+
+        status = "good"
+        note = "Your reading looks steady overall. Keep up the habits that are working for you."
+        numbers = _extract_numbers(raw_value)
+
+        if key == "blood_pressure" and len(numbers) >= 2:
+            systolic, diastolic = numbers[0], numbers[1]
+            if systolic >= 140 or diastolic >= 90:
+                status = "alert"
+                note = "Your blood pressure is high. Try to limit salt, keep monitoring, and follow up with your care team."
+            elif systolic > 120 or diastolic > 80:
+                status = "caution"
+                note = "Your blood pressure is a little above the usual range. Rest, keep meals lighter, and continue watching the trend."
+            elif systolic < 90 or diastolic < 60:
+                status = "caution"
+                note = "Your blood pressure is on the low side. If you feel dizzy or weak, contact your clinician."
+            else:
+                note = "Your blood pressure is in a healthy range. Keep it up."
+        elif key == "heart_rate" and numbers:
+            value = numbers[0]
+            if value < 50 or value > 110:
+                status = "alert"
+                note = "Your heart rate is noticeably outside the usual range. If you also feel chest discomfort or palpitations, contact your clinician soon."
+            elif value < 60 or value > 100:
+                status = "caution"
+                note = "Your heart rate is slightly outside the usual range. It may help to recheck after rest and compare with recent activity."
+            else:
+                note = "Your heart rate is within the usual healthy range."
+        elif key == "blood_oxygen" and numbers:
+            value = numbers[0]
+            if value < 93:
+                status = "alert"
+                note = "Your oxygen level is low. If you feel short of breath, unusually tired, or tight in the chest, seek medical advice promptly."
+            elif value < 95:
+                status = "caution"
+                note = "Your oxygen level is a little lower than expected. Go easy on activity and keep monitoring it."
+            else:
+                note = "Your oxygen level is in the normal range and looks stable."
+        elif key == "blood_glucose" and numbers:
+            value = numbers[0]
+            if value < 3.9 or value > 11:
+                status = "alert"
+                note = "Your glucose is quite far from the target range. Recheck when appropriate and follow your care plan for food or medication adjustments."
+            elif value > 7.8:
+                status = "caution"
+                note = "Your glucose is a bit elevated. Lighter meals, regular portions, and continued monitoring may help."
+            else:
+                note = "Your glucose is within the reference range. Keep your meal routine and monitoring consistent."
+        elif key == "steps_today" and numbers:
+            value = numbers[0]
+            if value < 3000:
+                status = "caution"
+                note = "Your activity is on the low side today. If you feel up to it, a few short walks may be easier than one longer session."
+            elif value < 6000:
+                status = "caution"
+                note = "You are partway toward a solid activity day. A little more light movement could help."
+            else:
+                note = "Your activity level looks good today. Nice work staying active."
+
+        cards.append(
+            f'<div class="hero-vital-card {status}">'
+            f'<div class="hero-vital-top">'
+            f'<div><div class="hero-vital-label">{escape(label)}</div><div class="hero-vital-value">{escape(str(raw_value))}</div></div>'
+            f'<div class="hero-vital-icon">{icon}</div>'
+            f'</div>'
+            f'<div class="hero-vital-range">Reference {escape(normal_range)}</div>'
+            f'<div class="hero-vital-note">{escape(note)}</div>'
+            f'</div>'
+        )
+
+    if not cards:
+        return ""
+
+    return (
+        '<section class="hero-vitals">'
+        '<div class="flex items-center justify-between gap-3 mb-3">'
+        '<div>'
+        '<div class="text-sm font-bold text-slate-900">Your latest health numbers</div>'
+        '<div class="text-xs text-slate-500 mt-1">Start here for a simple look at how your body is doing today.</div>'
+        '</div>'
+        '<div class="text-xl">📊</div>'
+        '</div>'
+        f'<div class="hero-vitals-grid">{"".join(cards)}</div>'
+        '</section>'
+    )
 
 
 def _render_condition_badges(conditions: list[str]) -> str:
@@ -707,12 +794,7 @@ def _render_diet_table(diet_table: list[dict]) -> str:
             f'</tr>'
         )
     return (
-        '<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">'
-        '<div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">'
-        '<span class="text-lg">📋</span>'
-        '<h2 class="text-sm font-bold text-slate-800">Diet by condition</h2>'
-        '</div>'
-        '<div class="overflow-x-auto">'
+        '<div class="overflow-x-auto rounded-xl border border-slate-200 bg-white">'
         '<table class="w-full text-sm">'
         '<thead><tr class="bg-slate-50">'
         '<th class="px-4 py-2 text-left text-xs font-semibold text-slate-500">Condition</th>'
@@ -721,7 +803,7 @@ def _render_diet_table(diet_table: list[dict]) -> str:
         '<th class="px-4 py-2 text-left text-xs font-semibold text-slate-500">Limit</th>'
         '</tr></thead>'
         f'<tbody class="divide-y divide-slate-100">{rows}</tbody>'
-        '</table></div></div>'
+        '</table></div>'
     )
 
 
@@ -1083,11 +1165,51 @@ def main() -> None:
 
     patient_id = meta.get("user_id") or "unknown"
 
-    header_greeting = ctx.get("header_greeting") or "Hello!"
+    preferred_name = (tone_profile or {}).get("preferred_name") or ""
+    base_greeting = ctx.get("header_greeting") or "Hello!"
+    if preferred_name:
+        base_trimmed = base_greeting.rstrip("!?. ")
+        header_greeting = f"{base_trimmed}, {preferred_name}"
+    else:
+        header_greeting = base_greeting
 
     # Always use card/accordion layout — patient taps to expand what they need
     use_cards = True
     layout_class = ""
+
+    def _module_subsection(title: str, description: str, content: str) -> str:
+        if not content or not content.strip():
+            return ""
+        description_html = (
+            f'<div class="module-subsection-copy">{escape(description)}</div>'
+            if description else ""
+        )
+        return (
+            '<div class="module-subsection">'
+            '<div class="module-subsection-head">'
+            f'<div class="module-subsection-title">{escape(title)}</div>'
+            '</div>'
+            f'{description_html}'
+            f'{content}'
+            '</div>'
+        )
+
+    def _section_card(section_key: str, icon: str, bg_color: str, title: str, summary: str, content: str) -> str:
+        if not content or not content.strip():
+            return ""
+        return (
+            f'<div class="section-card" data-section="{section_key}">'
+            f'<div class="section-card-header">'
+            f'<div class="section-card-icon" style="background:{bg_color}">{icon}</div>'
+            f'<div class="flex-1 min-w-0">'
+            f'<div class="section-card-title">{escape(title)}</div>'
+            f'<div class="section-card-summary">{escape(summary)}</div>'
+            f'</div>'
+            f'<div class="section-card-arrow">&#9662;</div>'
+            f'</div>'
+            f'<div class="section-card-body">{content}</div>'
+            f'</div>'
+        )
 
     # Build each section's content
     sections = []
@@ -1309,7 +1431,7 @@ def main() -> None:
             f'<div class="section-card-title">{title}</div>'
             f'<div class="section-card-summary">{summary}</div>'
             f'</div>'
-            f'<div class="section-card-arrow">▼</div>'
+            f'<div class="section-card-arrow">&#9662;</div>'
             f'</div>'
             f'<div class="section-card-body">{content}</div>'
             f'</div>'
@@ -1317,6 +1439,69 @@ def main() -> None:
         cards_html_parts.append(card)
 
     cards_html = "\n".join(cards_html_parts)
+
+    nutrition_text = (
+        '<div class="rounded-xl bg-emerald-50 border border-emerald-100 px-4 py-4 '
+        'text-[0.95em] leading-7 text-slate-700">'
+        + escape(so.get("nutrition_advice") or "Aim for balanced meals with plenty of vegetables and adequate hydration.")
+        + '</div>'
+    )
+    cuisine_html = (
+        "<p class=\"text-sm text-slate-500 mb-3\">Tell us which cuisines you enjoy so future meal ideas feel more natural for you.</p>"
+        '<div class="flex flex-wrap gap-2 mb-3" id="cuisineChips"></div>'
+        '<div class="flex items-center gap-2">'
+        '<input id="customCuisineInput" type="text" placeholder="Add another cuisine..." '
+        'class="flex-1 text-sm border border-slate-200 rounded-lg px-3 py-2 '
+        'focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-200">'
+        '<button onclick="addCustomCuisine()" class="px-3 py-2 rounded-lg bg-emerald-50 '
+        'border border-emerald-200 text-emerald-700 text-sm font-medium hover:bg-emerald-100">'
+        '+ Add</button></div>'
+    )
+    meal_plan_html = (
+        '<div class="flex gap-2 mb-4 overflow-x-auto pb-2" id="dayTabs"></div>'
+        '<div id="mealContent"></div>'
+    )
+    submit_html = (
+        '<button id="exportFeedbackBtn" onclick="exportFeedbackJSON()" style="display:none" '
+        'class="w-full px-6 py-3 rounded-full text-sm font-bold bg-emerald-600 text-white shadow-md '
+        'hover:bg-emerald-700 active:scale-95 transition-all">'
+        '✓ Submit my preferences</button>'
+        '<p class="text-xs text-slate-400 mt-2 text-center" id="submitHint" style="display:none">'
+        'Your feedback will shape future suggestions</p>'
+    )
+
+    hero_vitals_html = _render_vitals(so.get("latest_health_summary") or {}) if "vitals" in visible else ""
+
+    regrouped_cards = []
+    health_html = "".join([
+        _module_subsection("Adherence overview", "A quick look at how things have been going with medicine, meals, activity, and monitoring.", _adherence_subcards()) if "adherence" in visible else "",
+        _module_subsection("Health guidance", "The main things to keep in mind right now, based on how you have been feeling.", _render_health_guidance(so.get("health_guidance") or {}, conditions, tone_profile=tone_profile)) if "guidance" in visible else "",
+        _module_subsection("Suggestions", "Simple next steps that may feel the most helpful today.", _recs_subcards()) if "recommendations" in visible else "",
+        _module_subsection("Health history", "A place to look back on recent changes and important past notes.", _render_memory(memory)) if "memory" in visible else "",
+    ])
+    if health_html:
+        regrouped_cards.append(_section_card("health_hub", "💚", "#d1fae5", "Health management", "Your main reminders and recent updates are all together here.", health_html))
+
+    nutrition_html = "".join([
+        _module_subsection("Nutrition advice", "The eating focus that matters most for you right now.", nutrition_text) if "nutrition" in visible else "",
+        _module_subsection("Diet by condition", "Helpful food choices and foods to go easier on.", _render_diet_table(so.get("diet_table") or [])) if "diet_table" in visible else "",
+    ])
+    if nutrition_html:
+        regrouped_cards.append(_section_card("nutrition_hub", "🥗", "#ecfdf5", "Nutrition & condition diet", "Food ideas that are easier on your body and fit your current needs.", nutrition_html))
+
+    meal_html = "".join([
+        _module_subsection("Cuisine preferences", "Choose flavors you enjoy so future suggestions feel more like your own meals.", cuisine_html) if "cuisine" in visible else "",
+        _module_subsection("Weekly meal ideas", "A few gentle breakfast, lunch, and dinner ideas for the week.", meal_plan_html) if "meal_plan" in visible else "",
+        _module_subsection("Diet tips", "Small reminders that can make eating feel a little easier.", _render_diet_tips(so.get("diet_tips") or [])) if "diet_tips" in visible else "",
+        _module_subsection("Submit preferences", "Save what worked for you so the next page can fit you better.", submit_html) if "submit" in visible else "",
+    ])
+    if meal_html:
+        regrouped_cards.append(_section_card("meal_hub", "🍽️", "#eff6ff", "Preferences & meal ideas", "Meal ideas, food tips, and your taste preferences are all in one place.", meal_html))
+
+    if "map" in visible and map_section.strip():
+        regrouped_cards.append(_section_card("map", "🏥", "#f0f9ff", "Nearby care & parks", "If you need care or want a gentle walk, nearby places are here.", map_section))
+
+    cards_html = "\n".join(part for part in regrouped_cards if part)
 
     html = template.format(
         report_title="Adherence report",
@@ -1328,6 +1513,7 @@ def main() -> None:
         status_icon=status_icon,
         status_text=status_text,
         condition_badges=_render_condition_badges(conditions),
+        hero_vitals_html=hero_vitals_html,
         escalation_html=_render_escalation_banner(escalations) if "escalation" in visible else "",
         ai_message_html=_render_ai_message(so),
         cards_html=cards_html,

@@ -209,15 +209,15 @@ PATIENT_OVERRIDES: dict[str, PatientCopy] = {
             ],
         },
         health_guidance_en={
-            "summary": "This page is best read as an early cardiac signal that needs to be objectified quickly, not something to push through and ignore.",
+            "summary": "This page is best read as an early ADC-related cardiac-toxicity signal that needs to be objectified quickly, not something to push through and ignore.",
             "tips": [
-                {"text": "Write down each palpitation episode and how long it lasts", "why": "Brief self-limited episodes and prolonged episodes lead to very different next steps."},
-                {"text": "Avoid stairs and sudden heavy exertion today", "why": "Recent exertional dyspnea and HR drift suggest the current cardiac load should stay low."},
-                {"text": "Use gentle meals, regular fluids, and less stimulant intake", "why": "Steadier hydration and less sympathetic stimulation may reduce extra HR and BP fluctuation."},
+                {"text": "Write down each palpitation episode and how long it lasts", "why": "Brief self-limited episodes and prolonged episodes lead to very different next steps when ADC-related cardiac toxicity is on the table."},
+                {"text": "Avoid stairs and sudden heavy exertion today", "why": "Recent exertional dyspnea and HR drift suggest the current cardiac load should stay low while possible ADC-related strain is being clarified."},
+                {"text": "Use gentle meals, regular fluids, and less stimulant intake", "why": "Steadier hydration and less sympathetic stimulation may reduce extra HR and BP fluctuation during this ADC treatment window."},
             ],
         },
-        nutrition_zh="近期饮食以低盐、适度蛋白、少刺激为主。优先选择蒸鱼、鸡胸肉、豆腐、燕麦、软米饭和煮熟蔬菜，避免浓咖啡、能量饮料、重口味外卖和过咸汤面。",
-        nutrition_en="For the next few days, aim for lower-salt, moderate-protein, low-stimulant meals. Steamed fish, chicken breast, tofu, oatmeal, soft rice, and cooked vegetables fit better than energy drinks, strong coffee, or very salty take-out foods.",
+        nutrition_zh="考虑到当前处在 ADC 治疗窗口、又出现了可能的早期心脏毒性信号，近期饮食以低盐、适度蛋白、少刺激、少量多餐为主。优先选择蒸鱼、鸡胸肉、豆腐、燕麦、软米饭和煮熟蔬菜，避免浓咖啡、能量饮料、重口味外卖和过咸汤面，尽量减少会放大心悸与血压波动的因素。",
+        nutrition_en="Because he is in an ADC treatment window with a possible early cardiac-toxicity signal, meals should stay lower-salt, moderate-protein, lower-stimulant, and split into smaller portions. Steamed fish, chicken breast, tofu, oatmeal, soft rice, and cooked vegetables fit better than energy drinks, strong coffee, heavily seasoned take-out, or very salty noodle soups that could amplify palpitations and BP drift.",
         diet_table_zh=[
             {"condition": "高血压", "principle": "低盐、规律补水", "recommend": "蒸鱼、燕麦、熟蔬菜、清汤", "avoid": "腌制品、浓汤、重盐外卖"},
             {"condition": "冠心病/心悸风险", "principle": "减少刺激与大起大落", "recommend": "少量多餐、温水、低咖啡因饮品", "avoid": "浓咖啡、能量饮料、暴饮暴食"},
@@ -269,24 +269,24 @@ PATIENT_OVERRIDES: dict[str, PatientCopy] = {
             },
         ],
         diet_tips_zh=[
-            {"icon": "🫗", "title": "补水要分散进行", "detail": "不要等口渴才喝，全天少量多次补水更有利于减少心率波动。"},
-            {"icon": "☕", "title": "这几天减少刺激物", "detail": "浓咖啡、能量饮料和过量酒精都可能让心悸更明显。"},
-            {"icon": "🧂", "title": "盐味再降一点", "detail": "血压已经有漂移，能少一点咸味，就给药物多一点发挥空间。"},
-            {"icon": "📝", "title": "把症状和饮食放在同一本记录里", "detail": "有些人会发现大餐、熬夜或咖啡因与心悸发生时间有关。"},
+            {"icon": "🫗", "title": "补水要分散进行", "detail": "不要等口渴才喝，全天少量多次补水更有利于减少 ADC 治疗窗口里的心率和血压波动。"},
+            {"icon": "☕", "title": "这几天减少刺激物", "detail": "浓咖啡、能量饮料和过量酒精都可能放大可能的 ADC 相关心悸信号。"},
+            {"icon": "🧂", "title": "盐味再降一点", "detail": "血压已经有漂移，在怀疑 ADC 相关心脏负荷时，少一点咸味会更稳妥。"},
+            {"icon": "📝", "title": "把症状和饮食放在同一本记录里", "detail": "这样更容易看出大餐、熬夜、咖啡因或刺激性饮食是否会放大心悸。"},
         ],
         diet_tips_en=[
-            {"icon": "🫗", "title": "Spread fluids through the day", "detail": "Small frequent drinks work better than waiting until you are very thirsty."},
-            {"icon": "☕", "title": "Scale back stimulants", "detail": "Strong coffee, energy drinks, and excess alcohol can make palpitations feel worse."},
-            {"icon": "🧂", "title": "Trim sodium a little more", "detail": "BP is already drifting, so lower-salt meals give the medication more room to work."},
-            {"icon": "📝", "title": "Track food and symptoms together", "detail": "Some people notice palpitations cluster after large meals, poor sleep, or caffeine."},
+            {"icon": "🫗", "title": "Spread fluids through the day", "detail": "Small frequent drinks are gentler than catching up all at once when ADC-related HR and BP drift are a concern."},
+            {"icon": "☕", "title": "Scale back stimulants", "detail": "Strong coffee, energy drinks, and excess alcohol can amplify a possible ADC-related palpitation pattern."},
+            {"icon": "🧂", "title": "Trim sodium a little more", "detail": "BP is already drifting, so lower-salt meals are safer while possible ADC-related cardiac strain is being sorted out."},
+            {"icon": "📝", "title": "Track food and symptoms together", "detail": "This helps show whether larger meals, poor sleep, caffeine, or spicy foods are making palpitations cluster."},
         ],
         extra_recommendations_zh=[
             {"text": "今天开始记录每次心悸持续多久", "reason": "这是区分短暂波动还是需要升级处理的重要线索。", "category": "monitoring"},
             {"text": "如果出现胸痛、晕厥或静息气短，直接升级就医", "reason": "这些都是需要立刻跳出“居家观察”路径的红线信号。", "category": "monitoring"},
         ],
         extra_recommendations_en=[
-            {"text": "Start timing each palpitation episode today", "reason": "Duration is one of the fastest ways to separate a short-lived fluctuation from something that needs escalation.", "category": "monitoring"},
-            {"text": "Escalate immediately for chest pain, fainting, or breathlessness at rest", "reason": "Those are red-flag symptoms that move this out of the home-observation lane.", "category": "monitoring"},
+            {"text": "Start timing each palpitation episode today", "reason": "Duration is one of the fastest ways to separate a short-lived fluctuation from a possible ADC-related cardiac toxicity signal that needs escalation.", "category": "monitoring"},
+            {"text": "Escalate immediately for chest pain, fainting, or breathlessness at rest", "reason": "Those are red-flag symptoms that move this out of the home-observation lane when early ADC-related cardiac toxicity is possible.", "category": "monitoring"},
         ],
         emergency_note_zh="试验团队建议在 24 小时内完成心电图、超声心动图和趋势记录复核；在结果明确前，按早期心脏毒性信号处理更稳妥。",
         emergency_note_en="The trial team should review ECG, echo, and the HR/BP trend within 24 hours; until then, it is safer to treat this as an early cardiac toxicity signal.",
@@ -558,8 +558,8 @@ PATIENT_OVERRIDES: dict[str, PatientCopy] = {
                 {"text": "Skip stairs and brisk walking today", "why": "Protecting breathing reserve matters more than pushing activity right now."},
             ],
         },
-        nutrition_zh="饮食重点是轻负担但别掉营养。优先选择温热、易咀嚼、不过于油腻的蛋白来源，如蒸鱼、鸡肉、豆腐、软面和熟蔬菜；进餐时放慢速度，避免一次吃得过饱影响呼吸。",
-        nutrition_en="The food goal is lower breathing burden without losing nutrition. Choose warm, easy-to-chew, lower-fat protein options like steamed fish, chicken, tofu, soft noodles, and cooked vegetables, and slow meals down so a full stomach does not worsen breathing.",
+        nutrition_zh="考虑到当前更像 ADC 相关肺毒性早期观察期，饮食重点是减轻呼吸负担但别掉营养。优先选择温热、易咀嚼、不过于油腻的蛋白来源，如蒸鱼、鸡肉、豆腐、软面和熟蔬菜；进餐时放慢速度，避免一次吃得过饱影响呼吸。",
+        nutrition_en="Because this looks like an early ADC-related lung-toxicity observation window, the food goal is lower breathing burden without losing nutrition. Choose warm, easy-to-chew, lower-fat protein options like steamed fish, chicken, tofu, soft noodles, and cooked vegetables, and slow meals down so a full stomach does not worsen breathing.",
         diet_table_zh=[
             {"condition": "肺储备下降", "principle": "轻负担、分次进食", "recommend": "软面、蒸鱼、豆腐、熟蔬菜", "avoid": "太油、太撑、边走边吃"},
             {"condition": "乏力恢复期", "principle": "少量高蛋白", "recommend": "鸡肉、鸡蛋、豆类、温汤", "avoid": "空腹太久、只吃零食"},
@@ -611,16 +611,16 @@ PATIENT_OVERRIDES: dict[str, PatientCopy] = {
             },
         ],
         diet_tips_zh=[
-            {"icon": "🌬️", "title": "吃饭速度放慢", "detail": "说话多、吃得急、吃得太撑，都会让气短感觉更明显。"},
-            {"icon": "🍲", "title": "优先温热软食", "detail": "温汤面、软粥、蒸鱼和豆腐更容易在疲劳时完成。"},
-            {"icon": "🧃", "title": "水分分散喝", "detail": "全天小口补液，比临时猛灌更舒服，也更容易坚持。"},
-            {"icon": "📉", "title": "把血氧和步行耐量一起看", "detail": "有时候血氧变化不大，但步行耐量下降会更早提示问题。"},
+            {"icon": "🌬️", "title": "吃饭速度放慢", "detail": "在怀疑 ADC 相关肺毒性时，说话多、吃得急、吃得太撑，都会让气短感觉更明显。"},
+            {"icon": "🍲", "title": "优先温热软食", "detail": "温汤面、软粥、蒸鱼和豆腐更容易在疲劳和干咳阶段完成。"},
+            {"icon": "🧃", "title": "水分分散喝", "detail": "全天小口补液，比临时猛灌更舒服，也更适合呼吸负担偏高的阶段。"},
+            {"icon": "📉", "title": "把血氧和步行耐量一起看", "detail": "在 ADC 相关肺毒性观察期，有时步行耐量下降会比血氧数字更早提示问题。"},
         ],
         diet_tips_en=[
-            {"icon": "🌬️", "title": "Slow meals down", "detail": "Talking a lot, eating too fast, or overfilling the stomach can make breathlessness feel worse."},
-            {"icon": "🍲", "title": "Favor warm softer foods", "detail": "Warm soups, soft porridge, steamed fish, and tofu are easier to finish on a fatigued day."},
-            {"icon": "🧃", "title": "Space fluids through the day", "detail": "Small frequent drinks are usually more comfortable than trying to catch up all at once."},
-            {"icon": "📉", "title": "Watch walking tolerance with oxygen", "detail": "Sometimes walking capacity drops before oxygen numbers look dramatic."},
+            {"icon": "🌬️", "title": "Slow meals down", "detail": "When possible ADC-related lung toxicity is in play, talking a lot, eating too fast, or overfilling the stomach can make breathlessness feel worse."},
+            {"icon": "🍲", "title": "Favor warm softer foods", "detail": "Warm soups, soft porridge, steamed fish, and tofu are easier to finish during fatigue and dry-cough days."},
+            {"icon": "🧃", "title": "Space fluids through the day", "detail": "Small frequent drinks are usually more comfortable than catching up all at once when breathing reserve is limited."},
+            {"icon": "📉", "title": "Watch walking tolerance with oxygen", "detail": "In an ADC-related lung-toxicity watch period, walking capacity may drop before oxygen numbers look dramatic."},
         ],
         extra_recommendations_zh=[
             {"text": "每日记录静息和活动后血氧", "reason": "这能更早发现从轻度信号转向真正进展的趋势。", "category": "monitoring"},
@@ -664,6 +664,28 @@ def choose_lang(value: Any, lang: str) -> str:
     if isinstance(value, dict):
         return str(value.get(lang) or value.get("zh") or value.get("en") or "")
     return str(value or "")
+
+
+_SOURCE_SUGGESTION_ZH = {
+    "Keep a BP/HR trend log and note how long palpitations last": "记录血压和心率变化，并记下每次心悸持续多久",
+    "Continue metoprolol and blood-pressure medications as prescribed": "继续按医嘱服用美托洛尔和降压药",
+    "Urgent contact for chest pain, fainting, sustained palpitations beyond a few minutes, breathlessness at rest, or ankle swelling": "如果出现胸痛、晕厥、心悸持续数分钟以上、静息气短或踝部水肿，请立即联系医生或试验团队",
+    "Check orthostatic BP/HR and pre/post-meal fingerstick glucose; track fluid intake, urine output and daily weight": "监测体位性血压和心率、餐前餐后指尖血糖，并记录饮水量、尿量和每日体重",
+    "Sip fluids frequently and use the antiemetic as prescribed": "少量多次补液，并按医嘱使用止吐药",
+    "Urgent contact if you cannot keep fluids down, glucose < 4 mmol/L or > 13.9 with ketones, fainting, or less than 500 mL urine per day": "如果完全无法进液、血糖低于 4 mmol/L、血糖高于 13.9 且伴酮体、出现晕厥，或全天尿量少于 500 mL，请立即联系医生或试验团队",
+    "Check resting and post-activity SpO2, heart rate and temperature daily": "每天记录静息和活动后的血氧、心率与体温",
+    "Note any change in cough frequency and walking tolerance": "记录咳嗽频率和步行耐受度的变化",
+    "Contact the trial team immediately if SpO2 falls below 92%, you become short of breath at rest, develop fever, or have chest pain": "如果血氧低于 92%、出现静息气短、发热或胸痛，请立即联系试验团队",
+}
+
+
+def localize_source_text(value: Any, lang: str) -> str:
+    text = choose_lang(value, lang)
+    if lang != "zh":
+        return text
+    if isinstance(value, dict):
+        return text
+    return _SOURCE_SUGGESTION_ZH.get(text, text)
 
 
 def vitals_from_source(source: dict[str, Any]) -> dict[str, str]:
@@ -738,14 +760,17 @@ def translate_patient_suggestions(source: dict[str, Any], lang: str) -> list[dic
         for chunk in block.get("output_json", []) or []:
             category = (chunk.get("category") or "").lower()
             for advice in chunk.get("advice", []) or []:
+                advice_text = localize_source_text(advice, lang)
+                if not advice_text:
+                    continue
                 if lang == "zh":
                     translated = {
                         "Self-monitoring": "自我监测",
                         "When to seek help": "何时立即求助",
                     }.get(chunk.get("category"), chunk.get("category", "建议"))
-                    items.append({"text": choose_lang(advice, lang), "reason": f"来自{translated}模块的试验期建议。", "category": "monitoring" if "monitor" in category else "lifestyle"})
+                    items.append({"text": advice_text, "reason": f"来自{translated}模块的试验期建议。", "category": "monitoring" if "monitor" in category else "lifestyle"})
                 else:
-                    items.append({"text": advice, "reason": f"Pulled forward from the trial-page {chunk.get('category', 'patient guidance').lower()} block.", "category": "monitoring" if "monitor" in category else "lifestyle"})
+                    items.append({"text": advice_text, "reason": f"Pulled forward from the trial-page {chunk.get('category', 'patient guidance').lower()} block.", "category": "monitoring" if "monitor" in category else "lifestyle"})
     return items
 
 
@@ -785,6 +810,104 @@ def immediate_actions(source: dict[str, Any], override: PatientCopy, lang: str) 
     return actions
 
 
+def _lowercase_first(text: str) -> str:
+    if not text:
+        return ""
+    return text[:1].lower() + text[1:]
+
+
+def _meal_condition_phrase_en(condition: str) -> str:
+    normalized = (condition or "").strip().lower()
+    phrases = {
+        "hypertension": "keeping sodium and blood-pressure load steadier",
+        "cardiac risk": "keeping cardiac strain lighter",
+        "during chemotherapy": "this treatment window",
+        "fatigue": "days when energy is lower",
+        "palpitation risk": "avoiding extra palpitation triggers",
+        "cad": "heart-friendly recovery",
+        "nausea": "settling your stomach",
+        "poor intake": "days when eating feels harder",
+        "adc gi toxicity": "ADC-related stomach and bowel irritation",
+        "dehydration risk": "protecting hydration",
+        "orthostatic dizziness": "days when fluids may be running low",
+        "glucose drifting low": "keeping morning energy steadier",
+        "reduced pulmonary reserve": "protecting your breathing reserve",
+        "exertional dyspnea": "days when breathing gets heavier with activity",
+        "dry cough": "days when your throat and breathing feel more sensitive",
+    }
+    return phrases.get(normalized, normalized or "your current needs")
+
+
+def _meal_condition_phrase_zh(condition: str) -> str:
+    normalized = (condition or "").strip()
+    phrases = {
+        "高血压": "帮助盐分和血压更平稳",
+        "冠心病": "减轻心血管负担",
+        "化疗期间": "照顾这段治疗窗口里的恢复需求",
+        "乏力": "在体力偏低的时候也更容易吃下",
+        "心悸风险": "减少额外诱发心悸的因素",
+        "恶心": "让胃里更容易接受",
+        "进食减少": "在吃得少的时候也尽量补上营养",
+        "ADC 胃肠道毒性": "减轻 ADC 相关胃肠道刺激",
+        "脱水风险": "把补水和补蛋白一起兼顾",
+        "体位性头晕": "在容量不足时先把水分和盐分补回来",
+        "血糖向低值漂移": "减少上午低糖波动",
+        "肺储备下降": "尽量减轻呼吸负担",
+        "活动后气短": "在容易气短的时候更好入口",
+        "干咳": "在喉咙和呼吸道敏感时更容易完成一餐",
+    }
+    return phrases.get(normalized, f"贴合您现在的{normalized}情况" if normalized else "更温和地照顾现在的身体状态")
+
+
+def enrich_meal_plan_with_adc_context(meal_plan: list[dict[str, Any]], patient_key: str, lang: str) -> list[dict[str, Any]]:
+    normalized_key = (patient_key or "").split("_", 1)[0].lower()
+    meal_labels_en = {"breakfast": "breakfast", "lunch": "lunch", "dinner": "dinner"}
+    meal_labels_zh = {"breakfast": "早餐", "lunch": "午餐", "dinner": "晚餐"}
+    context_en = {
+        "michael": "Because you are on ADC and we want meals to keep your heart rate and blood pressure on a steadier track right now",
+        "emily": "Because you are on ADC and your stomach, hydration, and energy are easier to upset right now",
+        "jason": "Because you are on ADC and we want to protect your breathing reserve while still keeping your strength up",
+    }
+    context_zh = {
+        "michael": "因为您正在使用 ADC，现在饮食更需要帮助心率和血压保持平稳",
+        "emily": "因为您正在使用 ADC，现在胃肠道、补水状态和体力更容易受到影响",
+        "jason": "因为您正在使用 ADC，现在饮食既要顾到体力，也要尽量减轻呼吸负担",
+    }
+
+    for day in meal_plan:
+        for meal_key in ("breakfast", "lunch", "dinner"):
+            for item in day.get(meal_key, []) or []:
+                if item.get("adc_reason"):
+                    continue
+                condition = (item.get("condition") or "").strip()
+                benefit = (item.get("benefit") or "").strip()
+                if lang == "zh":
+                    prefix = context_zh.get(normalized_key, "因为您正在使用 ADC，现在饮食更需要温和、好消化、少量多餐")
+                    meal_label = meal_labels_zh[meal_key]
+                    condition_phrase = _meal_condition_phrase_zh(condition)
+                    if condition and benefit:
+                        item["adc_reason"] = f"{prefix}，这道{meal_label}是为了{condition_phrase}准备的，它能帮到您的地方是：{benefit}。"
+                    elif benefit:
+                        item["adc_reason"] = f"{prefix}，这道{meal_label}能帮到您的地方是：{benefit}。"
+                    else:
+                        item["adc_reason"] = f"{prefix}，这道{meal_label}会更温和，也更容易坚持。"
+                else:
+                    prefix = context_en.get(normalized_key, "Because you are on ADC, meals should stay gentle, easier to digest, and easier to finish")
+                    meal_label = meal_labels_en[meal_key]
+                    condition_phrase = _meal_condition_phrase_en(condition)
+                    if condition:
+                        item["adc_reason"] = (
+                            f"{prefix}. This {meal_label} is chosen to support {condition_phrase}. "
+                            f"What it can do for you: {benefit.rstrip('.') or 'Keep the meal gentler and easier to finish right now'}."
+                        )
+                    else:
+                        item["adc_reason"] = (
+                            f"{prefix}. What this {meal_label} can do for you: "
+                            f"{benefit.rstrip('.') or 'Keep the meal gentler and easier to finish right now'}."
+                        )
+    return meal_plan
+
+
 def build_adherence_input(source: dict[str, Any], override: PatientCopy, lang: str) -> dict[str, Any]:
     current_time = datetime.now().strftime("%Y-%m-%d %H:%M")
     vitals = vitals_from_source(source)
@@ -811,6 +934,8 @@ def build_adherence_input(source: dict[str, Any], override: PatientCopy, lang: s
         nutrition = SHARED_ADC_NUTRITION_EN + " " + SHARED_ADC_GI_DETAIL_EN + " " + nutrition
         diet_table = [SHARED_ADC_DIET_ROW_EN] + diet_table
         diet_tips = merge_tips(diet_tips, SHARED_ADC_DIET_TIPS_EN)
+
+    meal_plan = enrich_meal_plan_with_adc_context(meal_plan, override.file_stem, lang)
 
     triage = source.get("triage", {}) or {}
     trial = source.get("trial_context", {}).get("trial", {}) or {}
