@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clinical Trial Pages</title>
+  <style>
+    body {
+      font-family: "Segoe UI", "PingFang SC", sans-serif;
+      background: #f8fafc;
+      color: #0f172a;
+      margin: 0;
+      padding: 32px;
+    }
+    .wrap {
+      max-width: 960px;
+      margin: 0 auto;
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 18px;
+      padding: 28px;
+      box-shadow: 0 12px 40px rgba(15, 23, 42, 0.06);
+    }
+    h1 { margin-top: 0; font-size: 1.8rem; }
+    p { color: #475569; line-height: 1.7; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 14px 12px; border-bottom: 1px solid #e2e8f0; text-align: left; vertical-align: top; }
+    th { color: #334155; font-size: 0.95rem; }
+    .link {
+      display: inline-block;
+      margin: 6px 10px 6px 0;
+      padding: 8px 12px;
+      border-radius: 999px;
+      text-decoration: none;
+      background: #ecfeff;
+      color: #0f766e;
+      border: 1px solid #99f6e4;
+      font-size: 0.92rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Clinical Trial To Existing Page Formats</h1>
+    <p>下表汇总了 3 位患者映射到现有 4 套页面后的输出文件。原始转换输入 JSON 也同步写到了 <code>output/clinical-trial-pages/inputs</code>，便于后续继续改字段或重跑。</p>
+    <table>
+      <thead><tr><th>Patient</th><th>Generated Pages</th></tr></thead>
+      <tbody>
+        <tr><td>Michael Chen</td><td><a href="michael_adherence_zh.html" class="link">依从性中文</a> <a href="michael_adherence_en.html" class="link">Adherence EN</a> <a href="michael_emergency_zh.html" class="link">紧急指引中文</a> <a href="michael_emergency_en.html" class="link">Emergency EN</a></td></tr><tr><td>Emily Carter</td><td><a href="emily_adherence_zh.html" class="link">依从性中文</a> <a href="emily_adherence_en.html" class="link">Adherence EN</a> <a href="emily_emergency_zh.html" class="link">紧急指引中文</a> <a href="emily_emergency_en.html" class="link">Emergency EN</a></td></tr><tr><td>Jason Miller</td><td><a href="jason_adherence_zh.html" class="link">依从性中文</a> <a href="jason_adherence_en.html" class="link">Adherence EN</a> <a href="jason_emergency_zh.html" class="link">紧急指引中文</a> <a href="jason_emergency_en.html" class="link">Emergency EN</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>

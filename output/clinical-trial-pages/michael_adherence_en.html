@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adherence report</title>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+  body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; margin:0; padding:0; -webkit-text-size-adjust:100%; }
+  * { box-sizing: border-box; }
+  .meal-card { transition: all .2s; }
+  .meal-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.08); }
+  .feedback-actions { display:flex; flex-direction:column; gap:6px; align-self:stretch; }
+  .feedback-btn {
+    opacity:1;
+    cursor:pointer;
+    border:1px solid #d8dee8;
+    background:#fff;
+    color:#475569;
+    font-size:.76rem;
+    line-height:1.1;
+    padding:8px 11px;
+    border-radius:999px;
+    min-height:36px;
+    min-width:92px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    font-weight:750;
+    box-shadow:0 2px 8px rgba(15,23,42,.05);
+    white-space:nowrap;
+    transition:background .18s ease, border-color .18s ease, color .18s ease, box-shadow .18s ease, transform .18s ease;
+  }
+  .feedback-btn:hover { transform:translateY(-1px); border-color:#cbd5e1; background:#f8fafc; }
+  .feedback-btn.like { color:#047857; border-color:#bbf7d0; background:#f0fdf4; }
+  .feedback-btn.like:hover { background:#dcfce7; border-color:#86efac; }
+  .feedback-btn.feedback-skip { color:#475569; border-color:#e2e8f0; background:#fff; box-shadow:none; }
+  .feedback-btn.feedback-skip:hover { background:#f8fafc; border-color:#cbd5e1; }
+  .feedback-btn.liked { color:#fff; background:#059669; border-color:#059669; box-shadow:0 0 0 3px rgba(5,150,105,.16); }
+  .feedback-btn.disliked { color:#fff; background:#64748b; border-color:#64748b; box-shadow:0 0 0 3px rgba(100,116,139,.16); }
+  .section-card[data-section="meal_plan"] #mealContent .grid {
+    grid-template-columns:1fr !important;
+    gap:12px !important;
+  }
+  .section-card[data-section="meal_plan"] .meal-card {
+    display:grid !important;
+    grid-template-columns:auto minmax(0,1fr);
+    align-items:start;
+    gap:12px;
+    padding:14px !important;
+  }
+  .section-card[data-section="meal_plan"] .meal-card > div:last-child {
+    grid-column:1 / -1;
+    display:grid !important;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:8px !important;
+    width:100%;
+    margin-top:4px;
+  }
+  .section-card[data-section="meal_plan"] .meal-card .feedback-btn {
+    opacity:1 !important;
+    width:100%;
+    min-width:0;
+    min-height:40px;
+  }
+  .feedback-modal { position:fixed; inset:0; background:rgba(0,0,0,.4); display:flex; align-items:center; justify-content:center; z-index:9999; }
+  .feedback-modal-box { background:#fff; border-radius:16px; padding:24px; max-width:320px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,.2); }
+  .feedback-reason { display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0; border:1px solid #e2e8f0; border-radius:10px; background:#f8fafc; font-size:0.85em; cursor:pointer; transition:all .15s; }
+  .feedback-reason:hover { background:#eff6ff; border-color:#93c5fd; }
+  .cuisine-chip { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:20px; font-size:0.8em; font-weight:500; cursor:pointer; border:2px solid #e2e8f0; background:#f8fafc; color:#475569; transition:all 0.2s; user-select:none; }
+  .cuisine-chip:hover { border-color:#a7f3d0; background:#ecfdf5; }
+  .cuisine-chip.selected { border-color:#10b981; background:#d1fae5; color:#065f46; }
+  .cuisine-chip .chip-x { font-size:0.75em; opacity:0; padding:2px; border-radius:50%; }
+  .cuisine-chip.selected .chip-x { opacity:0.6; }
+  .cuisine-chip.selected .chip-x:hover { opacity:1; background:#fecaca; color:#991b1b; }
+
+  /* ─── Card/Accordion Layout (Message Center Style) ─── */
+  .section-card {
+    border-radius: 18px;
+    overflow: hidden;
+    margin-bottom: 14px;
+    border: 2px solid #e8ecf0;
+    background: #fff;
+    transition: border-color .25s, box-shadow .25s, transform .15s;
+    box-shadow: 0 2px 8px rgba(0,0,0,.04);
+  }
+  .section-card:active { transform: scale(0.985); }
+  .section-card.expanded {
+    border-color: #6ee7b7;
+    box-shadow: 0 6px 24px rgba(16,185,129,.12);
+  }
+  .section-card-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 22px;
+    cursor: pointer;
+    user-select: none;
+    min-height: 88px;
+  }
+  .section-card-header:hover { background: #fafbfc; }
+  .section-card-icon {
+    font-size: 1.8em;
+    flex-shrink: 0;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16px;
+  }
+  .section-card-title {
+    font-size: 1.2em;
+    font-weight: 800;
+    color: #1a202c;
+    line-height: 1.3;
+  }
+  .section-card-summary {
+    font-size: 0.88em;
+    color: #64748b;
+    margin-top: 4px;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .section-card-arrow {
+    margin-left: auto;
+    font-size: 1.1em;
+    color: #94a3b8;
+    transition: transform .3s ease;
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #f1f5f9;
+  }
+  .section-card.expanded .section-card-arrow {
+    transform: rotate(180deg);
+    background: #d1fae5;
+    color: #065f46;
+  }
+  .section-card-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .4s ease, padding .3s ease;
+    padding: 0 22px;
+  }
+  .section-card.expanded .section-card-body {
+    max-height: 8000px;
+    padding: 0 22px 22px 22px;
+    border-top: 1px solid #f1f5f9;
+  }
+
+  /* ─── Sub-card (nested tap-to-expand items) ─── */
+  .sub-card {
+    border-radius: 12px;
+    margin-bottom: 8px;
+    border: 1px solid #f1f5f9;
+    background: #f8fafc;
+    overflow: hidden;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .sub-card.open {
+    border-color: #d1d5db;
+    box-shadow: 0 2px 8px rgba(0,0,0,.04);
+  }
+  .sub-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    cursor: pointer;
+    user-select: none;
+    min-height: 52px;
+  }
+  .sub-card-header:active { background: #f1f5f9; }
+  .sub-card-icon { font-size: 1.3em; flex-shrink: 0; }
+  .sub-card-label { font-size: 0.82em; color: #64748b; line-height: 1.2; }
+  .sub-card-value { font-size: 1.05em; font-weight: 700; color: #1e293b; line-height: 1.3; }
+  .sub-card-arrow { margin-left: auto; font-size: 0.7em; color: #94a3b8; transition: transform .3s; }
+  .sub-card.open .sub-card-arrow { transform: rotate(90deg); color: #475569; }
+  .sub-card-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .35s ease, padding .25s ease;
+    padding: 0 16px;
+    border-top: 0px solid transparent;
+  }
+  .sub-card.open .sub-card-body {
+    max-height: 3000px;
+    padding: 12px 16px 14px 16px;
+    border-top: 1px solid #e8ecf0;
+  }
+
+  /* ─── Mobile-First App Layout ─── */
+  @media (max-width: 640px) {
+    body { font-size: 16px; line-height: 1.6; }
+    .max-w-md { max-width: 100% !important; padding: 0 !important; }
+
+    /* Section cards full width, less rounded */
+    .section-card { border-radius: 14px; margin-bottom: 10px; }
+    .section-card-header { padding: 16px 14px; min-height: 72px; gap: 12px; }
+    .section-card-icon { width: 46px; height: 46px; font-size: 1.5em; border-radius: 12px; }
+    .section-card-title { font-size: 1.05em; }
+    .section-card-summary { font-size: 0.8em; }
+    .section-card-body { padding-left: 14px !important; padding-right: 14px !important; }
+
+    /* Sub-cards touch-friendly */
+    .sub-card { border-radius: 10px; margin-bottom: 6px; }
+    .sub-card-header { padding: 14px 14px; min-height: 50px; }
+    .sub-card-value { font-size: 1em; }
+    .sub-card-label { font-size: 0.85em; }
+    .sub-card-body .text-sm { font-size: 0.95em; }
+
+    /* Feedback */
+    .feedback-btn { opacity: 1 !important; font-size: .78rem !important; padding: 8px 10px !important; min-width: 0; min-height: 38px; }
+    .feedback-modal-box { padding: 24px; max-width: 94%; }
+    .feedback-reason { padding: 14px 16px; font-size: 1em; }
+
+    /* Meal tabs */
+    #dayTabs button { padding: 8px 12px !important; font-size: 0.82em !important; }
+
+    /* Cuisine chips */
+    .cuisine-chip { padding: 9px 14px; font-size: 0.88em; }
+    #customCuisineInput { font-size: 1em !important; padding: 10px 14px !important; }
+
+    /* Grids */
+    .sm\\:grid-cols-2 { grid-template-columns: 1fr !important; }
+  }
+
+  /* ─── Larger screens (tablet+): slightly more breathing room ─── */
+  @media (min-width: 641px) {
+    .max-w-md { max-width: 480px; }
+    body { font-size: 15px; }
+  }
+  .hero-vitals {
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid #e2e8f0;
+    border-radius: 22px;
+    box-shadow: 0 12px 32px rgba(15,23,42,.06);
+    padding: 18px;
+  }
+  .hero-vitals-grid {
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:12px;
+  }
+  .hero-vital-card {
+    border-radius:18px;
+    padding:14px;
+    border:1px solid #e2e8f0;
+    background:#fff;
+    min-height:132px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .hero-vital-card.good {
+    background:linear-gradient(180deg,#f0fdf4 0%,#ffffff 100%);
+    border-color:#bbf7d0;
+  }
+  .hero-vital-card.caution {
+    background:linear-gradient(180deg,#fff7ed 0%,#ffffff 100%);
+    border-color:#fed7aa;
+  }
+  .hero-vital-card.alert {
+    background:linear-gradient(180deg,#fef2f2 0%,#ffffff 100%);
+    border-color:#fecaca;
+  }
+  .hero-vital-top {
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .hero-vital-icon {
+    width:42px;
+    height:42px;
+    border-radius:14px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:1.3em;
+    background:#f8fafc;
+  }
+  .hero-vital-label {
+    font-size:.78em;
+    color:#64748b;
+    font-weight:700;
+    letter-spacing:.01em;
+  }
+  .hero-vital-value {
+    font-size:1.45em;
+    font-weight:800;
+    color:#0f172a;
+    line-height:1.1;
+  }
+  .hero-vital-range {
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:.74em;
+    color:#475569;
+    background:#f8fafc;
+    border:1px solid #e2e8f0;
+    border-radius:999px;
+    padding:5px 9px;
+    width:max-content;
+  }
+  .hero-vital-note {
+    font-size:.82em;
+    line-height:1.55;
+    color:#475569;
+  }
+  .module-subsection {
+    border-top:1px solid #edf2f7;
+    padding-top:14px;
+    margin-top:14px;
+  }
+  .module-subsection:first-child {
+    border-top:none;
+    padding-top:0;
+    margin-top:0;
+  }
+  .module-subsection-head {
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:10px;
+  }
+  .module-subsection-title {
+    font-size:.96em;
+    font-weight:800;
+    color:#0f172a;
+  }
+  .module-subsection-copy {
+    font-size:.8em;
+    color:#64748b;
+    line-height:1.5;
+    margin-bottom:10px;
+  }
+</style>
+</head>
+<body class="bg-slate-100 text-slate-800">
+<div class="max-w-md mx-auto px-0 py-0 " style="min-height:100vh">
+
+  <!-- App Header (compact, sticky) -->
+  <div class="sticky top-0 z-50 bg-white border-b border-slate-200 px-4 py-3 shadow-sm">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-lg font-bold text-slate-900">Hello, Michael</h1>
+        <p class="text-xs text-slate-500">Jun 22, 2026 21:46</p>
+      </div>
+      <span class="inline-flex items-center gap-1 bg-amber-100 text-amber-800 px-3 py-1.5 rounded-full text-xs font-semibold">⚠️ Needs attention</span>
+    </div>
+    <div class="flex gap-1.5 mt-2 flex-wrap"><span class="inline-block bg-rose-500 text-white px-3 py-1 rounded-full text-xs font-semibold">Hypertension</span>
+<span class="inline-block bg-red-500 text-white px-3 py-1 rounded-full text-xs font-semibold">Coronary artery disease</span>
+<span class="inline-block bg-purple-500 text-white px-3 py-1 rounded-full text-xs font-semibold">During chemotherapy</span></div>
+  </div>
+
+  <div class="px-3 pt-3"><section class="hero-vitals"><div class="flex items-center justify-between gap-3 mb-3"><div><div class="text-sm font-bold text-slate-900">Your latest health numbers</div><div class="text-xs text-slate-500 mt-1">Start here for a simple look at how your body is doing today.</div></div><div class="text-xl">📊</div></div><div class="hero-vitals-grid"><div class="hero-vital-card alert"><div class="hero-vital-top"><div><div class="hero-vital-label">Blood pressure</div><div class="hero-vital-value">148/92</div></div><div class="hero-vital-icon">🩺</div></div><div class="hero-vital-range">Reference 90-120 / 60-80 mmHg</div><div class="hero-vital-note">Your blood pressure is high. Try to limit salt, keep monitoring, and follow up with your care team.</div></div><div class="hero-vital-card caution"><div class="hero-vital-top"><div><div class="hero-vital-label">Heart rate</div><div class="hero-vital-value">104</div></div><div class="hero-vital-icon">🫀</div></div><div class="hero-vital-range">Reference 60-100 bpm</div><div class="hero-vital-note">Your heart rate is slightly outside the usual range. It may help to recheck after rest and compare with recent activity.</div></div><div class="hero-vital-card good"><div class="hero-vital-top"><div><div class="hero-vital-label">Blood oxygen</div><div class="hero-vital-value">96</div></div><div class="hero-vital-icon">🫁</div></div><div class="hero-vital-range">Reference 95-100%</div><div class="hero-vital-note">Your oxygen level is in the normal range and looks stable.</div></div></div></section></div>
+
+  <!-- Escalation Banners -->
+  <div class="px-3 pt-3"></div>
+
+  <!-- AI Message (modular sub-cards) -->
+  <div class="px-3 pt-3 pb-1">
+    <div class="bg-white rounded-2xl border border-slate-200 p-3 shadow-sm">
+      <div class="flex items-center gap-2 mb-2 px-1">
+        <span class="text-base">🤖</span>
+        <span class="text-xs font-bold text-slate-600 uppercase tracking-wide">AI Health Companion</span>
+      </div>
+      <div class="sub-card" style="border-color:transparent"><div class="sub-card-header" style="padding:12px 14px"><span class="sub-card-icon" style="font-size:1.2em">🎉</span><div class="flex-1 min-w-0"><div class="sub-card-value text-emerald-800" style="font-size:0.95em">No immediate collapse signal</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">There is no chest pain, fainting, or breathlessness at rest right now, so this still looks controllable with prompt follow-up.</div></div></div><div class="sub-card" style="border-color:transparent"><div class="sub-card-header" style="padding:12px 14px"><span class="sub-card-icon" style="font-size:1.2em">⚠️</span><div class="flex-1 min-w-0"><div class="sub-card-value text-amber-800" style="font-size:0.95em">This behaves like an early cardiac toxicity signal</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">With prior CAD and a low-normal baseline LVEF, new palpitations plus fatigue and BP drift should not be dismissed as routine treatment tiredness.</div></div></div><div class="sub-card" style="border-color:transparent"><div class="sub-card-header" style="padding:12px 14px"><span class="sub-card-icon" style="font-size:1.2em">📝</span><div class="flex-1 min-w-0"><div class="sub-card-value text-blue-800" style="font-size:0.95em">What should happen next</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">Within the next 24 hours, the most useful steps are ECG, echo, and a clear HR/BP log to guide the trial team before the next dose.</div></div></div><div class="sub-card" style="border-color:transparent"><div class="sub-card-header" style="padding:12px 14px"><span class="sub-card-icon" style="font-size:1.2em">💪</span><div class="flex-1 min-w-0"><div class="sub-card-value text-purple-800" style="font-size:0.95em">Good records will help</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">Tracking how long each palpitation lasts, and whether it comes with shortness of breath or dizziness, will make the next decision much easier.</div></div></div>
+    </div>
+  </div>
+
+  <!-- Cards -->
+  <div class="px-3 pt-2 pb-3">
+    <div class="section-card" data-section="health_hub"><div class="section-card-header"><div class="section-card-icon" style="background:#d1fae5">💚</div><div class="flex-1 min-w-0"><div class="section-card-title">Health management</div><div class="section-card-summary">Your main reminders and recent updates are all together here.</div></div><div class="section-card-arrow">&#9662;</div></div><div class="section-card-body"><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">Adherence overview</div></div><div class="module-subsection-copy">A quick look at how things have been going with medicine, meals, activity, and monitoring.</div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">💊</span><div class="flex-1 min-w-0"><div class="sub-card-label">Medication</div><div class="sub-card-value text-emerald-700">Mostly on track</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 mb-1"><span class="font-medium text-slate-500">Issues:</span> He reports continuing his regular medications without obvious missed doses.</div><div class="text-sm text-slate-600 mb-1"><span class="font-medium text-slate-500">Adjustments:</span> Keep taking them as prescribed; if palpitations become sustained or more intense, do not self-adjust the beta blocker before speaking with the trial team.</div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">🍽️</span><div class="flex-1 min-w-0"><div class="sub-card-label">Appetite & diet</div><div class="sub-card-value text-amber-700">Mildly affected</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 mb-1"><span class="font-medium text-slate-500">Cause if known:</span> Fatigue and exertional symptoms can slow down normal eating and hydration habits.</div><div class="text-sm text-slate-600 mb-1"><span class="font-medium text-slate-500">Suggestions:</span> Prefer lower-salt, gentle meals and avoid heavy caffeine, very salty packaged foods, and large late meals.</div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">🏃</span><div class="flex-1 min-w-0"><div class="sub-card-label">Exercise & activity</div><div class="sub-card-value text-amber-700">Should be scaled back</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 mb-1"><span class="font-medium text-slate-500">Barriers:</span> Palpitations and mild exertional dyspnea make sudden exercise increases a poor fit this week.</div><div class="text-sm text-slate-600 mb-1"><span class="font-medium text-slate-500">Plan:</span> Keep activity light and steady, with short flat walks instead of stairs, brisk walking, or anything that provokes symptoms.</div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">📋</span><div class="flex-1 min-w-0"><div class="sub-card-label">Health monitoring</div><div class="sub-card-value text-amber-700">Needs tighter follow-up</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 mb-1"><span class="font-medium text-slate-500">Gaps:</span> He needs a clearer log of HR, BP, palpitation duration, and whether chest pressure, dizziness, or ankle swelling appear.</div></div></div></div><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">Health guidance</div></div><div class="module-subsection-copy">The main things to keep in mind right now, based on how you have been feeling.</div><div class="text-xs text-slate-500 mb-2">Personalized for <span class="font-semibold">Michael</span></div><div class="leading-relaxed mb-3 bg-emerald-50 border-l-4 border-emerald-400 rounded-lg p-4" style="font-size:0.95em">Antibody-drug conjugates (ADCs) combine a targeted antibody with a potent cytotoxic payload. While they can attack tumors effectively, off-target effects or payload release may also trigger gastrointestinal, hepatic, renal, marrow, or lung toxicity. The core nutrition principles are: higher protein, easy digestion, small frequent meals, and side-effect-specific adjustments. This page is best read as an early ADC-related cardiac-toxicity signal that needs to be objectified quickly, not something to push through and ignore.</div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">💡</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.95em">Write down each palpitation episode and how long it lasts</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic">→ Brief self-limited episodes and prolonged episodes lead to very different next steps when ADC-related cardiac toxicity is on the table.</div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">💡</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.95em">Avoid stairs and sudden heavy exertion today</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic">→ Recent exertional dyspnea and HR drift suggest the current cardiac load should stay low while possible ADC-related strain is being clarified.</div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">💡</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.95em">Use gentle meals, regular fluids, and less stimulant intake</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic">→ Steadier hydration and less sympathetic stimulation may reduce extra HR and BP fluctuation during this ADC treatment window.</div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">💡</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.95em">Break meals into 5 to 6 small eating moments</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic">→ Small frequent intake is usually easier to tolerate than forcing larger meals and is less likely to worsen nausea or fullness.</div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">💡</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.95em">Lead with higher-protein, easy-to-digest softer foods</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic">→ Steamed fish, chicken breast, tofu, and steamed egg help preserve nutrition even when total intake is limited.</div></div></div></div><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">Suggestions</div></div><div class="module-subsection-copy">Simple next steps that may feel the most helpful today.</div><div class="flex flex-wrap gap-2 mb-3"><span class="inline-block px-3 py-1 rounded-full text-xs font-medium border bg-slate-50 text-slate-600 border-slate-200">episodic palpitations</span>
+<span class="inline-block px-3 py-1 rounded-full text-xs font-medium border bg-slate-50 text-slate-600 border-slate-200">fatigue</span>
+<span class="inline-block px-3 py-1 rounded-full text-xs font-medium border bg-slate-50 text-slate-600 border-slate-200">mild exertional dyspnea</span>
+<span class="inline-block px-3 py-1 rounded-full text-xs font-medium border bg-slate-50 text-slate-600 border-slate-200">HR/BP drift</span></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">📋</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">Keep a BP/HR trend log and note how long palpitations last</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic mb-2">💬 Pulled forward from the trial-page self-monitoring block.</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="Helpful" onclick="saveLike(-1,'rec','Keep a BP/HR trend log and note how long palpitations last')">Useful</button><button class="feedback-btn feedback-skip" title="Not for me" onclick="showFeedbackModal(-1,'rec','Keep a BP/HR trend log and note how long palpitations last')">Not for me</button></div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">📋</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">Continue metoprolol and blood-pressure medications as prescribed</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic mb-2">💬 Pulled forward from the trial-page self-monitoring block.</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="Helpful" onclick="saveLike(-1,'rec','Continue metoprolol and blood-pressure medications as prescribed')">Useful</button><button class="feedback-btn feedback-skip" title="Not for me" onclick="showFeedbackModal(-1,'rec','Continue metoprolol and blood-pressure medications as prescribed')">Not for me</button></div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">🏠</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">Urgent contact for chest pain, fainting, sustained palpitations beyond a few minutes, breathlessness at rest, or ankle swelling</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic mb-2">💬 Pulled forward from the trial-page when to seek help block.</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="Helpful" onclick="saveLike(-1,'rec','Urgent contact for chest pain, fainting, sustained palpitations beyond a few minutes, breathlessness at rest, or ankle swelling')">Useful</button><button class="feedback-btn feedback-skip" title="Not for me" onclick="showFeedbackModal(-1,'rec','Urgent contact for chest pain, fainting, sustained palpitations beyond a few minutes, breathlessness at rest, or ankle swelling')">Not for me</button></div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">📋</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">Start timing each palpitation episode today</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic mb-2">💬 Duration is one of the fastest ways to separate a short-lived fluctuation from a possible ADC-related cardiac toxicity signal that needs escalation.</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="Helpful" onclick="saveLike(-1,'rec','Start timing each palpitation episode today')">Useful</button><button class="feedback-btn feedback-skip" title="Not for me" onclick="showFeedbackModal(-1,'rec','Start timing each palpitation episode today')">Not for me</button></div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">📋</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">Escalate immediately for chest pain, fainting, or breathlessness at rest</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic mb-2">💬 Those are red-flag symptoms that move this out of the home-observation lane when early ADC-related cardiac toxicity is possible.</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="Helpful" onclick="saveLike(-1,'rec','Escalate immediately for chest pain, fainting, or breathlessness at rest')">Useful</button><button class="feedback-btn feedback-skip" title="Not for me" onclick="showFeedbackModal(-1,'rec','Escalate immediately for chest pain, fainting, or breathlessness at rest')">Not for me</button></div></div></div><div class="text-xs text-slate-500 mt-3 bg-slate-50 rounded-lg p-3 leading-relaxed">💭 Michael Chen is in the ADC-047 C1D14 treatment window. The core interpretation is adapted from the trial-triage rationale: DXd-class ADCs carry a cardiac monitoring signal (LVEF decline, QTc); Michael&#x27;s CV history lowers his threshold. Fatigue may be treatment-related, cardiac, or anemia - objective LVEF/ECG/labs separate them before the next dose.</div></div><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">Health history</div></div><div class="module-subsection-copy">A place to look back on recent changes and important past notes.</div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">👤</span><div class="flex-1 min-w-0"><div class="sub-card-label">Profile</div><div class="sub-card-value">Michael Chen, 66-year-old male. Baseline conditions: Metasta...</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">Michael Chen, 66-year-old male. Baseline conditions: Metastatic gastric cancer (HER2 amplification)（Metastatic gastric cancer; HER2 amplification）; Hypertension（Hypertension (~10 yrs)）; Prior coronary artery disease; baseline low-normal LVEF（Prior CAD; baseline LVEF 54% (low-normal); baseline ECG sinus rhythm, QTc 430 ms）. Current medications: ADC-047 6.4 mg/kg; metoprolol 47.5 mg QD; amlodipine 5 mg QD; aspirin 100 mg QD.</div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">📈</span><div class="flex-1 min-w-0"><div class="sub-card-label">Recent trends</div><div class="sub-card-value">Current monitoring focus: episodic palpitations, fatigue, mi...</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">Current monitoring focus: episodic palpitations, fatigue, mild exertional dyspnea, HR/BP drift. HR drift with episodic palpitations and labile BP this cycle in a patient with prior CAD and low-normal LVEF.</div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">📋</span><div class="flex-1 min-w-0"><div class="sub-card-label">Key events</div><div class="sub-card-value">6 recorded events</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="space-y-2"><div class="flex items-start gap-3 rounded-lg p-2.5 border bg-amber-50 text-amber-700 border-amber-200"><span class="text-base mt-0.5">⚠️</span><div class="flex-1 min-w-0"><div class="text-sm font-semibold">My heart has been racing and skipping on and off since the last cycle, and I feel unusually tired.</div><div class="text-xs text-slate-400 mt-0.5">2026-06-22</div></div></div><div class="flex items-start gap-3 rounded-lg p-2.5 border bg-rose-50 text-rose-700 border-rose-200"><span class="text-base mt-0.5">🚨</span><div class="flex-1 min-w-0"><div class="text-sm font-semibold">HER2-amplified metastatic gastric cancer; hypertension; prior CAD</div><div class="text-xs text-slate-400 mt-0.5">2026-05-15</div></div></div><div class="flex items-start gap-3 rounded-lg p-2.5 border bg-rose-50 text-rose-700 border-rose-200"><span class="text-base mt-0.5">🚨</span><div class="flex-1 min-w-0"><div class="text-sm font-semibold">baseline LVEF 54%, baseline ECG QTc 430 ms, BP 134/82, HR 70</div><div class="text-xs text-slate-400 mt-0.5">2026-06-05</div></div></div><div class="flex items-start gap-3 rounded-lg p-2.5 border bg-rose-50 text-rose-700 border-rose-200"><span class="text-base mt-0.5">🚨</span><div class="flex-1 min-w-0"><div class="text-sm font-semibold">metoprolol, amlodipine, aspirin</div><div class="text-xs text-slate-400 mt-0.5">2026-05-20</div></div></div><div class="flex items-start gap-3 rounded-lg p-2.5 border bg-rose-50 text-rose-700 border-rose-200"><span class="text-base mt-0.5">🚨</span><div class="flex-1 min-w-0"><div class="text-sm font-semibold">prior cardiac event + baseline echocardiogram on file</div><div class="text-xs text-slate-400 mt-0.5">2026-04-30</div></div></div><div class="flex items-start gap-3 rounded-lg p-2.5 border bg-rose-50 text-rose-700 border-rose-200"><span class="text-base mt-0.5">🚨</span><div class="flex-1 min-w-0"><div class="text-sm font-semibold">new-onset palpitations + HR drift this cycle</div><div class="text-xs text-slate-400 mt-0.5">2026-06-20</div></div></div></div></div></div></div></div></div>
+<div class="section-card" data-section="nutrition_hub"><div class="section-card-header"><div class="section-card-icon" style="background:#ecfdf5">🥗</div><div class="flex-1 min-w-0"><div class="section-card-title">Nutrition &amp; condition diet</div><div class="section-card-summary">Food ideas that are easier on your body and fit your current needs.</div></div><div class="section-card-arrow">&#9662;</div></div><div class="section-card-body"><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">Nutrition advice</div></div><div class="module-subsection-copy">The eating focus that matters most for you right now.</div><div class="rounded-xl bg-emerald-50 border border-emerald-100 px-4 py-4 text-[0.95em] leading-7 text-slate-700">Antibody-drug conjugates (ADCs) combine a targeted antibody with a potent cytotoxic payload. While they can attack tumors effectively, off-target effects or payload release may also trigger gastrointestinal, hepatic, renal, marrow, or lung toxicity. The core nutrition principles are: higher protein, easy digestion, small frequent meals, and side-effect-specific adjustments. Because ADC targets may be broadly expressed in the gastrointestinal tract, or because the gut lining turns over quickly, nausea, diarrhea, and reduced intake are common. Use small, frequent, bland meals; avoid greasy, fried, and spicy foods; and aim for 5 to 6 eating moments per day without overfilling. Prioritize steamed fish, poached chicken breast, tofu, steamed egg, and vitamin-rich gourd vegetables for higher-protein, easier-to-digest choices. If diarrhea becomes significant, watch for dehydration and electrolyte loss and use oral rehydration solution, or lightly salted rice broth. Avoid milk and dairy because lactose can worsen gut burden. If nausea is severe, avoid large amounts of fluid during meals and move soups and other liquid foods to at least 30 minutes before or after eating. Because he is in an ADC treatment window with a possible early cardiac-toxicity signal, meals should stay lower-salt, moderate-protein, lower-stimulant, and split into smaller portions. Steamed fish, chicken breast, tofu, oatmeal, soft rice, and cooked vegetables fit better than energy drinks, strong coffee, heavily seasoned take-out, or very salty noodle soups that could amplify palpitations and BP drift.</div></div><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">Diet by condition</div></div><div class="module-subsection-copy">Helpful food choices and foods to go easier on.</div><div class="overflow-x-auto rounded-xl border border-slate-200 bg-white"><table class="w-full text-sm"><thead><tr class="bg-slate-50"><th class="px-4 py-2 text-left text-xs font-semibold text-slate-500">Condition</th><th class="px-4 py-2 text-left text-xs font-semibold text-slate-500">Principle</th><th class="px-4 py-2 text-left text-xs font-semibold text-slate-500">Favor</th><th class="px-4 py-2 text-left text-xs font-semibold text-slate-500">Limit</th></tr></thead><tbody class="divide-y divide-slate-100"><tr><td class="px-4 py-3 font-medium text-slate-800">General nutrition during ADC treatment</td><td class="px-4 py-3 text-slate-600">Higher protein, easy digestion, small frequent meals</td><td class="px-4 py-3 text-emerald-700">Steamed fish, chicken breast, tofu, steamed egg, mild gourd vegetables, oral rehydration solution</td><td class="px-4 py-3 text-rose-600">Greasy spicy foods, overeating, large liquids during meals, dairy when diarrhea is active</td></tr><tr><td class="px-4 py-3 font-medium text-slate-800">Hypertension</td><td class="px-4 py-3 text-slate-600">Lower sodium and steady hydration</td><td class="px-4 py-3 text-emerald-700">Steamed fish, oatmeal, cooked vegetables, light soups</td><td class="px-4 py-3 text-rose-600">Pickled foods, salty broths, heavy take-out</td></tr><tr><td class="px-4 py-3 font-medium text-slate-800">CAD / palpitation risk</td><td class="px-4 py-3 text-slate-600">Reduce stimulants and extremes</td><td class="px-4 py-3 text-emerald-700">Small regular meals, water, low-caffeine drinks</td><td class="px-4 py-3 text-rose-600">Strong coffee, energy drinks, very large meals</td></tr><tr><td class="px-4 py-3 font-medium text-slate-800">During chemotherapy</td><td class="px-4 py-3 text-slate-600">Enough protein with stable energy</td><td class="px-4 py-3 text-emerald-700">Chicken breast, tofu, steamed egg, soft rice</td><td class="px-4 py-3 text-rose-600">Fried high-fat meals and very late heavy dinners</td></tr></tbody></table></div></div></div></div>
+<div class="section-card" data-section="meal_hub"><div class="section-card-header"><div class="section-card-icon" style="background:#eff6ff">🍽️</div><div class="flex-1 min-w-0"><div class="section-card-title">Preferences &amp; meal ideas</div><div class="section-card-summary">Meal ideas, food tips, and your taste preferences are all in one place.</div></div><div class="section-card-arrow">&#9662;</div></div><div class="section-card-body"><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">Cuisine preferences</div></div><div class="module-subsection-copy">Choose flavors you enjoy so future suggestions feel more like your own meals.</div><p class="text-sm text-slate-500 mb-3">Tell us which cuisines you enjoy so future meal ideas feel more natural for you.</p><div class="flex flex-wrap gap-2 mb-3" id="cuisineChips"></div><div class="flex items-center gap-2"><input id="customCuisineInput" type="text" placeholder="Add another cuisine..." class="flex-1 text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-200"><button onclick="addCustomCuisine()" class="px-3 py-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium hover:bg-emerald-100">+ Add</button></div></div><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">Weekly meal ideas</div></div><div class="module-subsection-copy">A few gentle breakfast, lunch, and dinner ideas for the week.</div><div class="flex gap-2 mb-4 overflow-x-auto pb-2" id="dayTabs"></div><div id="mealContent"></div></div><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">Diet tips</div></div><div class="module-subsection-copy">Small reminders that can make eating feel a little easier.</div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">🫗</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">Spread fluids through the day</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 leading-relaxed mb-2">Small frequent drinks are gentler than catching up all at once when ADC-related HR and BP drift are a concern.</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="Helpful" onclick="saveLike(-1,'tip','Spread fluids through the day')">Useful</button><button class="feedback-btn feedback-skip" title="Not for me" onclick="showFeedbackModal(-1,'tip','Spread fluids through the day')">Not for me</button></div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">☕</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">Scale back stimulants</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 leading-relaxed mb-2">Strong coffee, energy drinks, and excess alcohol can amplify a possible ADC-related palpitation pattern.</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="Helpful" onclick="saveLike(-1,'tip','Scale back stimulants')">Useful</button><button class="feedback-btn feedback-skip" title="Not for me" onclick="showFeedbackModal(-1,'tip','Scale back stimulants')">Not for me</button></div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">🧂</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">Trim sodium a little more</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 leading-relaxed mb-2">BP is already drifting, so lower-salt meals are safer while possible ADC-related cardiac strain is being sorted out.</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="Helpful" onclick="saveLike(-1,'tip','Trim sodium a little more')">Useful</button><button class="feedback-btn feedback-skip" title="Not for me" onclick="showFeedbackModal(-1,'tip','Trim sodium a little more')">Not for me</button></div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">📝</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">Track food and symptoms together</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 leading-relaxed mb-2">This helps show whether larger meals, poor sleep, caffeine, or spicy foods are making palpitations cluster.</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="Helpful" onclick="saveLike(-1,'tip','Track food and symptoms together')">Useful</button><button class="feedback-btn feedback-skip" title="Not for me" onclick="showFeedbackModal(-1,'tip','Track food and symptoms together')">Not for me</button></div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">🍽️</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">Small frequent meals</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 leading-relaxed mb-2">Aim for 5 to 6 eating moments per day instead of one or two heavy meals to reduce nausea, bloating, and post-meal discomfort.</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="Helpful" onclick="saveLike(-1,'tip','Small frequent meals')">Useful</button><button class="feedback-btn feedback-skip" title="Not for me" onclick="showFeedbackModal(-1,'tip','Small frequent meals')">Not for me</button></div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">🥚</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">Higher-protein and easy to digest</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 leading-relaxed mb-2">Steamed fish, poached chicken breast, tofu, and steamed egg are practical ADC-treatment protein staples.</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="Helpful" onclick="saveLike(-1,'tip','Higher-protein and easy to digest')">Useful</button><button class="feedback-btn feedback-skip" title="Not for me" onclick="showFeedbackModal(-1,'tip','Higher-protein and easy to digest')">Not for me</button></div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">🧂</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">Replace fluids and salt during diarrhea</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 leading-relaxed mb-2">Significant diarrhea causes fluid and electrolyte loss, so use oral rehydration solution or lightly salted rice broth.</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="Helpful" onclick="saveLike(-1,'tip','Replace fluids and salt during diarrhea')">Useful</button><button class="feedback-btn feedback-skip" title="Not for me" onclick="showFeedbackModal(-1,'tip','Replace fluids and salt during diarrhea')">Not for me</button></div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">🥛</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">Pause dairy if diarrhea is active</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 leading-relaxed mb-2">Lactose in milk and dairy can add to gut burden when diarrhea is already present.</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="Helpful" onclick="saveLike(-1,'tip','Pause dairy if diarrhea is active')">Useful</button><button class="feedback-btn feedback-skip" title="Not for me" onclick="showFeedbackModal(-1,'tip','Pause dairy if diarrhea is active')">Not for me</button></div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">🥣</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">Separate larger liquids from meals if nausea is strong</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 leading-relaxed mb-2">Move soups and other liquid foods to at least 30 minutes before or after eating when nausea is severe.</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="Helpful" onclick="saveLike(-1,'tip','Separate larger liquids from meals if nausea is strong')">Useful</button><button class="feedback-btn feedback-skip" title="Not for me" onclick="showFeedbackModal(-1,'tip','Separate larger liquids from meals if nausea is strong')">Not for me</button></div></div></div></div><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">Submit preferences</div></div><div class="module-subsection-copy">Save what worked for you so the next page can fit you better.</div><button id="exportFeedbackBtn" onclick="exportFeedbackJSON()" style="display:none" class="w-full px-6 py-3 rounded-full text-sm font-bold bg-emerald-600 text-white shadow-md hover:bg-emerald-700 active:scale-95 transition-all">✓ Submit my preferences</button><p class="text-xs text-slate-400 mt-2 text-center" id="submitHint" style="display:none">Your feedback will shape future suggestions</p></div></div></div>
+<div class="section-card" data-section="map"><div class="section-card-header"><div class="section-card-icon" style="background:#f0f9ff">🏥</div><div class="flex-1 min-w-0"><div class="section-card-title">Nearby care &amp; parks</div><div class="section-card-summary">If you need care or want a gentle walk, nearby places are here.</div></div><div class="section-card-arrow">&#9662;</div></div><div class="section-card-body"><div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3"><div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100"><span class="text-lg">📍</span><h2 class="text-sm font-bold text-slate-800">Nearby picks</h2></div><p class="text-sm text-slate-600 mb-3">Nearby care locations are shown if you ever need them.</p><div class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 mb-3">Set GOOGLE_MAPS_API_KEY to render the interactive map.</div><div class="grid grid-cols-1 sm:grid-cols-2 gap-2"><a class="block rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm font-semibold text-slate-700 hover:bg-slate-100 text-center" href="https://www.google.com/maps/search/hospitals/@42.2766632,-71.8079906,14z" target="_blank" rel="noopener">🏥 Nearby hospitals</a><a class="block rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm font-semibold text-slate-700 hover:bg-slate-100 text-center" href="https://www.google.com/maps/search/parks/@42.2766632,-71.8079906,14z" target="_blank" rel="noopener">🌳 Nearby parks</a></div></div></div></div>
+  </div>
+
+  <!-- Guardrail (slim footer) -->
+  <div class="px-4 py-3 bg-slate-50 border-t border-slate-200">
+    <p class="text-[11px] text-slate-400 text-center leading-relaxed">This page is restructured from clinical-trial review data for supportive understanding only. It does not replace the trial team, treating clinician, or emergency assessment.</p>
+  </div>
+
+</div>
+
+<script>
+const DAYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const MEAL_LABELS = {"breakfast":"Breakfast","lunch":"Lunch","dinner":"Dinner"};
+const rawMeals = [{"day": "Day 1", "breakfast": [{"name": "Oatmeal with steamed egg", "icon": "🥣", "condition": "Hypertension", "benefit": "Gentle, lower-salt, and steady for the morning", "adc_reason": "Because you are on ADC and we want meals to keep your heart rate and blood pressure on a steadier track right now. This breakfast is chosen to support keeping sodium and blood-pressure load steadier. What it can do for you: Gentle, lower-salt, and steady for the morning."}], "lunch": [{"name": "Steamed fish with soft rice", "icon": "🐟", "condition": "Cardiac risk", "benefit": "Lean protein with less cardiovascular load", "adc_reason": "Because you are on ADC and we want meals to keep your heart rate and blood pressure on a steadier track right now. This lunch is chosen to support keeping cardiac strain lighter. What it can do for you: Lean protein with less cardiovascular load."}], "dinner": [{"name": "Chicken and vegetable soup", "icon": "🍲", "condition": "During chemotherapy", "benefit": "Adds fluids, protein, and cooked vegetables in one meal", "adc_reason": "Because you are on ADC and we want meals to keep your heart rate and blood pressure on a steadier track right now. This dinner is chosen to support this treatment window. What it can do for you: Adds fluids, protein, and cooked vegetables in one meal."}]}, {"day": "Day 2", "breakfast": [{"name": "Banana oatmeal cup", "icon": "🍌", "condition": "Fatigue", "benefit": "Easy to tolerate and helps avoid a long fasting stretch", "adc_reason": "Because you are on ADC and we want meals to keep your heart rate and blood pressure on a steadier track right now. This breakfast is chosen to support days when energy is lower. What it can do for you: Easy to tolerate and helps avoid a long fasting stretch."}], "lunch": [{"name": "Tofu greens noodle bowl", "icon": "🍜", "condition": "Hypertension", "benefit": "Uses a lighter broth while keeping fluids and carbs up", "adc_reason": "Because you are on ADC and we want meals to keep your heart rate and blood pressure on a steadier track right now. This lunch is chosen to support keeping sodium and blood-pressure load steadier. What it can do for you: Uses a lighter broth while keeping fluids and carbs up."}], "dinner": [{"name": "Steamed chicken with pumpkin mash", "icon": "🍗", "condition": "During chemotherapy", "benefit": "Soft, digestible, and not too heavy at night", "adc_reason": "Because you are on ADC and we want meals to keep your heart rate and blood pressure on a steadier track right now. This dinner is chosen to support this treatment window. What it can do for you: Soft, digestible, and not too heavy at night."}]}, {"day": "Day 3", "breakfast": [{"name": "Warm soy milk with whole-wheat toast", "icon": "🍞", "condition": "Palpitation risk", "benefit": "Regular breakfast without a heavy sugar or caffeine load", "adc_reason": "Because you are on ADC and we want meals to keep your heart rate and blood pressure on a steadier track right now. This breakfast is chosen to support avoiding extra palpitation triggers. What it can do for you: Regular breakfast without a heavy sugar or caffeine load."}], "lunch": [{"name": "Salmon and quinoa bowl", "icon": "🥗", "condition": "CAD", "benefit": "Helpful for protein and heart-friendly fats", "adc_reason": "Because you are on ADC and we want meals to keep your heart rate and blood pressure on a steadier track right now. This lunch is chosen to support heart-friendly recovery. What it can do for you: Helpful for protein and heart-friendly fats."}], "dinner": [{"name": "Tofu steamed egg with broccoli", "icon": "🥚", "condition": "Hypertension", "benefit": "Low-salt, easy to digest, and evening-friendly", "adc_reason": "Because you are on ADC and we want meals to keep your heart rate and blood pressure on a steadier track right now. This dinner is chosen to support keeping sodium and blood-pressure load steadier. What it can do for you: Low-salt, easy to digest, and evening-friendly."}]}];
+const meals = DAYS.map((d, i) => ({ ...rawMeals[i % rawMeals.length], day: d }));
+let activeDay = 0;
+
+const MEAL_FEEDBACK_REASONS = [
+  "Don't like the taste",
+  "Allergic / intolerant",
+  "Can't find this ingredient",
+  "Too difficult to prepare",
+  "Other"
+];
+const GENERAL_FEEDBACK_REASONS = [
+  "Not applicable to me",
+  "Too difficult to do",
+  "Already doing this",
+  "Don't agree with this",
+  "Other"
+];
+const FEEDBACK_STORAGE_KEY = "mealFeedback_en";
+const CUISINE_STORAGE_KEY = "cuisinePrefs_en";
+let feedbackStore = JSON.parse(localStorage.getItem(FEEDBACK_STORAGE_KEY) || "{}");
+const pendingFeedbackSubmits = {};
+
+function saveFeedback(dayIdx, mealType, itemName, reason) {
+  const key = `${dayIdx}-${mealType}-${itemName}`;
+  feedbackStore[key] = { sentiment: "dislike", reason, timestamp: new Date().toISOString() };
+  localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(feedbackStore));
+  updateExportBadge();
+}
+
+function saveLike(dayIdx, mealType, itemName) {
+  const key = `${dayIdx}-${mealType}-${itemName}`;
+  feedbackStore[key] = { sentiment: "like", reason: null, timestamp: new Date().toISOString() };
+  localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(feedbackStore));
+  renderMeals();
+  updateExportBadge();
+}
+
+function getFeedback(dayIdx, mealType, itemName) {
+  return feedbackStore[`${dayIdx}-${mealType}-${itemName}`];
+}
+
+function buildPreferencePayload() {
+  const likes = [];
+  const dislikes = [];
+  for (const [key, val] of Object.entries(feedbackStore)) {
+    const entry = { item_key: key, ...val };
+    if (val.sentiment === "like") likes.push(entry);
+    else dislikes.push(entry);
+  }
+  const selectedCuisines = Object.entries(cuisinePrefs).map(([name, meta]) => ({
+    cuisine: name, ...meta
+  }));
+  return {
+    user_id: "ct_michael",
+    data_type: "scenario",
+    language: "en",
+    timestamp: new Date().toISOString(),
+    data: {
+      bundle: {
+        type: "user_preference",
+        report_time: "Jun 22, 2026 21:46",
+        total_feedback: likes.length + dislikes.length,
+        cuisine_preferences: selectedCuisines,
+        liked: likes,
+        disliked: dislikes
+      }
+    }
+  };
+}
+
+function exportFeedbackJSON() {
+  const payload = buildPreferencePayload();
+  const btn = document.getElementById("exportFeedbackBtn");
+  if (!btn) return;
+  const origText = btn.textContent;
+  const feedbackId = "feedback_" + Date.now() + "_" + Math.random().toString(36).slice(2);
+  pendingFeedbackSubmits[feedbackId] = { btn, origText };
+  btn.textContent = "⏳ Submitting...";
+  btn.disabled = true;
+  window.parent.postMessage({
+    type: "skill_feedback",
+    feedback_id: feedbackId,
+    payload
+  }, "*");
+  setTimeout(() => {
+    if (!pendingFeedbackSubmits[feedbackId]) return;
+    delete pendingFeedbackSubmits[feedbackId];
+    btn.textContent = origText;
+    btn.disabled = false;
+  }, 8000);
+}
+
+window.addEventListener("message", function(event) {
+  const data = event.data || {};
+  if (data.type !== "skill_feedback_result" || !data.feedback_id) return;
+  const pending = pendingFeedbackSubmits[data.feedback_id];
+  if (!pending) return;
+  delete pendingFeedbackSubmits[data.feedback_id];
+  pending.btn.textContent = data.ok === false ? "Submission failed" : "✓ Submitted";
+  setTimeout(() => {
+    pending.btn.textContent = pending.origText;
+    pending.btn.disabled = false;
+  }, 2500);
+});
+
+function updateExportBadge() {
+  const btn = document.getElementById("exportFeedbackBtn");
+  const hint = document.getElementById("submitHint");
+  if (!btn) return;
+  const fbCount = Object.keys(feedbackStore).length;
+  const cuisineCount = Object.keys(cuisinePrefs).length;
+  const total = fbCount + cuisineCount;
+  if (total > 0) {
+    btn.textContent = "✓ Submit my preferences (" + total + ")";
+    btn.style.display = "inline-block";
+    if (hint) hint.style.display = "block";
+  } else {
+    btn.style.display = "none";
+    if (hint) hint.style.display = "none";
+  }
+}
+
+function showFeedbackModal(dayIdx, mealType, itemName) {
+  const existing = document.querySelector('.feedback-modal');
+  if (existing) existing.remove();
+  const isMeal = dayIdx >= 0;
+  const reasons = isMeal ? MEAL_FEEDBACK_REASONS : GENERAL_FEEDBACK_REASONS;
+  const title = isMeal ? "Why don't you want this food?" : "Why doesn't this work for you?";
+  const displayName = itemName.length > 60 ? itemName.substring(0, 57) + "..." : itemName;
+  const modal = document.createElement('div');
+  modal.className = 'feedback-modal';
+  modal.innerHTML = `
+    <div class="feedback-modal-box">
+      <div class="text-sm font-bold text-slate-800 mb-1">${title}</div>
+      <div class="text-xs text-slate-500 mb-3">${displayName}</div>
+      ${reasons.map(r => `<button class="feedback-reason" data-reason="${r}">${r}</button>`).join('')}
+      <button class="feedback-reason" style="color:#94a3b8;border-color:#e2e8f0;margin-top:8px" data-reason="__cancel__">Cancel</button>
+    </div>`;
+  modal.addEventListener('click', function(e) {
+    const reason = e.target.dataset.reason;
+    if (!reason) return;
+    if (reason === '__cancel__') { modal.remove(); return; }
+    saveFeedback(dayIdx, mealType, itemName, reason);
+    modal.remove();
+    if (isMeal) renderMeals();
+    e.target.closest('.feedback-modal').remove();
+  });
+  document.body.appendChild(modal);
+}
+
+function renderTabs() {
+  const container = document.getElementById("dayTabs");
+  container.innerHTML = DAYS.map((d, i) =>
+    `<button onclick="switchDay(${i})" class="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${i === activeDay ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">${d}</button>`
+  ).join("");
+}
+
+function switchDay(i) {
+  activeDay = i;
+  renderTabs();
+  renderMeals();
+}
+
+function renderMeals() {
+  const day = meals[activeDay];
+  if (!day) { document.getElementById("mealContent").innerHTML = '<p class="text-sm text-slate-400">No data</p>'; return; }
+  let html = "";
+  for (const [key, label] of Object.entries(MEAL_LABELS)) {
+    const items = day[key] || [];
+    if (!items.length) continue;
+    html += `<div class="mb-4"><div class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">${label}</div><div class="grid grid-cols-1 sm:grid-cols-2 gap-2">`;
+    for (const it of items) {
+      const fb = getFeedback(activeDay, key, it.name);
+      const likeClass = fb && fb.sentiment === "like" ? "liked" : "";
+      const dislikeClass = fb && fb.sentiment === "dislike" ? "disliked" : "";
+      const safeName = it.name.replace(/'/g, "&#39;");
+      const reason = it.adc_reason || (
+        it.condition && it.benefit
+          ? "For your " + it.condition.toLowerCase() + ": " + it.benefit.toLowerCase()
+          : (it.benefit || "")
+      );
+      html += `<div class="meal-card flex items-start gap-3 bg-slate-50 rounded-lg p-3 border border-slate-100">
+        <span class="text-2xl mt-0.5">${it.icon || "🍽️"}</span>
+        <div class="flex-1 min-w-0">
+          <div class="text-sm font-semibold text-slate-800">${it.name}</div>
+          <div class="text-xs text-emerald-600 mt-0.5 leading-relaxed italic">${reason}</div>
+        </div>
+        <div class="feedback-actions">
+          <button class="feedback-btn like ${likeClass}" title="Keep this meal idea" onclick="saveLike(${activeDay},'${key}','${safeName}')">Keep this</button>
+          <button class="feedback-btn feedback-skip ${dislikeClass}" title="This meal is not for me" onclick="showFeedbackModal(${activeDay},'${key}','${safeName}')">Not for me</button>
+        </div>
+      </div>`;
+    }
+    html += "</div></div>";
+  }
+  document.getElementById("mealContent").innerHTML = html;
+}
+
+// ─── Cuisine Preferences ───
+const DEFAULT_CUISINES = [
+  { name: "American", icon: "🍔" },
+  { name: "Italian", icon: "🍝" },
+  { name: "Japanese", icon: "🍣" },
+  { name: "Korean", icon: "🥘" },
+  { name: "Mexican", icon: "🌮" },
+  { name: "Indian", icon: "🍛" },
+  { name: "Mediterranean", icon: "🫒" },
+  { name: "Sichuan", icon: "🌶️" },
+  { name: "Cantonese", icon: "🥡" },
+  { name: "Thai", icon: "🍜" },
+  { name: "French", icon: "🥐" },
+  { name: "Vietnamese", icon: "🍲" },
+];
+
+let cuisinePrefs = JSON.parse(localStorage.getItem(CUISINE_STORAGE_KEY) || "{}");
+
+function renderCuisineChips() {
+  const container = document.getElementById("cuisineChips");
+  if (!container) return;
+  const allCuisines = [...DEFAULT_CUISINES];
+  const customNames = Object.keys(cuisinePrefs).filter(n => !DEFAULT_CUISINES.some(d => d.name === n));
+  for (const cn of customNames) {
+    allCuisines.push({ name: cn, icon: "🍽️" });
+  }
+  container.innerHTML = allCuisines.map(c => {
+    const sel = cuisinePrefs[c.name] ? "selected" : "";
+    return `<span class="cuisine-chip ${sel}" onclick="toggleCuisine('${c.name.replace(/'/g,"&#39;")}')">${c.icon} ${c.name}<span class="chip-x" onclick="event.stopPropagation();removeCuisine('${c.name.replace(/'/g,"&#39;")}')">✕</span></span>`;
+  }).join("");
+  updateExportBadge();
+}
+
+function toggleCuisine(name) {
+  if (cuisinePrefs[name]) {
+    delete cuisinePrefs[name];
+  } else {
+    cuisinePrefs[name] = { selected_at: new Date().toISOString() };
+  }
+  localStorage.setItem(CUISINE_STORAGE_KEY, JSON.stringify(cuisinePrefs));
+  renderCuisineChips();
+  showCuisineToast();
+}
+
+function showCuisineToast() {
+  const selected = Object.keys(cuisinePrefs);
+  if (!selected.length) return;
+  let existing = document.getElementById("cuisineToast");
+  if (!existing) {
+    existing = document.createElement("div");
+    existing.id = "cuisineToast";
+    existing.style.cssText = "position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#065f46;color:#fff;padding:10px 20px;border-radius:12px;font-size:0.8em;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,0.2);z-index:9999;transition:opacity 0.3s;max-width:90%;text-align:center";
+    document.body.appendChild(existing);
+  }
+  existing.textContent = "✓ Saved! Next report will include " + selected.join(", ") + " recipes.";
+  existing.style.opacity = "1";
+  clearTimeout(existing._timer);
+  existing._timer = setTimeout(() => { existing.style.opacity = "0"; }, 3000);
+}
+
+function removeCuisine(name) {
+  delete cuisinePrefs[name];
+  localStorage.setItem(CUISINE_STORAGE_KEY, JSON.stringify(cuisinePrefs));
+  renderCuisineChips();
+}
+
+function addCustomCuisine() {
+  const input = document.getElementById("customCuisineInput");
+  const name = (input.value || "").trim();
+  if (!name) return;
+  cuisinePrefs[name] = { selected_at: new Date().toISOString(), custom: true };
+  localStorage.setItem(CUISINE_STORAGE_KEY, JSON.stringify(cuisinePrefs));
+  input.value = "";
+  renderCuisineChips();
+}
+
+document.getElementById("customCuisineInput").addEventListener("keydown", function(e) {
+  if (e.key === "Enter") { e.preventDefault(); addCustomCuisine(); }
+});
+
+renderCuisineChips();
+renderTabs();
+renderMeals();
+updateExportBadge();
+
+// ─── Card Accordion Toggle ───
+document.querySelectorAll(".section-card-header").forEach(function(header) {
+  header.addEventListener("click", function() {
+    const card = header.closest(".section-card");
+    if (!card) return;
+    const wasExpanded = card.classList.contains("expanded");
+    card.classList.toggle("expanded");
+    if (!wasExpanded) {
+      setTimeout(function() { card.scrollIntoView({ behavior: "smooth", block: "start" }); }, 100);
+    }
+  });
+});
+
+// ─── Sub-card Toggle (tap item to expand its details) ───
+document.querySelectorAll(".sub-card-header").forEach(function(header) {
+  header.addEventListener("click", function(e) {
+    e.stopPropagation();
+    header.closest(".sub-card").classList.toggle("open");
+  });
+});
+</script>
+</body>
+</html>

@@ -23,7 +23,10 @@ webpage_example/
 __pycache__/
 
 # Orchestrator output (regenerate with orchestrator.py)
-output/
+output/*
+!output/clinical-trial-pages/
+output/clinical-trial-pages/*
+!output/clinical-trial-pages/*.html
 
 # Verification output (regenerate with verify.py)
 skill-dev-kit/skill-dev-kit/*-output.html

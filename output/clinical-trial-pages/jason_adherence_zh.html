@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>依从性报告</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script type="text/javascript" src="https://api.map.baidu.com/api?v=3.0&ak=6zXfgKZZiCdrL3MZBH7DGpjemq5IRxRC"></script>
+<style>
+  body { font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; margin:0; padding:0; -webkit-text-size-adjust:100%; }
+  * { box-sizing: border-box; }
+  .meal-card { transition: all .2s; }
+  .meal-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.08); }
+  .feedback-actions { display:flex; flex-direction:column; gap:6px; align-self:stretch; }
+  .feedback-btn {
+    opacity:1;
+    cursor:pointer;
+    border:1px solid #d8dee8;
+    background:#fff;
+    color:#475569;
+    font-size:.76rem;
+    line-height:1.1;
+    padding:8px 11px;
+    border-radius:999px;
+    min-height:36px;
+    min-width:92px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    font-weight:750;
+    box-shadow:0 2px 8px rgba(15,23,42,.05);
+    white-space:nowrap;
+    transition:background .18s ease, border-color .18s ease, color .18s ease, box-shadow .18s ease, transform .18s ease;
+  }
+  .feedback-btn:hover { transform:translateY(-1px); border-color:#cbd5e1; background:#f8fafc; }
+  .feedback-btn.like { color:#047857; border-color:#bbf7d0; background:#f0fdf4; }
+  .feedback-btn.like:hover { background:#dcfce7; border-color:#86efac; }
+  .feedback-btn.feedback-skip { color:#475569; border-color:#e2e8f0; background:#fff; box-shadow:none; }
+  .feedback-btn.feedback-skip:hover { background:#f8fafc; border-color:#cbd5e1; }
+  .feedback-btn.liked { color:#fff; background:#059669; border-color:#059669; box-shadow:0 0 0 3px rgba(5,150,105,.16); }
+  .feedback-btn.disliked { color:#fff; background:#64748b; border-color:#64748b; box-shadow:0 0 0 3px rgba(100,116,139,.16); }
+  .section-card[data-section="meal_plan"] #mealContent .grid {
+    grid-template-columns:1fr !important;
+    gap:12px !important;
+  }
+  .section-card[data-section="meal_plan"] .meal-card {
+    display:grid !important;
+    grid-template-columns:auto minmax(0,1fr);
+    align-items:start;
+    gap:12px;
+    padding:14px !important;
+  }
+  .section-card[data-section="meal_plan"] .meal-card > div:last-child {
+    grid-column:1 / -1;
+    display:grid !important;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:8px !important;
+    width:100%;
+    margin-top:4px;
+  }
+  .section-card[data-section="meal_plan"] .meal-card .feedback-btn {
+    opacity:1 !important;
+    width:100%;
+    min-width:0;
+    min-height:40px;
+  }
+  .feedback-modal { position:fixed; inset:0; background:rgba(0,0,0,.4); display:flex; align-items:center; justify-content:center; z-index:9999; }
+  .feedback-modal-box { background:#fff; border-radius:16px; padding:24px; max-width:320px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,.2); }
+  .feedback-reason { display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0; border:1px solid #e2e8f0; border-radius:10px; background:#f8fafc; font-size:0.85em; cursor:pointer; transition:all .15s; }
+  .feedback-reason:hover { background:#eff6ff; border-color:#93c5fd; }
+  .cuisine-chip { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:20px; font-size:0.8em; font-weight:500; cursor:pointer; border:2px solid #e2e8f0; background:#f8fafc; color:#475569; transition:all 0.2s; user-select:none; }
+  .cuisine-chip:hover { border-color:#a7f3d0; background:#ecfdf5; }
+  .cuisine-chip.selected { border-color:#10b981; background:#d1fae5; color:#065f46; }
+  .cuisine-chip .chip-x { font-size:0.75em; opacity:0; padding:2px; border-radius:50%; }
+  .cuisine-chip.selected .chip-x { opacity:0.6; }
+  .cuisine-chip.selected .chip-x:hover { opacity:1; background:#fecaca; color:#991b1b; }
+
+  /* ─── Card/Accordion Layout (Message Center Style) ─── */
+  .section-card {
+    border-radius: 18px;
+    overflow: hidden;
+    margin-bottom: 14px;
+    border: 2px solid #e8ecf0;
+    background: #fff;
+    transition: border-color .25s, box-shadow .25s, transform .15s;
+    box-shadow: 0 2px 8px rgba(0,0,0,.04);
+  }
+  .section-card:active { transform: scale(0.985); }
+  .section-card.expanded {
+    border-color: #6ee7b7;
+    box-shadow: 0 6px 24px rgba(16,185,129,.12);
+  }
+  .section-card-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 22px;
+    cursor: pointer;
+    user-select: none;
+    min-height: 88px;
+  }
+  .section-card-header:hover { background: #fafbfc; }
+  .section-card-icon {
+    font-size: 1.8em;
+    flex-shrink: 0;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16px;
+  }
+  .section-card-title {
+    font-size: 1.2em;
+    font-weight: 800;
+    color: #1a202c;
+    line-height: 1.3;
+  }
+  .section-card-summary {
+    font-size: 0.88em;
+    color: #64748b;
+    margin-top: 4px;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .section-card-arrow {
+    margin-left: auto;
+    font-size: 1.1em;
+    color: #94a3b8;
+    transition: transform .3s ease;
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #f1f5f9;
+  }
+  .section-card.expanded .section-card-arrow {
+    transform: rotate(180deg);
+    background: #d1fae5;
+    color: #065f46;
+  }
+  .section-card-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .4s ease, padding .3s ease;
+    padding: 0 22px;
+  }
+  .section-card.expanded .section-card-body {
+    max-height: 8000px;
+    padding: 0 22px 22px 22px;
+    border-top: 1px solid #f1f5f9;
+  }
+
+  /* ─── Sub-card (nested tap-to-expand items) ─── */
+  .sub-card {
+    border-radius: 12px;
+    margin-bottom: 8px;
+    border: 1px solid #f1f5f9;
+    background: #f8fafc;
+    overflow: hidden;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .sub-card.open {
+    border-color: #d1d5db;
+    box-shadow: 0 2px 8px rgba(0,0,0,.04);
+  }
+  .sub-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    cursor: pointer;
+    user-select: none;
+    min-height: 52px;
+  }
+  .sub-card-header:active { background: #f1f5f9; }
+  .sub-card-icon { font-size: 1.3em; flex-shrink: 0; }
+  .sub-card-label { font-size: 0.82em; color: #64748b; line-height: 1.2; }
+  .sub-card-value { font-size: 1.05em; font-weight: 700; color: #1e293b; line-height: 1.3; }
+  .sub-card-arrow { margin-left: auto; font-size: 0.7em; color: #94a3b8; transition: transform .3s; }
+  .sub-card.open .sub-card-arrow { transform: rotate(90deg); color: #475569; }
+  .sub-card-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .35s ease, padding .25s ease;
+    padding: 0 16px;
+    border-top: 0px solid transparent;
+  }
+  .sub-card.open .sub-card-body {
+    max-height: 3000px;
+    padding: 12px 16px 14px 16px;
+    border-top: 1px solid #e8ecf0;
+  }
+
+  /* ─── Mobile-First App Layout ─── */
+  @media (max-width: 640px) {
+    body { font-size: 16px; line-height: 1.6; }
+    .max-w-md { max-width: 100% !important; padding: 0 !important; }
+
+    /* Section cards full width, less rounded */
+    .section-card { border-radius: 14px; margin-bottom: 10px; }
+    .section-card-header { padding: 16px 14px; min-height: 72px; gap: 12px; }
+    .section-card-icon { width: 46px; height: 46px; font-size: 1.5em; border-radius: 12px; }
+    .section-card-title { font-size: 1.05em; }
+    .section-card-summary { font-size: 0.8em; }
+    .section-card-body { padding-left: 14px !important; padding-right: 14px !important; }
+
+    /* Sub-cards touch-friendly */
+    .sub-card { border-radius: 10px; margin-bottom: 6px; }
+    .sub-card-header { padding: 14px 14px; min-height: 50px; }
+    .sub-card-value { font-size: 1em; }
+    .sub-card-label { font-size: 0.85em; }
+    .sub-card-body .text-sm { font-size: 0.95em; }
+
+    /* Feedback */
+    .feedback-btn { opacity: 1 !important; font-size: .78rem !important; padding: 8px 10px !important; min-width: 0; min-height: 38px; }
+    .feedback-modal-box { padding: 24px; max-width: 94%; }
+    .feedback-reason { padding: 14px 16px; font-size: 1em; }
+
+    /* Meal tabs */
+    #dayTabs button { padding: 8px 12px !important; font-size: 0.82em !important; }
+
+    /* Cuisine chips */
+    .cuisine-chip { padding: 9px 14px; font-size: 0.88em; }
+    #customCuisineInput { font-size: 1em !important; padding: 10px 14px !important; }
+
+    /* Grids */
+    .sm\\:grid-cols-2 { grid-template-columns: 1fr !important; }
+  }
+
+  /* ─── Larger screens (tablet+): slightly more breathing room ─── */
+  @media (min-width: 641px) {
+    .max-w-md { max-width: 480px; }
+    body { font-size: 15px; }
+  }
+  .hero-vitals {
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid #e2e8f0;
+    border-radius: 22px;
+    box-shadow: 0 12px 32px rgba(15,23,42,.06);
+    padding: 18px;
+  }
+  .hero-vitals-grid {
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:12px;
+  }
+  .hero-vital-card {
+    border-radius:18px;
+    padding:14px;
+    border:1px solid #e2e8f0;
+    background:#fff;
+    min-height:132px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .hero-vital-card.good {
+    background:linear-gradient(180deg,#f0fdf4 0%,#ffffff 100%);
+    border-color:#bbf7d0;
+  }
+  .hero-vital-card.caution {
+    background:linear-gradient(180deg,#fff7ed 0%,#ffffff 100%);
+    border-color:#fed7aa;
+  }
+  .hero-vital-card.alert {
+    background:linear-gradient(180deg,#fef2f2 0%,#ffffff 100%);
+    border-color:#fecaca;
+  }
+  .hero-vital-top {
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .hero-vital-icon {
+    width:42px;
+    height:42px;
+    border-radius:14px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:1.3em;
+    background:#f8fafc;
+  }
+  .hero-vital-label {
+    font-size:.78em;
+    color:#64748b;
+    font-weight:700;
+    letter-spacing:.01em;
+  }
+  .hero-vital-value {
+    font-size:1.45em;
+    font-weight:800;
+    color:#0f172a;
+    line-height:1.1;
+  }
+  .hero-vital-range {
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:.74em;
+    color:#475569;
+    background:#f8fafc;
+    border:1px solid #e2e8f0;
+    border-radius:999px;
+    padding:5px 9px;
+    width:max-content;
+  }
+  .hero-vital-note {
+    font-size:.82em;
+    line-height:1.55;
+    color:#475569;
+  }
+  .module-subsection {
+    border-top:1px solid #edf2f7;
+    padding-top:14px;
+    margin-top:14px;
+  }
+  .module-subsection:first-child {
+    border-top:none;
+    padding-top:0;
+    margin-top:0;
+  }
+  .module-subsection-head {
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:10px;
+  }
+  .module-subsection-title {
+    font-size:.96em;
+    font-weight:800;
+    color:#0f172a;
+  }
+  .module-subsection-copy {
+    font-size:.8em;
+    color:#64748b;
+    line-height:1.5;
+    margin-bottom:10px;
+  }
+</style>
+</head>
+<body class="bg-slate-100 text-slate-800">
+<div class="max-w-md mx-auto px-0 py-0 " style="min-height:100vh">
+
+  <!-- App Header (compact, sticky) -->
+  <div class="sticky top-0 z-50 bg-white border-b border-slate-200 px-4 py-3 shadow-sm">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-lg font-bold text-slate-900">您好，Jason</h1>
+        <p class="text-xs text-slate-500">2026年06月22日 21:46</p>
+      </div>
+      <span class="inline-flex items-center gap-1 bg-amber-100 text-amber-800 px-3 py-1.5 rounded-full text-xs font-semibold">⚠️ 需要关注</span>
+    </div>
+    <div class="flex gap-1.5 mt-2 flex-wrap"><span class="inline-block bg-slate-500 text-white px-3 py-1 rounded-full text-xs font-semibold">肺储备下降</span>
+<span class="inline-block bg-purple-500 text-white px-3 py-1 rounded-full text-xs font-semibold">化疗期间</span></div>
+  </div>
+
+  <div class="px-3 pt-3"><section class="hero-vitals"><div class="flex items-center justify-between gap-3 mb-3"><div><div class="text-sm font-bold text-slate-900">您最新的健康情况</div><div class="text-xs text-slate-500 mt-1">先看看这里，就能快速知道今天身体的大致状态。</div></div><div class="text-xl">📊</div></div><div class="hero-vitals-grid"><div class="hero-vital-card caution"><div class="hero-vital-top"><div><div class="hero-vital-label">血压</div><div class="hero-vital-value">132/84</div></div><div class="hero-vital-icon">🩺</div></div><div class="hero-vital-range">参考范围 90-120 / 60-80 mmHg</div><div class="hero-vital-note">您的血压略高，近期注意休息、少盐饮食，并持续观察。</div></div><div class="hero-vital-card good"><div class="hero-vital-top"><div><div class="hero-vital-label">心率</div><div class="hero-vital-value">88</div></div><div class="hero-vital-icon">🫀</div></div><div class="hero-vital-range">参考范围 60-100 bpm</div><div class="hero-vital-note">您的心率处于常见健康范围，当前状态不错。</div></div><div class="hero-vital-card good"><div class="hero-vital-top"><div><div class="hero-vital-label">血氧</div><div class="hero-vital-value">95</div></div><div class="hero-vital-icon">🫁</div></div><div class="hero-vital-range">参考范围 95-100%</div><div class="hero-vital-note">您的血氧在正常范围内，呼吸状态较稳定。</div></div></div></section></div>
+
+  <!-- Escalation Banners -->
+  <div class="px-3 pt-3"></div>
+
+  <!-- AI Message (modular sub-cards) -->
+  <div class="px-3 pt-3 pb-1">
+    <div class="bg-white rounded-2xl border border-slate-200 p-3 shadow-sm">
+      <div class="flex items-center gap-2 mb-2 px-1">
+        <span class="text-base">🤖</span>
+        <span class="text-xs font-bold text-slate-600 uppercase tracking-wide">AI 健康管家</span>
+      </div>
+      <div class="sub-card" style="border-color:transparent"><div class="sub-card-header" style="padding:12px 14px"><span class="sub-card-icon" style="font-size:1.2em">🎉</span><div class="flex-1 min-w-0"><div class="sub-card-value text-emerald-800" style="font-size:0.95em">现在还不是静息性呼吸困难</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">目前血氧虽然较基线下降，但还没有静息气短和发热，说明仍处在可以尽快追踪和处理的窗口。</div></div></div><div class="sub-card" style="border-color:transparent"><div class="sub-card-header" style="padding:12px 14px"><span class="sub-card-icon" style="font-size:1.2em">⚠️</span><div class="flex-1 min-w-0"><div class="sub-card-value text-amber-800" style="font-size:0.95em">要把它当作早期肺毒性信号</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">在 DXd 类药物背景下，轻度活动后气短加干咳和血氧漂移，不能简单按体能下降处理。</div></div></div><div class="sub-card" style="border-color:transparent"><div class="sub-card-header" style="padding:12px 14px"><span class="sub-card-icon" style="font-size:1.2em">📝</span><div class="flex-1 min-w-0"><div class="sub-card-value text-blue-800" style="font-size:0.95em">这 48 到 72 小时最重要</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">重点观察血氧是否继续下降、咳嗽是否加重、气短是否从活动后转到静息时。</div></div></div><div class="sub-card" style="border-color:transparent"><div class="sub-card-header" style="padding:12px 14px"><span class="sub-card-icon" style="font-size:1.2em">💪</span><div class="flex-1 min-w-0"><div class="sub-card-value text-purple-800" style="font-size:0.95em">先把气息留给恢复</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">这几天饮食要轻一些、活动要慢一些，目标是减少额外呼吸负荷。</div></div></div>
+    </div>
+  </div>
+
+  <!-- Cards -->
+  <div class="px-3 pt-2 pb-3">
+    <div class="section-card" data-section="health_hub"><div class="section-card-header"><div class="section-card-icon" style="background:#d1fae5">💚</div><div class="flex-1 min-w-0"><div class="section-card-title">健康管理</div><div class="section-card-summary">您现在最需要看的提醒和近况，都放在这里。</div></div><div class="section-card-arrow">&#9662;</div></div><div class="section-card-body"><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">依从性概览</div></div><div class="module-subsection-copy">先看看最近用药、饮食、活动和监测的大致情况。</div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">💊</span><div class="flex-1 min-w-0"><div class="sub-card-label">用药</div><div class="sub-card-value text-amber-700">基础用药延续</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 mb-1"><span class="font-medium text-slate-500">问题：</span> 当前更大的问题不是漏服，而是需要尽快识别是否出现 ADC 相关肺毒性。</div><div class="text-sm text-slate-600 mb-1"><span class="font-medium text-slate-500">调整建议：</span> 没有试验团队新指示前先按原方案服药，但若症状升级，要立即联系团队确认是否需要暂停下一次给药。</div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">🍽️</span><div class="flex-1 min-w-0"><div class="sub-card-label">食欲与饮食</div><div class="sub-card-value text-amber-700">轻度受影响</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 mb-1"><span class="font-medium text-slate-500">可能原因：</span> 气短和乏力会让吃饭变慢，也容易因为说话或活动多了而更累。</div><div class="text-sm text-slate-600 mb-1"><span class="font-medium text-slate-500">建议：</span> 餐量可以小一点，但尽量保证蛋白和总热量，不要因为怕累就整天不吃。</div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">🏃</span><div class="flex-1 min-w-0"><div class="sub-card-label">运动与活动</div><div class="sub-card-value text-amber-700">需要保守</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 mb-1"><span class="font-medium text-slate-500">障碍：</span> 现阶段呼吸储备下降，活动后气短和干咳是主要限制。</div><div class="text-sm text-slate-600 mb-1"><span class="font-medium text-slate-500">计划：</span> 先以室内短距离、节奏慢的活动为主，避免爬楼和快走。</div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">📋</span><div class="flex-1 min-w-0"><div class="sub-card-label">健康监测</div><div class="sub-card-value text-amber-700">需要更密切</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 mb-1"><span class="font-medium text-slate-500">缺口：</span> 要每天记录静息与活动后血氧、体温、咳嗽频率和步行耐量。</div></div></div></div><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">健康指导</div></div><div class="module-subsection-copy">结合您最近的感受，整理出现在最值得留意的重点。</div><div class="text-xs text-slate-500 mb-2">为 <span class="font-semibold">Jason</span> 个性化整理</div><div class="leading-relaxed mb-3 bg-emerald-50 border-l-4 border-emerald-400 rounded-lg p-4" style="font-size:0.95em">ADC（抗体偶联药物）由于将靶向抗体与强效小分子细胞毒素结合，在杀伤肿瘤的同时，也可能因为脱靶效应或毒素释放，引发胃肠道、肝肾、骨髓及肺部等毒性反应。科学补充营养的核心原则是：高蛋白、易消化、少食多餐，并根据具体副作用做针对性调整。Jason 当前最重要的是把“轻度气短 + 干咳 + 血氧漂移”看成可能的早期肺毒性线索，主动追踪，而不是等它自己过去。</div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">💡</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.95em">每天都测一次静息和活动后血氧</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic">→ 对肺毒性来说，趋势往往比某一次单点更有意义。</div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">💡</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.95em">吃得少一点没关系，但别吃得太油太撑</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic">→ 过饱会增加呼吸负担，轻一点反而更容易完成。</div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">💡</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.95em">今天先避免爬楼和快走</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic">→ 把有限的呼吸储备留给恢复，比硬练更重要。</div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">💡</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.95em">把三餐拆成 5 到 6 次少量进食</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic">→ 少量多餐通常比硬吃大餐更容易完成，也更不容易恶心或腹胀。</div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">💡</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.95em">优先补高蛋白、好消化的软食</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic">→ 蒸鱼、鸡胸肉、豆腐、蒸蛋这类食物能在总量不多时尽量保住营养密度。</div></div></div></div><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">健康建议</div></div><div class="module-subsection-copy">这些是现在更适合您去做的小步骤。</div><div class="flex flex-wrap gap-2 mb-3"><span class="inline-block px-3 py-1 rounded-full text-xs font-medium border bg-sky-50 text-sky-700 border-sky-200">活动后气短</span>
+<span class="inline-block px-3 py-1 rounded-full text-xs font-medium border bg-slate-50 text-slate-600 border-slate-200">干咳</span>
+<span class="inline-block px-3 py-1 rounded-full text-xs font-medium border bg-orange-50 text-orange-700 border-orange-200">血氧轻度下降</span>
+<span class="inline-block px-3 py-1 rounded-full text-xs font-medium border bg-slate-50 text-slate-600 border-slate-200">乏力</span></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">📋</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">每天记录静息和活动后的血氧、心率与体温</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic mb-2">💬 来自自我监测模块的试验期建议。</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="有帮助" onclick="saveLike(-1,'rec','每天记录静息和活动后的血氧、心率与体温')">适合我</button><button class="feedback-btn feedback-skip" title="不适合我" onclick="showFeedbackModal(-1,'rec','每天记录静息和活动后的血氧、心率与体温')">不适合</button></div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">📋</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">记录咳嗽频率和步行耐受度的变化</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic mb-2">💬 来自自我监测模块的试验期建议。</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="有帮助" onclick="saveLike(-1,'rec','记录咳嗽频率和步行耐受度的变化')">适合我</button><button class="feedback-btn feedback-skip" title="不适合我" onclick="showFeedbackModal(-1,'rec','记录咳嗽频率和步行耐受度的变化')">不适合</button></div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">🏠</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">如果血氧低于 92%、出现静息气短、发热或胸痛，请立即联系试验团队</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic mb-2">💬 来自何时立即求助模块的试验期建议。</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="有帮助" onclick="saveLike(-1,'rec','如果血氧低于 92%、出现静息气短、发热或胸痛，请立即联系试验团队')">适合我</button><button class="feedback-btn feedback-skip" title="不适合我" onclick="showFeedbackModal(-1,'rec','如果血氧低于 92%、出现静息气短、发热或胸痛，请立即联系试验团队')">不适合</button></div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">📋</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">每日记录静息和活动后血氧</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic mb-2">💬 这能更早发现从轻度信号转向真正进展的趋势。</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="有帮助" onclick="saveLike(-1,'rec','每日记录静息和活动后血氧')">适合我</button><button class="feedback-btn feedback-skip" title="不适合我" onclick="showFeedbackModal(-1,'rec','每日记录静息和活动后血氧')">不适合</button></div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">📋</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">只要气短开始影响静息状态，就不要再在家观察</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic mb-2">💬 从活动后转为静息时不适，是需要升级处理的重要分界点。</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="有帮助" onclick="saveLike(-1,'rec','只要气短开始影响静息状态，就不要再在家观察')">适合我</button><button class="feedback-btn feedback-skip" title="不适合我" onclick="showFeedbackModal(-1,'rec','只要气短开始影响静息状态，就不要再在家观察')">不适合</button></div></div></div><div class="text-xs text-slate-500 mt-3 bg-slate-50 rounded-lg p-3 leading-relaxed">💭 Jason Miller 当前处于 ADC-047 C1D15 治疗窗口。 页面核心判断来自试验原始分诊：Stable now; complaint could be baseline lung cancer / deconditioning / treatment fatigue, but it sits in the early ADC exposure window, so a small respiratory change may precede a toxicity pattern.</div></div><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">健康记录</div></div><div class="module-subsection-copy">这里可以回看近期变化和之前的重要记录。</div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">👤</span><div class="flex-1 min-w-0"><div class="sub-card-label">长期资料</div><div class="sub-card-value">Jason Miller，72 岁男性。当前主要基础情况：Metastatic NSCLC (EGFR exon 19 ...</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">Jason Miller，72 岁男性。当前主要基础情况：Metastatic NSCLC (EGFR exon 19 del)（Metastatic non-small cell lung cancer; EGFR exon 19 deletion）；Prior platinum chemotherapy; reduced respiratory reserve。近期用药：ADC-047 1.8 mg/kg；amlodipine。</div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">📈</span><div class="flex-1 min-w-0"><div class="sub-card-label">近期趋势</div><div class="sub-card-value">当前系统重点关注：mild exertional dyspnea、slight SpO2 drift、dry cough...</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">当前系统重点关注：mild exertional dyspnea、slight SpO2 drift、dry cough、fatigue。Mild HR drift and SpO2 below baseline in the early ADC-047 exposure window; respiratory self-report.</div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">📋</span><div class="flex-1 min-w-0"><div class="sub-card-label">关键事件</div><div class="sub-card-value">6 条记录</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="space-y-2"><div class="flex items-start gap-3 rounded-lg p-2.5 border bg-amber-50 text-amber-700 border-amber-200"><span class="text-base mt-0.5">⚠️</span><div class="flex-1 min-w-0"><div class="text-sm font-semibold">I am not in real distress, but my breathing has felt a little uncomfortable recently, especially when I walk upstairs.</div><div class="text-xs text-slate-400 mt-0.5">2026-06-22</div></div></div><div class="flex items-start gap-3 rounded-lg p-2.5 border bg-rose-50 text-rose-700 border-rose-200"><span class="text-base mt-0.5">🚨</span><div class="flex-1 min-w-0"><div class="text-sm font-semibold">基线 SpO₂ 98%、HR 74</div><div class="text-xs text-slate-400 mt-0.5">2026-06-05</div></div></div><div class="flex items-start gap-3 rounded-lg p-2.5 border bg-rose-50 text-rose-700 border-rose-200"><span class="text-base mt-0.5">🚨</span><div class="flex-1 min-w-0"><div class="text-sm font-semibold">转移性非小细胞肺癌,EGFR exon 19 缺失</div><div class="text-xs text-slate-400 mt-0.5">2026-05-20</div></div></div><div class="flex items-start gap-3 rounded-lg p-2.5 border bg-rose-50 text-rose-700 border-rose-200"><span class="text-base mt-0.5">🚨</span><div class="flex-1 min-w-0"><div class="text-sm font-semibold">既往含铂化疗</div><div class="text-xs text-slate-400 mt-0.5">2026-05-22</div></div></div><div class="flex items-start gap-3 rounded-lg p-2.5 border bg-rose-50 text-rose-700 border-rose-200"><span class="text-base mt-0.5">🚨</span><div class="flex-1 min-w-0"><div class="text-sm font-semibold">DLCO 下降 / 已有基线胸部影像</div><div class="text-xs text-slate-400 mt-0.5">2026-05-25</div></div></div><div class="flex items-start gap-3 rounded-lg p-2.5 border bg-rose-50 text-rose-700 border-rose-200"><span class="text-base mt-0.5">🚨</span><div class="flex-1 min-w-0"><div class="text-sm font-semibold">本周期首次呼吸相关自述</div><div class="text-xs text-slate-400 mt-0.5">2026-06-20</div></div></div></div></div></div></div></div></div>
+<div class="section-card" data-section="nutrition_hub"><div class="section-card-header"><div class="section-card-icon" style="background:#ecfdf5">🥗</div><div class="flex-1 min-w-0"><div class="section-card-title">营养与疾病饮食</div><div class="section-card-summary">这里整理了更适合您现在状态的吃法和食物选择。</div></div><div class="section-card-arrow">&#9662;</div></div><div class="section-card-body"><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">营养建议</div></div><div class="module-subsection-copy">先看这段时间吃什么会更适合您。</div><div class="rounded-xl bg-emerald-50 border border-emerald-100 px-4 py-4 text-[0.95em] leading-7 text-slate-700">ADC（抗体偶联药物）由于将靶向抗体与强效小分子细胞毒素结合，在杀伤肿瘤的同时，也可能因为脱靶效应或毒素释放，引发胃肠道、肝肾、骨髓及肺部等毒性反应。科学补充营养的核心原则是：高蛋白、易消化、少食多餐，并根据具体副作用做针对性调整。由于 ADC 靶点在消化道广泛分布，或肠道黏膜更新较快，恶心、腹泻和进食减少都很常见。建议少量多餐、保持清淡，避免油腻、油炸及辛辣刺激性食物，每日可进食 5 到 6 顿、避免过饱。食物优先选择蒸鱼、水煮鸡胸肉、豆腐、蒸蛋等优质高蛋白且容易消化的搭配，并多补充富含维生素的瓜类蔬菜。若腹泻明显，要警惕脱水与电解质流失，可饮用口服补液盐，或米汤加少量盐；此时先避开牛奶和乳制品，以免乳糖进一步增加肠道负担。若恶心严重，避免在进餐时饮用大量液体，汤水等流食尽量放在餐前或餐后 30 分钟以上。考虑到当前更像 ADC 相关肺毒性早期观察期，饮食重点是减轻呼吸负担但别掉营养。优先选择温热、易咀嚼、不过于油腻的蛋白来源，如蒸鱼、鸡肉、豆腐、软面和熟蔬菜；进餐时放慢速度，避免一次吃得过饱影响呼吸。</div></div><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">疾病饮食对照</div></div><div class="module-subsection-copy">哪些食物更适合，哪些先少吃一点。</div><div class="overflow-x-auto rounded-xl border border-slate-200 bg-white"><table class="w-full text-sm"><thead><tr class="bg-slate-50"><th class="px-4 py-2 text-left text-xs font-semibold text-slate-500">疾病</th><th class="px-4 py-2 text-left text-xs font-semibold text-slate-500">原则</th><th class="px-4 py-2 text-left text-xs font-semibold text-slate-500">推荐</th><th class="px-4 py-2 text-left text-xs font-semibold text-slate-500">避免</th></tr></thead><tbody class="divide-y divide-slate-100"><tr><td class="px-4 py-3 font-medium text-slate-800">ADC 治疗期通用饮食</td><td class="px-4 py-3 text-slate-600">高蛋白、易消化、少量多餐</td><td class="px-4 py-3 text-emerald-700">蒸鱼、鸡胸肉、豆腐、蒸蛋、清淡瓜类蔬菜、口服补液盐</td><td class="px-4 py-3 text-rose-600">油炸辛辣、过饱、大量餐中饮液、腹泻时乳制品</td></tr><tr><td class="px-4 py-3 font-medium text-slate-800">肺储备下降</td><td class="px-4 py-3 text-slate-600">轻负担、分次进食</td><td class="px-4 py-3 text-emerald-700">软面、蒸鱼、豆腐、熟蔬菜</td><td class="px-4 py-3 text-rose-600">太油、太撑、边走边吃</td></tr><tr><td class="px-4 py-3 font-medium text-slate-800">乏力恢复期</td><td class="px-4 py-3 text-slate-600">少量高蛋白</td><td class="px-4 py-3 text-emerald-700">鸡肉、鸡蛋、豆类、温汤</td><td class="px-4 py-3 text-rose-600">空腹太久、只吃零食</td></tr><tr><td class="px-4 py-3 font-medium text-slate-800">化疗期间</td><td class="px-4 py-3 text-slate-600">稳定能量和水分</td><td class="px-4 py-3 text-emerald-700">清淡主食、温水、分散补液</td><td class="px-4 py-3 text-rose-600">刺激性饮料、熬夜后不吃早餐</td></tr></tbody></table></div></div></div></div>
+<div class="section-card" data-section="meal_hub"><div class="section-card-header"><div class="section-card-icon" style="background:#eff6ff">🍽️</div><div class="flex-1 min-w-0"><div class="section-card-title">口味偏好与餐食灵感</div><div class="section-card-summary">吃什么、怎么搭配、哪些更适合您，这里一起看会更方便。</div></div><div class="section-card-arrow">&#9662;</div></div><div class="section-card-body"><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">口味偏好</div></div><div class="module-subsection-copy">选一些您平时更愿意吃的口味，后面的建议会更贴近您。</div><p class="text-sm text-slate-500 mb-3">选择您喜欢的菜系，后续餐食灵感会尽量参考您的口味。</p><div class="flex flex-wrap gap-2 mb-3" id="cuisineChips"></div><div class="flex items-center gap-2"><input id="customCuisineInput" type="text" placeholder="添加其他菜系..." class="flex-1 text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-200"><button onclick="addCustomCuisine()" class="px-3 py-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium hover:bg-emerald-100">+ 添加</button></div></div><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">一周餐食灵感</div></div><div class="module-subsection-copy">给您一些这周更容易照着吃的早、中、晚餐想法。</div><div class="flex gap-2 mb-4 overflow-x-auto pb-2" id="dayTabs"></div><div id="mealContent"></div></div><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">饮食小贴士</div></div><div class="module-subsection-copy">都是些更容易用得上的小提醒。</div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">🌬️</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">吃饭速度放慢</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 leading-relaxed mb-2">在怀疑 ADC 相关肺毒性时，说话多、吃得急、吃得太撑，都会让气短感觉更明显。</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="有帮助" onclick="saveLike(-1,'tip','吃饭速度放慢')">适合我</button><button class="feedback-btn feedback-skip" title="不适合我" onclick="showFeedbackModal(-1,'tip','吃饭速度放慢')">不适合</button></div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">🍲</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">优先温热软食</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 leading-relaxed mb-2">温汤面、软粥、蒸鱼和豆腐更容易在疲劳和干咳阶段完成。</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="有帮助" onclick="saveLike(-1,'tip','优先温热软食')">适合我</button><button class="feedback-btn feedback-skip" title="不适合我" onclick="showFeedbackModal(-1,'tip','优先温热软食')">不适合</button></div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">🧃</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">水分分散喝</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 leading-relaxed mb-2">全天小口补液，比临时猛灌更舒服，也更适合呼吸负担偏高的阶段。</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="有帮助" onclick="saveLike(-1,'tip','水分分散喝')">适合我</button><button class="feedback-btn feedback-skip" title="不适合我" onclick="showFeedbackModal(-1,'tip','水分分散喝')">不适合</button></div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">📉</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">把血氧和步行耐量一起看</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 leading-relaxed mb-2">在 ADC 相关肺毒性观察期，有时步行耐量下降会比血氧数字更早提示问题。</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="有帮助" onclick="saveLike(-1,'tip','把血氧和步行耐量一起看')">适合我</button><button class="feedback-btn feedback-skip" title="不适合我" onclick="showFeedbackModal(-1,'tip','把血氧和步行耐量一起看')">不适合</button></div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">🍽️</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">少量多餐</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 leading-relaxed mb-2">每日可进食 5 到 6 顿，避免一次吃得太多，减轻恶心、腹胀和餐后不适。</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="有帮助" onclick="saveLike(-1,'tip','少量多餐')">适合我</button><button class="feedback-btn feedback-skip" title="不适合我" onclick="showFeedbackModal(-1,'tip','少量多餐')">不适合</button></div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">🥚</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">高蛋白易消化</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 leading-relaxed mb-2">蒸鱼、水煮鸡胸肉、豆腐、蒸蛋等更适合作为 ADC 治疗期的基础蛋白来源。</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="有帮助" onclick="saveLike(-1,'tip','高蛋白易消化')">适合我</button><button class="feedback-btn feedback-skip" title="不适合我" onclick="showFeedbackModal(-1,'tip','高蛋白易消化')">不适合</button></div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">🧂</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">腹泻时补液补盐</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 leading-relaxed mb-2">严重腹泻会带走水分和电解质，可使用口服补液盐，或米汤加少量盐。</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="有帮助" onclick="saveLike(-1,'tip','腹泻时补液补盐')">适合我</button><button class="feedback-btn feedback-skip" title="不适合我" onclick="showFeedbackModal(-1,'tip','腹泻时补液补盐')">不适合</button></div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">🥛</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">腹泻时先避开乳制品</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 leading-relaxed mb-2">牛奶和乳制品中的乳糖可能进一步增加肠道负担。</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="有帮助" onclick="saveLike(-1,'tip','腹泻时先避开乳制品')">适合我</button><button class="feedback-btn feedback-skip" title="不适合我" onclick="showFeedbackModal(-1,'tip','腹泻时先避开乳制品')">不适合</button></div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">🥣</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">恶心重时错开喝流食</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 leading-relaxed mb-2">如果恶心明显，汤水等流食尽量安排在餐前或餐后 30 分钟以上。</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="有帮助" onclick="saveLike(-1,'tip','恶心重时错开喝流食')">适合我</button><button class="feedback-btn feedback-skip" title="不适合我" onclick="showFeedbackModal(-1,'tip','恶心重时错开喝流食')">不适合</button></div></div></div></div><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">提交偏好</div></div><div class="module-subsection-copy">把适合您的选择记下来，下次页面会更贴近您。</div><button id="exportFeedbackBtn" onclick="exportFeedbackJSON()" style="display:none" class="w-full px-6 py-3 rounded-full text-sm font-bold bg-emerald-600 text-white shadow-md hover:bg-emerald-700 active:scale-95 transition-all">✓ 提交我的偏好</button><p class="text-xs text-slate-400 mt-2 text-center" id="submitHint" style="display:none">您的选择会用于下次生成更合适的建议</p></div></div></div>
+<div class="section-card" data-section="map"><div class="section-card-header"><div class="section-card-icon" style="background:#f0f9ff">🏥</div><div class="flex-1 min-w-0"><div class="section-card-title">附近医疗与公园</div><div class="section-card-summary">如果想就医或出门走一走，附近地点可以直接在这里看。</div></div><div class="section-card-arrow">&#9662;</div></div><div class="section-card-body"><style>#bmap{width:100%;height:100%}#locate-btn{position:absolute;bottom:12px;right:12px;z-index:999;width:38px;height:38px;border-radius:50%;border:none;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.2);cursor:pointer;font-size:1.1em;display:flex;align-items:center;justify-content:center}#locate-btn:active{transform:scale(0.92)}.map-toggle{display:flex;margin-top:10px;background:#f1f5f9;border-radius:10px;padding:3px}.map-toggle button{flex:1;padding:8px 0;border:none;background:transparent;border-radius:8px;font-size:0.85em;font-weight:600;color:#94a3b8;cursor:pointer;transition:all 0.25s}.map-toggle button.active{background:linear-gradient(135deg,#42a5f5,#1e88e5);color:#fff;box-shadow:0 2px 8px rgba(30,136,229,0.3)}.map-toggle button.active.park-mode{background:linear-gradient(135deg,#66bb6a,#43a047);box-shadow:0 2px 8px rgba(67,160,71,0.3)}.map-place{display:flex;align-items:center;gap:10px;background:#f8fafc;border-radius:10px;padding:12px;margin-top:8px;cursor:pointer;border:2px solid transparent;transition:all 0.15s}.map-place:active{transform:scale(0.98)}.map-place.focused{border-color:#1e88e5;box-shadow:0 2px 10px rgba(30,136,229,0.15)}.map-place.focused.park-mode{border-color:#43a047;box-shadow:0 2px 10px rgba(67,160,71,0.15)}.map-place-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1em;flex-shrink:0}.map-place-icon.hospital{background:#e3f2fd}.map-place-icon.park{background:#e8f5e9}.map-place-nav{flex-shrink:0;width:30px;height:30px;border-radius:50%;border:none;background:#1e88e5;color:#fff;font-size:0.9em;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(30,136,229,0.35)}.map-place-nav.park-mode{background:#43a047;box-shadow:0 2px 6px rgba(67,160,71,0.35)}.map-place-nav:active{transform:scale(0.9)}.map-dist{font-size:0.75em;font-weight:700;padding:3px 8px;border-radius:16px;white-space:nowrap;flex-shrink:0}.map-dist.hospital{background:#e3f2fd;color:#1565c0}.map-dist.park{background:#e8f5e9;color:#2e7d32}</style>
+<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3"><div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100"><span class="text-lg">📍</span><h2 class="text-sm font-bold text-slate-800">附近推荐</h2></div><p class="text-sm text-slate-600 mb-3" id="ai-map-text">您近期活动量偏低，天气不错时可以去附近公园散散步。</p><div class="rounded-2xl overflow-hidden border border-slate-200 relative" style="height:240px"><div id="bmap"></div><button id="locate-btn" title="回到我的位置">📍</button></div><div class="map-toggle"><button class="active" id="btn-hospital" onclick="switchMapMode('hospital')">🏥 附近医院</button><button id="btn-park" onclick="switchMapMode('park')">🌳 附近公园</button></div><div id="map-cards"></div></div>
+<script>
+(function() {
+  var bmap = new BMap.Map("bmap");
+  bmap.enableScrollWheelZoom(true);
+  var userPoint = new BMap.Point(116.4074, 39.9042);
+  var mapMode = 'hospital';
+  var mapMarkers = [];
+  var mapCards = [];
+  var mapRoute = null;
+  var userOverlays = [];
+  var AI_MAP_TEXT = { hospital: "您近期活动量偏低，天气不错时可以去附近公园散散步。", park: "您近期活动量偏低，天气不错时可以去附近公园散散步。" };
+
+  document.getElementById('locate-btn').addEventListener('click', function() {
+    if (userPoint) { bmap.panTo(userPoint); bmap.setZoom(15); }
+  });
+
+  var USER_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28">'
+    + '<circle cx="14" cy="14" r="13" fill="#4285f4" fill-opacity="0.2" stroke="#4285f4" stroke-width="1"/>'
+    + '<circle cx="14" cy="14" r="7" fill="#4285f4" stroke="#fff" stroke-width="2.5"/>'
+    + '</svg>';
+  var USER_ICON = new BMap.Icon(
+    'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(USER_ICON_SVG),
+    new BMap.Size(28, 28),
+    { anchor: new BMap.Size(14, 14) }
+  );
+
+  function addUserOverlays() {
+    userOverlays.forEach(function(o) { bmap.removeOverlay(o); });
+    userOverlays = [];
+    var marker = new BMap.Marker(userPoint, { icon: USER_ICON });
+    bmap.addOverlay(marker);
+    userOverlays.push(marker);
+    var label = new BMap.Label('\u60a8\u5728\u8fd9\u91cc', {
+      position: userPoint,
+      offset: new BMap.Size(16, -8)
+    });
+    label.setStyle({
+      background:'#4285f4',color:'#fff',border:'none',
+      borderRadius:'6px',padding:'2px 8px',
+      fontSize:'12px',fontWeight:'600',
+      boxShadow:'0 1px 4px rgba(0,0,0,0.25)',whiteSpace:'nowrap'
+    });
+    bmap.addOverlay(label);
+    userOverlays.push(label);
+  }
+
+  function clearRoute() {
+    if (mapRoute) { mapRoute.clearResults(); mapRoute = null; }
+  }
+  function clearResultMarkers() {
+    clearRoute();
+    mapMarkers.forEach(function(m) { bmap.removeOverlay(m); });
+    mapMarkers = [];
+    mapCards = [];
+  }
+
+  bmap.centerAndZoom(userPoint, 15);
+  addUserOverlays();
+  doMapSearch('hospital');
+
+  window.switchMapMode = function(mode) {
+    if (mode === mapMode) return;
+    mapMode = mode;
+    document.getElementById('btn-hospital').className = mode === 'hospital' ? 'active' : '';
+    document.getElementById('btn-park').className = mode === 'park' ? 'active park-mode' : '';
+    document.getElementById('ai-map-text').textContent = AI_MAP_TEXT[mode];
+    clearResultMarkers();
+    document.getElementById('map-cards').innerHTML = '<div style="text-align:center;color:#bbb;padding:16px;font-size:0.85em">\u641c\u7d22\u4e2d\u2026</div>';
+    doMapSearch(mode);
+  };
+
+  function doMapSearch(mode) {
+    if (!userPoint) return;
+    var keyword = mode === 'hospital' ? '\u533b\u9662' : '\u516c\u56ed';
+    var local = new BMap.LocalSearch(bmap, {
+      renderOptions: { autoViewport: false },
+      onSearchComplete: function(results) {
+        clearResultMarkers();
+        var container = document.getElementById('map-cards');
+        container.innerHTML = '';
+        if (!results || local.getStatus() !== BMAP_STATUS_SUCCESS || results.getCurrentNumPois() === 0) {
+          container.innerHTML = '<div style="text-align:center;color:#bbb;padding:16px;font-size:0.85em">\u9644\u8fd1\u6682\u65e0\u76f8\u5173\u5730\u70b9</div>';
+          return;
+        }
+        var count = results.getCurrentNumPois();
+        for (var i = 0; i < count; i++) {
+          (function(idx) {
+            var poi = results.getPoi(idx);
+            var dist = bmap.getDistance(userPoint, poi.point);
+            var distText = dist >= 1000 ? (dist/1000).toFixed(1)+' km' : Math.round(dist)+' m';
+            var marker = new BMap.Marker(poi.point);
+            bmap.addOverlay(marker);
+            mapMarkers.push(marker);
+            marker.addEventListener('click', function() { focusMapCard(idx, poi); });
+            var card = document.createElement('div');
+            card.className = 'map-place';
+            card.innerHTML = '<div class="map-place-icon '+mode+'">'+(mode==='hospital'?'\ud83c\udfe5':'\ud83c\udf33')+'</div>'
+              +'<div style="flex:1;min-width:0"><div style="font-size:0.9em;font-weight:600;color:#222;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+poi.title+'</div>'
+              +'<div style="font-size:0.75em;color:#999;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(poi.address||'\u6682\u65e0\u5730\u5740')+'</div></div>'
+              +'<div class="map-dist '+mode+'">'+distText+'</div>'
+              +'<button class="map-place-nav'+(mode==='park'?' park-mode':'')+'" title="\u5bfc\u822a">\u27a4</button>';
+            card.addEventListener('click', function(e) {
+              if (e.target.classList.contains('map-place-nav')) return;
+              focusMapCard(idx, poi);
+            });
+            card.querySelector('.map-place-nav').addEventListener('click', function(e) {
+              e.stopPropagation();
+              navigateMapTo(poi);
+            });
+            container.appendChild(card);
+            mapCards.push(card);
+          })(i);
+        }
+      }
+    });
+    local.searchNearby(keyword, userPoint, 4000);
+  }
+
+  function focusMapCard(idx, poi) {
+    mapCards.forEach(function(c) { c.classList.remove('focused','park-mode'); });
+    mapCards[idx].classList.add('focused');
+    if (mapMode === 'park') mapCards[idx].classList.add('park-mode');
+    mapCards[idx].scrollIntoView({ behavior:'smooth', block:'nearest' });
+    bmap.panTo(poi.point);
+    mapMarkers[idx].openInfoWindow(
+      new BMap.InfoWindow('<b>'+poi.title+'</b><br><span style="color:#888;font-size:12px">'+(poi.address||'')+'</span>')
+    );
+    clearRoute();
+    var routeColor = mapMode === 'hospital' ? '#1e88e5' : '#43a047';
+    var walking = new BMap.WalkingRoute(bmap, {
+      renderOptions: { map: bmap, autoViewport: false },
+      onSearchComplete: function(results) {
+        if (walking.getStatus() !== BMAP_STATUS_SUCCESS) return;
+        var plan = results.getPlan(0);
+        for (var s = 0; s < plan.getNumRoutes(); s++) {
+          var route = plan.getRoute(s);
+          var path = route.getPolyline();
+          if (path) { path.setStrokeColor(routeColor); path.setStrokeWeight(5); path.setStrokeOpacity(0.85); }
+        }
+        addUserOverlays();
+      }
+    });
+    walking.search(userPoint, poi.point);
+    mapRoute = walking;
+  }
+
+  function navigateMapTo(poi) {
+    var destLat = poi.point.lat;
+    var destLng = poi.point.lng;
+    var destName = encodeURIComponent(poi.title);
+    var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    var appUrl = 'baidumap://map/direction?destination=latlng:'+destLat+','+destLng+'|name:'+destName+'&mode=walking&coord_type=bd09ll&src=webapp';
+    var webUrl = 'https://api.map.baidu.com/marker?location='+destLat+','+destLng+'&title='+destName+'&output=html&coord_type=bd09ll&src=webapp';
+    if (isMobile) {
+      window.location.href = appUrl;
+      setTimeout(function() { window.location.href = webUrl; }, 2000);
+    } else {
+      window.open(webUrl, '_blank');
+    }
+  }
+})();
+</script></div></div>
+  </div>
+
+  <!-- Guardrail (slim footer) -->
+  <div class="px-4 py-3 bg-slate-50 border-t border-slate-200">
+    <p class="text-[11px] text-slate-400 text-center leading-relaxed">本页面基于试验审核数据重组生成，仅供辅助理解，不替代试验团队、主诊医生或急诊评估。</p>
+  </div>
+
+</div>
+
+<script>
+const DAYS = ["周一","周二","周三","周四","周五","周六","周日"];
+const MEAL_LABELS = {"breakfast":"早餐","lunch":"午餐","dinner":"晚餐"};
+const rawMeals = [{"day": "第1天", "breakfast": [{"name": "软面配蒸蛋", "icon": "🍜", "condition": "乏力", "benefit": "容易入口，不会太撑", "adc_reason": "因为您正在使用 ADC，现在饮食既要顾到体力，也要尽量减轻呼吸负担，这道早餐是为了在体力偏低的时候也更容易吃下准备的，它能帮到您的地方是：容易入口，不会太撑。"}], "lunch": [{"name": "清蒸鱼配南瓜", "icon": "🐟", "condition": "肺储备下降", "benefit": "高蛋白又不过油，减少餐后负担", "adc_reason": "因为您正在使用 ADC，现在饮食既要顾到体力，也要尽量减轻呼吸负担，这道午餐是为了尽量减轻呼吸负担准备的，它能帮到您的地方是：高蛋白又不过油，减少餐后负担。"}], "dinner": [{"name": "豆腐鸡丝汤", "icon": "🍲", "condition": "化疗期间", "benefit": "补液同时提供温和蛋白", "adc_reason": "因为您正在使用 ADC，现在饮食既要顾到体力，也要尽量减轻呼吸负担，这道晚餐是为了照顾这段治疗窗口里的恢复需求准备的，它能帮到您的地方是：补液同时提供温和蛋白。"}]}, {"day": "第2天", "breakfast": [{"name": "香蕉燕麦粥", "icon": "🥣", "condition": "活动后气短", "benefit": "早晨温和补能量，减少空腹乏力", "adc_reason": "因为您正在使用 ADC，现在饮食既要顾到体力，也要尽量减轻呼吸负担，这道早餐是为了在容易气短的时候更好入口准备的，它能帮到您的地方是：早晨温和补能量，减少空腹乏力。"}], "lunch": [{"name": "鸡肉蔬菜粥", "icon": "🍚", "condition": "干咳", "benefit": "质地软，更适合说话少、慢慢吃", "adc_reason": "因为您正在使用 ADC，现在饮食既要顾到体力，也要尽量减轻呼吸负担，这道午餐是为了在喉咙和呼吸道敏感时更容易完成一餐准备的，它能帮到您的地方是：质地软，更适合说话少、慢慢吃。"}], "dinner": [{"name": "清炒豆腐配软米饭", "icon": "🍚", "condition": "化疗期间", "benefit": "晚餐不油不重，避免吃完更喘", "adc_reason": "因为您正在使用 ADC，现在饮食既要顾到体力，也要尽量减轻呼吸负担，这道晚餐是为了照顾这段治疗窗口里的恢复需求准备的，它能帮到您的地方是：晚餐不油不重，避免吃完更喘。"}]}, {"day": "第3天", "breakfast": [{"name": "全麦吐司配温豆浆", "icon": "🍞", "condition": "乏力", "benefit": "少量碳水和蛋白，维持上午体力", "adc_reason": "因为您正在使用 ADC，现在饮食既要顾到体力，也要尽量减轻呼吸负担，这道早餐是为了在体力偏低的时候也更容易吃下准备的，它能帮到您的地方是：少量碳水和蛋白，维持上午体力。"}], "lunch": [{"name": "鳕鱼土豆泥", "icon": "🐟", "condition": "肺储备下降", "benefit": "吃得慢一点也容易完成", "adc_reason": "因为您正在使用 ADC，现在饮食既要顾到体力，也要尽量减轻呼吸负担，这道午餐是为了尽量减轻呼吸负担准备的，它能帮到您的地方是：吃得慢一点也容易完成。"}], "dinner": [{"name": "鸡丝冬瓜汤面", "icon": "🍜", "condition": "活动后气短", "benefit": "温热、软烂，减少餐后胸闷感", "adc_reason": "因为您正在使用 ADC，现在饮食既要顾到体力，也要尽量减轻呼吸负担，这道晚餐是为了在容易气短的时候更好入口准备的，它能帮到您的地方是：温热、软烂，减少餐后胸闷感。"}]}];
+const meals = DAYS.map((d, i) => ({ ...rawMeals[i % rawMeals.length], day: d }));
+let activeDay = 0;
+
+const MEAL_FEEDBACK_REASONS = [
+  "不喜欢口味",
+  "过敏/不耐受",
+  "买不到食材",
+  "准备起来太麻烦",
+  "其他"
+];
+const GENERAL_FEEDBACK_REASONS = [
+  "不适合我",
+  "做起来太难",
+  "我已经在做",
+  "不同意这个建议",
+  "其他"
+];
+const FEEDBACK_STORAGE_KEY = "mealFeedback_zh";
+const CUISINE_STORAGE_KEY = "cuisinePrefs_zh";
+let feedbackStore = JSON.parse(localStorage.getItem(FEEDBACK_STORAGE_KEY) || "{}");
+const pendingFeedbackSubmits = {};
+
+function saveFeedback(dayIdx, mealType, itemName, reason) {
+  const key = `${dayIdx}-${mealType}-${itemName}`;
+  feedbackStore[key] = { sentiment: "dislike", reason, timestamp: new Date().toISOString() };
+  localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(feedbackStore));
+  updateExportBadge();
+}
+
+function saveLike(dayIdx, mealType, itemName) {
+  const key = `${dayIdx}-${mealType}-${itemName}`;
+  feedbackStore[key] = { sentiment: "like", reason: null, timestamp: new Date().toISOString() };
+  localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(feedbackStore));
+  renderMeals();
+  updateExportBadge();
+}
+
+function getFeedback(dayIdx, mealType, itemName) {
+  return feedbackStore[`${dayIdx}-${mealType}-${itemName}`];
+}
+
+function buildPreferencePayload() {
+  const likes = [];
+  const dislikes = [];
+  for (const [key, val] of Object.entries(feedbackStore)) {
+    const entry = { item_key: key, ...val };
+    if (val.sentiment === "like") likes.push(entry);
+    else dislikes.push(entry);
+  }
+  const selectedCuisines = Object.entries(cuisinePrefs).map(([name, meta]) => ({
+    cuisine: name, ...meta
+  }));
+  return {
+    user_id: "ct_jason",
+    data_type: "scenario",
+    language: "zh",
+    timestamp: new Date().toISOString(),
+    data: {
+      bundle: {
+        type: "user_preference",
+        report_time: "2026年06月22日 21:46",
+        total_feedback: likes.length + dislikes.length,
+        cuisine_preferences: selectedCuisines,
+        liked: likes,
+        disliked: dislikes
+      }
+    }
+  };
+}
+
+function exportFeedbackJSON() {
+  const payload = buildPreferencePayload();
+  const btn = document.getElementById("exportFeedbackBtn");
+  if (!btn) return;
+  const origText = btn.textContent;
+  const feedbackId = "feedback_" + Date.now() + "_" + Math.random().toString(36).slice(2);
+  pendingFeedbackSubmits[feedbackId] = { btn, origText };
+  btn.textContent = "⏳ 提交中...";
+  btn.disabled = true;
+  window.parent.postMessage({
+    type: "skill_feedback",
+    feedback_id: feedbackId,
+    payload
+  }, "*");
+  setTimeout(() => {
+    if (!pendingFeedbackSubmits[feedbackId]) return;
+    delete pendingFeedbackSubmits[feedbackId];
+    btn.textContent = origText;
+    btn.disabled = false;
+  }, 8000);
+}
+
+window.addEventListener("message", function(event) {
+  const data = event.data || {};
+  if (data.type !== "skill_feedback_result" || !data.feedback_id) return;
+  const pending = pendingFeedbackSubmits[data.feedback_id];
+  if (!pending) return;
+  delete pendingFeedbackSubmits[data.feedback_id];
+  pending.btn.textContent = data.ok === false ? "提交失败" : "✓ 已提交";
+  setTimeout(() => {
+    pending.btn.textContent = pending.origText;
+    pending.btn.disabled = false;
+  }, 2500);
+});
+
+function updateExportBadge() {
+  const btn = document.getElementById("exportFeedbackBtn");
+  const hint = document.getElementById("submitHint");
+  if (!btn) return;
+  const fbCount = Object.keys(feedbackStore).length;
+  const cuisineCount = Object.keys(cuisinePrefs).length;
+  const total = fbCount + cuisineCount;
+  if (total > 0) {
+    btn.textContent = "✓ 提交我的偏好 (" + total + ")";
+    btn.style.display = "inline-block";
+    if (hint) hint.style.display = "block";
+  } else {
+    btn.style.display = "none";
+    if (hint) hint.style.display = "none";
+  }
+}
+
+function showFeedbackModal(dayIdx, mealType, itemName) {
+  const existing = document.querySelector('.feedback-modal');
+  if (existing) existing.remove();
+  const isMeal = dayIdx >= 0;
+  const reasons = isMeal ? MEAL_FEEDBACK_REASONS : GENERAL_FEEDBACK_REASONS;
+  const title = isMeal ? "为什么不想要这个食物？" : "为什么这个建议不适合您？";
+  const displayName = itemName.length > 60 ? itemName.substring(0, 57) + "..." : itemName;
+  const modal = document.createElement('div');
+  modal.className = 'feedback-modal';
+  modal.innerHTML = `
+    <div class="feedback-modal-box">
+      <div class="text-sm font-bold text-slate-800 mb-1">${title}</div>
+      <div class="text-xs text-slate-500 mb-3">${displayName}</div>
+      ${reasons.map(r => `<button class="feedback-reason" data-reason="${r}">${r}</button>`).join('')}
+      <button class="feedback-reason" style="color:#94a3b8;border-color:#e2e8f0;margin-top:8px" data-reason="__cancel__">取消</button>
+    </div>`;
+  modal.addEventListener('click', function(e) {
+    const reason = e.target.dataset.reason;
+    if (!reason) return;
+    if (reason === '__cancel__') { modal.remove(); return; }
+    saveFeedback(dayIdx, mealType, itemName, reason);
+    modal.remove();
+    if (isMeal) renderMeals();
+    e.target.closest('.feedback-modal').remove();
+  });
+  document.body.appendChild(modal);
+}
+
+function renderTabs() {
+  const container = document.getElementById("dayTabs");
+  container.innerHTML = DAYS.map((d, i) =>
+    `<button onclick="switchDay(${i})" class="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${i === activeDay ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">${d}</button>`
+  ).join("");
+}
+
+function switchDay(i) {
+  activeDay = i;
+  renderTabs();
+  renderMeals();
+}
+
+function renderMeals() {
+  const day = meals[activeDay];
+  if (!day) { document.getElementById("mealContent").innerHTML = '<p class="text-sm text-slate-400">暂无数据</p>'; return; }
+  let html = "";
+  for (const [key, label] of Object.entries(MEAL_LABELS)) {
+    const items = day[key] || [];
+    if (!items.length) continue;
+    html += `<div class="mb-4"><div class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">${label}</div><div class="grid grid-cols-1 sm:grid-cols-2 gap-2">`;
+    for (const it of items) {
+      const fb = getFeedback(activeDay, key, it.name);
+      const likeClass = fb && fb.sentiment === "like" ? "liked" : "";
+      const dislikeClass = fb && fb.sentiment === "dislike" ? "disliked" : "";
+      const safeName = it.name.replace(/'/g, "&#39;");
+      const reason = it.adc_reason || (
+        it.condition && it.benefit
+          ? "适合" + it.condition + "：" + it.benefit
+          : (it.benefit || "")
+      );
+      html += `<div class="meal-card flex items-start gap-3 bg-slate-50 rounded-lg p-3 border border-slate-100">
+        <span class="text-2xl mt-0.5">${it.icon || "🍽️"}</span>
+        <div class="flex-1 min-w-0">
+          <div class="text-sm font-semibold text-slate-800">${it.name}</div>
+          <div class="text-xs text-emerald-600 mt-0.5 leading-relaxed italic">${reason}</div>
+        </div>
+        <div class="feedback-actions">
+          <button class="feedback-btn like ${likeClass}" title="保留这个餐食建议" onclick="saveLike(${activeDay},'${key}','${safeName}')">适合我</button>
+          <button class="feedback-btn feedback-skip ${dislikeClass}" title="这个不适合我" onclick="showFeedbackModal(${activeDay},'${key}','${safeName}')">不适合</button>
+        </div>
+      </div>`;
+    }
+    html += "</div></div>";
+  }
+  document.getElementById("mealContent").innerHTML = html;
+}
+
+// ─── Cuisine Preferences ───
+const DEFAULT_CUISINES = [
+  { name: "家常菜", icon: "🍚" },
+  { name: "粤菜", icon: "🥡" },
+  { name: "川菜", icon: "🌶️" },
+  { name: "江浙菜", icon: "🥢" },
+  { name: "清淡饮食", icon: "🥣" },
+  { name: "地中海饮食", icon: "🫒" },
+  { name: "日式", icon: "🍣" },
+  { name: "意式", icon: "🍝" },
+];
+
+let cuisinePrefs = JSON.parse(localStorage.getItem(CUISINE_STORAGE_KEY) || "{}");
+
+function renderCuisineChips() {
+  const container = document.getElementById("cuisineChips");
+  if (!container) return;
+  const allCuisines = [...DEFAULT_CUISINES];
+  const customNames = Object.keys(cuisinePrefs).filter(n => !DEFAULT_CUISINES.some(d => d.name === n));
+  for (const cn of customNames) {
+    allCuisines.push({ name: cn, icon: "🍽️" });
+  }
+  container.innerHTML = allCuisines.map(c => {
+    const sel = cuisinePrefs[c.name] ? "selected" : "";
+    return `<span class="cuisine-chip ${sel}" onclick="toggleCuisine('${c.name.replace(/'/g,"&#39;")}')">${c.icon} ${c.name}<span class="chip-x" onclick="event.stopPropagation();removeCuisine('${c.name.replace(/'/g,"&#39;")}')">✕</span></span>`;
+  }).join("");
+  updateExportBadge();
+}
+
+function toggleCuisine(name) {
+  if (cuisinePrefs[name]) {
+    delete cuisinePrefs[name];
+  } else {
+    cuisinePrefs[name] = { selected_at: new Date().toISOString() };
+  }
+  localStorage.setItem(CUISINE_STORAGE_KEY, JSON.stringify(cuisinePrefs));
+  renderCuisineChips();
+  showCuisineToast();
+}
+
+function showCuisineToast() {
+  const selected = Object.keys(cuisinePrefs);
+  if (!selected.length) return;
+  let existing = document.getElementById("cuisineToast");
+  if (!existing) {
+    existing = document.createElement("div");
+    existing.id = "cuisineToast";
+    existing.style.cssText = "position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#065f46;color:#fff;padding:10px 20px;border-radius:12px;font-size:0.8em;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,0.2);z-index:9999;transition:opacity 0.3s;max-width:90%;text-align:center";
+    document.body.appendChild(existing);
+  }
+  existing.textContent = "✓ 已保存！下次报告会参考：" + selected.join("、");
+  existing.style.opacity = "1";
+  clearTimeout(existing._timer);
+  existing._timer = setTimeout(() => { existing.style.opacity = "0"; }, 3000);
+}
+
+function removeCuisine(name) {
+  delete cuisinePrefs[name];
+  localStorage.setItem(CUISINE_STORAGE_KEY, JSON.stringify(cuisinePrefs));
+  renderCuisineChips();
+}
+
+function addCustomCuisine() {
+  const input = document.getElementById("customCuisineInput");
+  const name = (input.value || "").trim();
+  if (!name) return;
+  cuisinePrefs[name] = { selected_at: new Date().toISOString(), custom: true };
+  localStorage.setItem(CUISINE_STORAGE_KEY, JSON.stringify(cuisinePrefs));
+  input.value = "";
+  renderCuisineChips();
+}
+
+document.getElementById("customCuisineInput").addEventListener("keydown", function(e) {
+  if (e.key === "Enter") { e.preventDefault(); addCustomCuisine(); }
+});
+
+renderCuisineChips();
+renderTabs();
+renderMeals();
+updateExportBadge();
+
+// ─── Card Accordion Toggle ───
+document.querySelectorAll(".section-card-header").forEach(function(header) {
+  header.addEventListener("click", function() {
+    const card = header.closest(".section-card");
+    if (!card) return;
+    const wasExpanded = card.classList.contains("expanded");
+    card.classList.toggle("expanded");
+    if (!wasExpanded) {
+      setTimeout(function() { card.scrollIntoView({ behavior: "smooth", block: "start" }); }, 100);
+    }
+  });
+});
+
+// ─── Sub-card Toggle (tap item to expand its details) ───
+document.querySelectorAll(".sub-card-header").forEach(function(header) {
+  header.addEventListener("click", function(e) {
+    e.stopPropagation();
+    header.closest(".sub-card").classList.toggle("open");
+  });
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adherence report</title>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+  body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; margin:0; padding:0; -webkit-text-size-adjust:100%; }
+  * { box-sizing: border-box; }
+  .meal-card { transition: all .2s; }
+  .meal-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.08); }
+  .feedback-actions { display:flex; flex-direction:column; gap:6px; align-self:stretch; }
+  .feedback-btn {
+    opacity:1;
+    cursor:pointer;
+    border:1px solid #d8dee8;
+    background:#fff;
+    color:#475569;
+    font-size:.76rem;
+    line-height:1.1;
+    padding:8px 11px;
+    border-radius:999px;
+    min-height:36px;
+    min-width:92px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    font-weight:750;
+    box-shadow:0 2px 8px rgba(15,23,42,.05);
+    white-space:nowrap;
+    transition:background .18s ease, border-color .18s ease, color .18s ease, box-shadow .18s ease, transform .18s ease;
+  }
+  .feedback-btn:hover { transform:translateY(-1px); border-color:#cbd5e1; background:#f8fafc; }
+  .feedback-btn.like { color:#047857; border-color:#bbf7d0; background:#f0fdf4; }
+  .feedback-btn.like:hover { background:#dcfce7; border-color:#86efac; }
+  .feedback-btn.feedback-skip { color:#475569; border-color:#e2e8f0; background:#fff; box-shadow:none; }
+  .feedback-btn.feedback-skip:hover { background:#f8fafc; border-color:#cbd5e1; }
+  .feedback-btn.liked { color:#fff; background:#059669; border-color:#059669; box-shadow:0 0 0 3px rgba(5,150,105,.16); }
+  .feedback-btn.disliked { color:#fff; background:#64748b; border-color:#64748b; box-shadow:0 0 0 3px rgba(100,116,139,.16); }
+  .section-card[data-section="meal_plan"] #mealContent .grid {
+    grid-template-columns:1fr !important;
+    gap:12px !important;
+  }
+  .section-card[data-section="meal_plan"] .meal-card {
+    display:grid !important;
+    grid-template-columns:auto minmax(0,1fr);
+    align-items:start;
+    gap:12px;
+    padding:14px !important;
+  }
+  .section-card[data-section="meal_plan"] .meal-card > div:last-child {
+    grid-column:1 / -1;
+    display:grid !important;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:8px !important;
+    width:100%;
+    margin-top:4px;
+  }
+  .section-card[data-section="meal_plan"] .meal-card .feedback-btn {
+    opacity:1 !important;
+    width:100%;
+    min-width:0;
+    min-height:40px;
+  }
+  .feedback-modal { position:fixed; inset:0; background:rgba(0,0,0,.4); display:flex; align-items:center; justify-content:center; z-index:9999; }
+  .feedback-modal-box { background:#fff; border-radius:16px; padding:24px; max-width:320px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,.2); }
+  .feedback-reason { display:block; width:100%; text-align:left; padding:10px 14px; margin:6px 0; border:1px solid #e2e8f0; border-radius:10px; background:#f8fafc; font-size:0.85em; cursor:pointer; transition:all .15s; }
+  .feedback-reason:hover { background:#eff6ff; border-color:#93c5fd; }
+  .cuisine-chip { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:20px; font-size:0.8em; font-weight:500; cursor:pointer; border:2px solid #e2e8f0; background:#f8fafc; color:#475569; transition:all 0.2s; user-select:none; }
+  .cuisine-chip:hover { border-color:#a7f3d0; background:#ecfdf5; }
+  .cuisine-chip.selected { border-color:#10b981; background:#d1fae5; color:#065f46; }
+  .cuisine-chip .chip-x { font-size:0.75em; opacity:0; padding:2px; border-radius:50%; }
+  .cuisine-chip.selected .chip-x { opacity:0.6; }
+  .cuisine-chip.selected .chip-x:hover { opacity:1; background:#fecaca; color:#991b1b; }
+
+  /* ─── Card/Accordion Layout (Message Center Style) ─── */
+  .section-card {
+    border-radius: 18px;
+    overflow: hidden;
+    margin-bottom: 14px;
+    border: 2px solid #e8ecf0;
+    background: #fff;
+    transition: border-color .25s, box-shadow .25s, transform .15s;
+    box-shadow: 0 2px 8px rgba(0,0,0,.04);
+  }
+  .section-card:active { transform: scale(0.985); }
+  .section-card.expanded {
+    border-color: #6ee7b7;
+    box-shadow: 0 6px 24px rgba(16,185,129,.12);
+  }
+  .section-card-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 22px;
+    cursor: pointer;
+    user-select: none;
+    min-height: 88px;
+  }
+  .section-card-header:hover { background: #fafbfc; }
+  .section-card-icon {
+    font-size: 1.8em;
+    flex-shrink: 0;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16px;
+  }
+  .section-card-title {
+    font-size: 1.2em;
+    font-weight: 800;
+    color: #1a202c;
+    line-height: 1.3;
+  }
+  .section-card-summary {
+    font-size: 0.88em;
+    color: #64748b;
+    margin-top: 4px;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .section-card-arrow {
+    margin-left: auto;
+    font-size: 1.1em;
+    color: #94a3b8;
+    transition: transform .3s ease;
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #f1f5f9;
+  }
+  .section-card.expanded .section-card-arrow {
+    transform: rotate(180deg);
+    background: #d1fae5;
+    color: #065f46;
+  }
+  .section-card-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .4s ease, padding .3s ease;
+    padding: 0 22px;
+  }
+  .section-card.expanded .section-card-body {
+    max-height: 8000px;
+    padding: 0 22px 22px 22px;
+    border-top: 1px solid #f1f5f9;
+  }
+
+  /* ─── Sub-card (nested tap-to-expand items) ─── */
+  .sub-card {
+    border-radius: 12px;
+    margin-bottom: 8px;
+    border: 1px solid #f1f5f9;
+    background: #f8fafc;
+    overflow: hidden;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .sub-card.open {
+    border-color: #d1d5db;
+    box-shadow: 0 2px 8px rgba(0,0,0,.04);
+  }
+  .sub-card-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    cursor: pointer;
+    user-select: none;
+    min-height: 52px;
+  }
+  .sub-card-header:active { background: #f1f5f9; }
+  .sub-card-icon { font-size: 1.3em; flex-shrink: 0; }
+  .sub-card-label { font-size: 0.82em; color: #64748b; line-height: 1.2; }
+  .sub-card-value { font-size: 1.05em; font-weight: 700; color: #1e293b; line-height: 1.3; }
+  .sub-card-arrow { margin-left: auto; font-size: 0.7em; color: #94a3b8; transition: transform .3s; }
+  .sub-card.open .sub-card-arrow { transform: rotate(90deg); color: #475569; }
+  .sub-card-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height .35s ease, padding .25s ease;
+    padding: 0 16px;
+    border-top: 0px solid transparent;
+  }
+  .sub-card.open .sub-card-body {
+    max-height: 3000px;
+    padding: 12px 16px 14px 16px;
+    border-top: 1px solid #e8ecf0;
+  }
+
+  /* ─── Mobile-First App Layout ─── */
+  @media (max-width: 640px) {
+    body { font-size: 16px; line-height: 1.6; }
+    .max-w-md { max-width: 100% !important; padding: 0 !important; }
+
+    /* Section cards full width, less rounded */
+    .section-card { border-radius: 14px; margin-bottom: 10px; }
+    .section-card-header { padding: 16px 14px; min-height: 72px; gap: 12px; }
+    .section-card-icon { width: 46px; height: 46px; font-size: 1.5em; border-radius: 12px; }
+    .section-card-title { font-size: 1.05em; }
+    .section-card-summary { font-size: 0.8em; }
+    .section-card-body { padding-left: 14px !important; padding-right: 14px !important; }
+
+    /* Sub-cards touch-friendly */
+    .sub-card { border-radius: 10px; margin-bottom: 6px; }
+    .sub-card-header { padding: 14px 14px; min-height: 50px; }
+    .sub-card-value { font-size: 1em; }
+    .sub-card-label { font-size: 0.85em; }
+    .sub-card-body .text-sm { font-size: 0.95em; }
+
+    /* Feedback */
+    .feedback-btn { opacity: 1 !important; font-size: .78rem !important; padding: 8px 10px !important; min-width: 0; min-height: 38px; }
+    .feedback-modal-box { padding: 24px; max-width: 94%; }
+    .feedback-reason { padding: 14px 16px; font-size: 1em; }
+
+    /* Meal tabs */
+    #dayTabs button { padding: 8px 12px !important; font-size: 0.82em !important; }
+
+    /* Cuisine chips */
+    .cuisine-chip { padding: 9px 14px; font-size: 0.88em; }
+    #customCuisineInput { font-size: 1em !important; padding: 10px 14px !important; }
+
+    /* Grids */
+    .sm\\:grid-cols-2 { grid-template-columns: 1fr !important; }
+  }
+
+  /* ─── Larger screens (tablet+): slightly more breathing room ─── */
+  @media (min-width: 641px) {
+    .max-w-md { max-width: 480px; }
+    body { font-size: 15px; }
+  }
+  .hero-vitals {
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid #e2e8f0;
+    border-radius: 22px;
+    box-shadow: 0 12px 32px rgba(15,23,42,.06);
+    padding: 18px;
+  }
+  .hero-vitals-grid {
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:12px;
+  }
+  .hero-vital-card {
+    border-radius:18px;
+    padding:14px;
+    border:1px solid #e2e8f0;
+    background:#fff;
+    min-height:132px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .hero-vital-card.good {
+    background:linear-gradient(180deg,#f0fdf4 0%,#ffffff 100%);
+    border-color:#bbf7d0;
+  }
+  .hero-vital-card.caution {
+    background:linear-gradient(180deg,#fff7ed 0%,#ffffff 100%);
+    border-color:#fed7aa;
+  }
+  .hero-vital-card.alert {
+    background:linear-gradient(180deg,#fef2f2 0%,#ffffff 100%);
+    border-color:#fecaca;
+  }
+  .hero-vital-top {
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .hero-vital-icon {
+    width:42px;
+    height:42px;
+    border-radius:14px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:1.3em;
+    background:#f8fafc;
+  }
+  .hero-vital-label {
+    font-size:.78em;
+    color:#64748b;
+    font-weight:700;
+    letter-spacing:.01em;
+  }
+  .hero-vital-value {
+    font-size:1.45em;
+    font-weight:800;
+    color:#0f172a;
+    line-height:1.1;
+  }
+  .hero-vital-range {
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:.74em;
+    color:#475569;
+    background:#f8fafc;
+    border:1px solid #e2e8f0;
+    border-radius:999px;
+    padding:5px 9px;
+    width:max-content;
+  }
+  .hero-vital-note {
+    font-size:.82em;
+    line-height:1.55;
+    color:#475569;
+  }
+  .module-subsection {
+    border-top:1px solid #edf2f7;
+    padding-top:14px;
+    margin-top:14px;
+  }
+  .module-subsection:first-child {
+    border-top:none;
+    padding-top:0;
+    margin-top:0;
+  }
+  .module-subsection-head {
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:10px;
+  }
+  .module-subsection-title {
+    font-size:.96em;
+    font-weight:800;
+    color:#0f172a;
+  }
+  .module-subsection-copy {
+    font-size:.8em;
+    color:#64748b;
+    line-height:1.5;
+    margin-bottom:10px;
+  }
+</style>
+</head>
+<body class="bg-slate-100 text-slate-800">
+<div class="max-w-md mx-auto px-0 py-0 " style="min-height:100vh">
+
+  <!-- App Header (compact, sticky) -->
+  <div class="sticky top-0 z-50 bg-white border-b border-slate-200 px-4 py-3 shadow-sm">
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-lg font-bold text-slate-900">Hello, Emily</h1>
+        <p class="text-xs text-slate-500">Jun 22, 2026 21:46</p>
+      </div>
+      <span class="inline-flex items-center gap-1 bg-amber-100 text-amber-800 px-3 py-1.5 rounded-full text-xs font-semibold">⚠️ Needs attention</span>
+    </div>
+    <div class="flex gap-1.5 mt-2 flex-wrap"><span class="inline-block bg-amber-500 text-white px-3 py-1 rounded-full text-xs font-semibold">Type 2 diabetes</span>
+<span class="inline-block bg-purple-500 text-white px-3 py-1 rounded-full text-xs font-semibold">During chemotherapy</span></div>
+  </div>
+
+  <div class="px-3 pt-3"><section class="hero-vitals"><div class="flex items-center justify-between gap-3 mb-3"><div><div class="text-sm font-bold text-slate-900">Your latest health numbers</div><div class="text-xs text-slate-500 mt-1">Start here for a simple look at how your body is doing today.</div></div><div class="text-xl">📊</div></div><div class="hero-vitals-grid"><div class="hero-vital-card good"><div class="hero-vital-top"><div><div class="hero-vital-label">Blood pressure</div><div class="hero-vital-value">104/68</div></div><div class="hero-vital-icon">🩺</div></div><div class="hero-vital-range">Reference 90-120 / 60-80 mmHg</div><div class="hero-vital-note">Your blood pressure is in a healthy range. Keep it up.</div></div><div class="hero-vital-card good"><div class="hero-vital-top"><div><div class="hero-vital-label">Heart rate</div><div class="hero-vital-value">96</div></div><div class="hero-vital-icon">🫀</div></div><div class="hero-vital-range">Reference 60-100 bpm</div><div class="hero-vital-note">Your heart rate is within the usual healthy range.</div></div><div class="hero-vital-card good"><div class="hero-vital-top"><div><div class="hero-vital-label">Blood oxygen</div><div class="hero-vital-value">98</div></div><div class="hero-vital-icon">🫁</div></div><div class="hero-vital-range">Reference 95-100%</div><div class="hero-vital-note">Your oxygen level is in the normal range and looks stable.</div></div><div class="hero-vital-card good"><div class="hero-vital-top"><div><div class="hero-vital-label">Glucose</div><div class="hero-vital-value">4.3</div></div><div class="hero-vital-icon">🧪</div></div><div class="hero-vital-range">Reference 3.9-7.8 mmol/L</div><div class="hero-vital-note">Your glucose is within the reference range. Keep your meal routine and monitoring consistent.</div></div></div></section></div>
+
+  <!-- Escalation Banners -->
+  <div class="px-3 pt-3"></div>
+
+  <!-- AI Message (modular sub-cards) -->
+  <div class="px-3 pt-3 pb-1">
+    <div class="bg-white rounded-2xl border border-slate-200 p-3 shadow-sm">
+      <div class="flex items-center gap-2 mb-2 px-1">
+        <span class="text-base">🤖</span>
+        <span class="text-xs font-bold text-slate-600 uppercase tracking-wide">AI Health Companion</span>
+      </div>
+      <div class="sub-card" style="border-color:transparent"><div class="sub-card-header" style="padding:12px 14px"><span class="sub-card-icon" style="font-size:1.2em">🎉</span><div class="flex-1 min-w-0"><div class="sub-card-value text-emerald-800" style="font-size:0.95em">There is still time to get ahead of this at home</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">The priority is to control nausea, restore fluids, and monitor glucose before this becomes a bigger dehydration or hypoglycemia event.</div></div></div><div class="sub-card" style="border-color:transparent"><div class="sub-card-header" style="padding:12px 14px"><span class="sub-card-icon" style="font-size:1.2em">⚠️</span><div class="flex-1 min-w-0"><div class="sub-card-value text-amber-800" style="font-size:0.95em">This is more than a poor appetite day</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">In an ADC setting, nausea plus poor intake creates two risks at once for a diabetic patient: dehydration and unstable glucose.</div></div></div><div class="sub-card" style="border-color:transparent"><div class="sub-card-header" style="padding:12px 14px"><span class="sub-card-icon" style="font-size:1.2em">📝</span><div class="flex-1 min-w-0"><div class="sub-card-value text-blue-800" style="font-size:0.95em">Order of operations</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">Use the antiemetic early, switch to small frequent intake, and track orthostatic BP, urine output, and fingerstick glucose together.</div></div></div><div class="sub-card" style="border-color:transparent"><div class="sub-card-header" style="padding:12px 14px"><span class="sub-card-icon" style="font-size:1.2em">💪</span><div class="flex-1 min-w-0"><div class="sub-card-value text-purple-800" style="font-size:0.95em">The goal is stability, not forcing big meals</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">Even a few bites and a few sips at a time count if they help fluids and calories slowly come back up.</div></div></div>
+    </div>
+  </div>
+
+  <!-- Cards -->
+  <div class="px-3 pt-2 pb-3">
+    <div class="section-card" data-section="health_hub"><div class="section-card-header"><div class="section-card-icon" style="background:#d1fae5">💚</div><div class="flex-1 min-w-0"><div class="section-card-title">Health management</div><div class="section-card-summary">Your main reminders and recent updates are all together here.</div></div><div class="section-card-arrow">&#9662;</div></div><div class="section-card-body"><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">Adherence overview</div></div><div class="module-subsection-copy">A quick look at how things have been going with medicine, meals, activity, and monitoring.</div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">💊</span><div class="flex-1 min-w-0"><div class="sub-card-label">Medication</div><div class="sub-card-value text-amber-700">Needs dynamic adjustment</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 mb-1"><span class="font-medium text-slate-500">Issues:</span> Continuing metformin while intake is poor can push both dehydration and low-glucose risk higher.</div><div class="text-sm text-slate-600 mb-1"><span class="font-medium text-slate-500">Adjustments:</span> Before intake recovers, the trial team should clarify whether metformin should be held or retimed.</div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">🍽️</span><div class="flex-1 min-w-0"><div class="sub-card-label">Appetite & diet</div><div class="sub-card-value text-amber-700">Clearly reduced</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 mb-1"><span class="font-medium text-slate-500">Cause if known:</span> Likely DXd-class GI toxicity layered on top of a known history of chemotherapy-related nausea.</div><div class="text-sm text-slate-600 mb-1"><span class="font-medium text-slate-500">Suggestions:</span> Shift to 5 to 6 small eating opportunities with warm, bland, softer, higher-protein foods.</div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">🏃</span><div class="flex-1 min-w-0"><div class="sub-card-label">Exercise & activity</div><div class="sub-card-value text-amber-700">Not ready to increase</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 mb-1"><span class="font-medium text-slate-500">Barriers:</span> Orthostatic dizziness and mild tachycardia suggest volume depletion, so safety comes before extra activity.</div><div class="text-sm text-slate-600 mb-1"><span class="font-medium text-slate-500">Plan:</span> Pause before standing, keep movement short and supervised, and skip intentional exercise today.</div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">📋</span><div class="flex-1 min-w-0"><div class="sub-card-label">Health monitoring</div><div class="sub-card-value text-amber-700">Needs immediate tightening</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 mb-1"><span class="font-medium text-slate-500">Gaps:</span> Track pre/post-meal glucose, fluid intake, urine output, orthostatic BP/HR, and day-to-day weight change together.</div></div></div></div><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">Health guidance</div></div><div class="module-subsection-copy">The main things to keep in mind right now, based on how you have been feeling.</div><div class="text-xs text-slate-500 mb-2">Personalized for <span class="font-semibold">Emily</span></div><div class="leading-relaxed mb-3 bg-emerald-50 border-l-4 border-emerald-400 rounded-lg p-4" style="font-size:0.95em">Antibody-drug conjugates (ADCs) combine a targeted antibody with a potent cytotoxic payload. While they can attack tumors effectively, off-target effects or payload release may also trigger gastrointestinal, hepatic, renal, marrow, or lung toxicity. The core nutrition principles are: higher protein, easy digestion, small frequent meals, and side-effect-specific adjustments. Emily&#x27;s problem is not just &#x27;poor appetite&#x27; — ADC GI toxicity, dehydration, and diabetes-related glucose swings are amplifying one another and need to be managed together.</div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">💡</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.95em">Break meals into 5 to 6 small eating moments</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic">→ Small frequent intake is often easier to tolerate than forcing one full meal and can smooth glucose swings.</div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">💡</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.95em">Prioritize steamed fish, chicken breast, tofu, and steamed egg</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic">→ They are easier to digest and add more protein when total intake is low.</div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">💡</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.95em">If nausea is strong, move soups and larger fluids away from meals</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic">→ Drinking a lot during meals can worsen fullness and gagging.</div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">💡</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.95em">Lead with higher-protein, easy-to-digest softer foods</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic">→ Steamed fish, chicken breast, tofu, and steamed egg help preserve nutrition even when total intake is limited.</div></div></div></div><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">Suggestions</div></div><div class="module-subsection-copy">Simple next steps that may feel the most helpful today.</div><div class="flex flex-wrap gap-2 mb-3"><span class="inline-block px-3 py-1 rounded-full text-xs font-medium border bg-slate-50 text-slate-600 border-slate-200">nausea</span>
+<span class="inline-block px-3 py-1 rounded-full text-xs font-medium border bg-slate-50 text-slate-600 border-slate-200">poor oral intake</span>
+<span class="inline-block px-3 py-1 rounded-full text-xs font-medium border bg-slate-50 text-slate-600 border-slate-200">orthostatic dizziness</span>
+<span class="inline-block px-3 py-1 rounded-full text-xs font-medium border bg-amber-50 text-amber-700 border-amber-200">glucose drifting low</span></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">📋</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">Check orthostatic BP/HR and pre/post-meal fingerstick glucose; track fluid intake, urine output and daily weight</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic mb-2">💬 Pulled forward from the trial-page self-monitoring block.</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="Helpful" onclick="saveLike(-1,'rec','Check orthostatic BP/HR and pre/post-meal fingerstick glucose; track fluid intake, urine output and daily weight')">Useful</button><button class="feedback-btn feedback-skip" title="Not for me" onclick="showFeedbackModal(-1,'rec','Check orthostatic BP/HR and pre/post-meal fingerstick glucose; track fluid intake, urine output and daily weight')">Not for me</button></div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">📋</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">Sip fluids frequently and use the antiemetic as prescribed</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic mb-2">💬 Pulled forward from the trial-page self-monitoring block.</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="Helpful" onclick="saveLike(-1,'rec','Sip fluids frequently and use the antiemetic as prescribed')">Useful</button><button class="feedback-btn feedback-skip" title="Not for me" onclick="showFeedbackModal(-1,'rec','Sip fluids frequently and use the antiemetic as prescribed')">Not for me</button></div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">🏠</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">Urgent contact if you cannot keep fluids down, glucose &lt; 4 mmol/L or &gt; 13.9 with ketones, fainting, or less than 500 mL urine per day</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic mb-2">💬 Pulled forward from the trial-page when to seek help block.</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="Helpful" onclick="saveLike(-1,'rec','Urgent contact if you cannot keep fluids down, glucose &lt; 4 mmol/L or &gt; 13.9 with ketones, fainting, or less than 500 mL urine per day')">Useful</button><button class="feedback-btn feedback-skip" title="Not for me" onclick="showFeedbackModal(-1,'rec','Urgent contact if you cannot keep fluids down, glucose &lt; 4 mmol/L or &gt; 13.9 with ketones, fainting, or less than 500 mL urine per day')">Not for me</button></div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">🥗</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">Start frequent small sips today and work fluids back toward your usual amount</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic mb-2">💬 Orthostatic dizziness and mild tachycardia fit early volume depletion.</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="Helpful" onclick="saveLike(-1,'rec','Start frequent small sips today and work fluids back toward your usual amount')">Useful</button><button class="feedback-btn feedback-skip" title="Not for me" onclick="showFeedbackModal(-1,'rec','Start frequent small sips today and work fluids back toward your usual amount')">Not for me</button></div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">💊</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">If you are barely eating, ask the trial team how to handle metformin</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic mb-2">💬 Poor intake plus the usual dose can increase low-glucose and dehydration risk.</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="Helpful" onclick="saveLike(-1,'rec','If you are barely eating, ask the trial team how to handle metformin')">Useful</button><button class="feedback-btn feedback-skip" title="Not for me" onclick="showFeedbackModal(-1,'rec','If you are barely eating, ask the trial team how to handle metformin')">Not for me</button></div></div></div><div class="text-xs text-slate-500 mt-3 bg-slate-50 rounded-lg p-3 leading-relaxed">💭 Emily Carter is in the ADC-047 C1D10 treatment window. The core interpretation is adapted from the trial-triage rationale: Nausea/vomiting is the most common DXd-class AE; in a diabetic, reduced intake on glucose-lowering meds risks hypoglycemia and dehydration shifts glucose unpredictably. Manage proactively before a grade 2-3 dehydration / hypoglycemia event.</div></div><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">Health history</div></div><div class="module-subsection-copy">A place to look back on recent changes and important past notes.</div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">👤</span><div class="flex-1 min-w-0"><div class="sub-card-label">Profile</div><div class="sub-card-value">Emily Carter, 58-year-old female. Baseline conditions: HER2-...</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">Emily Carter, 58-year-old female. Baseline conditions: HER2-positive metastatic breast cancer（HER2-positive metastatic breast cancer）; Type 2 diabetes（Type 2 diabetes (~6 yrs); HbA1c 7.2%; usual fasting glucose ~7.0 mmol/L）; Reduced oral intake over the past 2 days. Current medications: ADC-047 5.4 mg/kg; metformin 1000 mg BID; ondansetron PRN.</div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">📈</span><div class="flex-1 min-w-0"><div class="sub-card-label">Recent trends</div><div class="sub-card-value">Current monitoring focus: nausea, poor oral intake, orthosta...</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">Current monitoring focus: nausea, poor oral intake, orthostatic dizziness, mild tachycardia, trending-low glucose. Mild tachycardia, orthostatic BP drop and glucose drifting low after reduced oral intake on ADC-047.</div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">📋</span><div class="flex-1 min-w-0"><div class="sub-card-label">Key events</div><div class="sub-card-value">6 recorded events</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="space-y-2"><div class="flex items-start gap-3 rounded-lg p-2.5 border bg-amber-50 text-amber-700 border-amber-200"><span class="text-base mt-0.5">⚠️</span><div class="flex-1 min-w-0"><div class="text-sm font-semibold">Since the last infusion I&#x27;ve felt really nauseous and can barely eat. When I stand up I get dizzy.</div><div class="text-xs text-slate-400 mt-0.5">2026-06-22</div></div></div><div class="flex items-start gap-3 rounded-lg p-2.5 border bg-rose-50 text-rose-700 border-rose-200"><span class="text-base mt-0.5">🚨</span><div class="flex-1 min-w-0"><div class="text-sm font-semibold">HER2+ metastatic breast cancer; type 2 diabetes</div><div class="text-xs text-slate-400 mt-0.5">2026-05-18</div></div></div><div class="flex items-start gap-3 rounded-lg p-2.5 border bg-rose-50 text-rose-700 border-rose-200"><span class="text-base mt-0.5">🚨</span><div class="flex-1 min-w-0"><div class="text-sm font-semibold">HbA1c 7.2%; baseline renal function on file</div><div class="text-xs text-slate-400 mt-0.5">2026-05-26</div></div></div><div class="flex items-start gap-3 rounded-lg p-2.5 border bg-rose-50 text-rose-700 border-rose-200"><span class="text-base mt-0.5">🚨</span><div class="flex-1 min-w-0"><div class="text-sm font-semibold">baseline BP 122/80, usual fasting glucose ~7.0</div><div class="text-xs text-slate-400 mt-0.5">2026-06-05</div></div></div><div class="flex items-start gap-3 rounded-lg p-2.5 border bg-rose-50 text-rose-700 border-rose-200"><span class="text-base mt-0.5">🚨</span><div class="flex-1 min-w-0"><div class="text-sm font-semibold">metformin 1000 mg BID; ondansetron PRN</div><div class="text-xs text-slate-400 mt-0.5">2026-05-20</div></div></div><div class="flex items-start gap-3 rounded-lg p-2.5 border bg-rose-50 text-rose-700 border-rose-200"><span class="text-base mt-0.5">🚨</span><div class="flex-1 min-w-0"><div class="text-sm font-semibold">prior chemotherapy-induced nausea episodes; 2-day intake decline</div><div class="text-xs text-slate-400 mt-0.5">2026-06-18</div></div></div></div></div></div></div></div></div>
+<div class="section-card" data-section="nutrition_hub"><div class="section-card-header"><div class="section-card-icon" style="background:#ecfdf5">🥗</div><div class="flex-1 min-w-0"><div class="section-card-title">Nutrition &amp; condition diet</div><div class="section-card-summary">Food ideas that are easier on your body and fit your current needs.</div></div><div class="section-card-arrow">&#9662;</div></div><div class="section-card-body"><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">Nutrition advice</div></div><div class="module-subsection-copy">The eating focus that matters most for you right now.</div><div class="rounded-xl bg-emerald-50 border border-emerald-100 px-4 py-4 text-[0.95em] leading-7 text-slate-700">Antibody-drug conjugates (ADCs) combine a targeted antibody with a potent cytotoxic payload. While they can attack tumors effectively, off-target effects or payload release may also trigger gastrointestinal, hepatic, renal, marrow, or lung toxicity. The core nutrition principles are: higher protein, easy digestion, small frequent meals, and side-effect-specific adjustments. Because ADC targets may be broadly expressed in the gastrointestinal tract, or because the gut lining turns over quickly, nausea, diarrhea, and reduced intake are common. Use small, frequent, bland meals; avoid greasy, fried, and spicy foods; and aim for 5 to 6 eating moments per day without overfilling. Prioritize steamed fish, poached chicken breast, tofu, steamed egg, and vitamin-rich gourd vegetables for higher-protein, easier-to-digest choices. If diarrhea becomes significant, watch for dehydration and electrolyte loss and use oral rehydration solution, or lightly salted rice broth. Avoid milk and dairy because lactose can worsen gut burden. If nausea is severe, avoid large amounts of fluid during meals and move soups and other liquid foods to at least 30 minutes before or after eating. Because ADC targets are widely expressed in the gastrointestinal tract, or because the gut lining turns over quickly, nausea, diarrhea, and reduced intake can show up early. The immediate priorities are smaller meals, steady hydration, and close tracking of both glucose swings and dehydration risk. Small frequent bland meals matter most: avoid greasy, fried, and spicy foods; prefer steamed fish, poached chicken breast, tofu, steamed egg, and vitamin-rich gourd vegetables.</div></div><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">Diet by condition</div></div><div class="module-subsection-copy">Helpful food choices and foods to go easier on.</div><div class="overflow-x-auto rounded-xl border border-slate-200 bg-white"><table class="w-full text-sm"><thead><tr class="bg-slate-50"><th class="px-4 py-2 text-left text-xs font-semibold text-slate-500">Condition</th><th class="px-4 py-2 text-left text-xs font-semibold text-slate-500">Principle</th><th class="px-4 py-2 text-left text-xs font-semibold text-slate-500">Favor</th><th class="px-4 py-2 text-left text-xs font-semibold text-slate-500">Limit</th></tr></thead><tbody class="divide-y divide-slate-100"><tr><td class="px-4 py-3 font-medium text-slate-800">General nutrition during ADC treatment</td><td class="px-4 py-3 text-slate-600">Higher protein, easy digestion, small frequent meals</td><td class="px-4 py-3 text-emerald-700">Steamed fish, chicken breast, tofu, steamed egg, mild gourd vegetables, oral rehydration solution</td><td class="px-4 py-3 text-rose-600">Greasy spicy foods, overeating, large liquids during meals, dairy when diarrhea is active</td></tr><tr><td class="px-4 py-3 font-medium text-slate-800">ADC GI toxicity</td><td class="px-4 py-3 text-slate-600">Bland, soft, small frequent intake</td><td class="px-4 py-3 text-emerald-700">Steamed egg, tofu, rice porridge, steamed fish, chicken breast</td><td class="px-4 py-3 text-rose-600">Greasy, fried, spicy, and very rich foods</td></tr><tr><td class="px-4 py-3 font-medium text-slate-800">Dehydration / diarrhea risk</td><td class="px-4 py-3 text-slate-600">Replace fluids and electrolytes together</td><td class="px-4 py-3 text-emerald-700">Oral rehydration solution, lightly salted rice broth, clear soups</td><td class="px-4 py-3 text-rose-600">Only sugary drinks without any electrolyte replacement</td></tr><tr><td class="px-4 py-3 font-medium text-slate-800">Diabetes with poor intake</td><td class="px-4 py-3 text-slate-600">Steady carbs without long fasting</td><td class="px-4 py-3 text-emerald-700">Small starch portions paired with protein and scheduled glucose checks</td><td class="px-4 py-3 text-rose-600">Long fasting while taking usual glucose-lowering medication unchanged</td></tr></tbody></table></div></div></div></div>
+<div class="section-card" data-section="meal_hub"><div class="section-card-header"><div class="section-card-icon" style="background:#eff6ff">🍽️</div><div class="flex-1 min-w-0"><div class="section-card-title">Preferences &amp; meal ideas</div><div class="section-card-summary">Meal ideas, food tips, and your taste preferences are all in one place.</div></div><div class="section-card-arrow">&#9662;</div></div><div class="section-card-body"><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">Cuisine preferences</div></div><div class="module-subsection-copy">Choose flavors you enjoy so future suggestions feel more like your own meals.</div><p class="text-sm text-slate-500 mb-3">Tell us which cuisines you enjoy so future meal ideas feel more natural for you.</p><div class="flex flex-wrap gap-2 mb-3" id="cuisineChips"></div><div class="flex items-center gap-2"><input id="customCuisineInput" type="text" placeholder="Add another cuisine..." class="flex-1 text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-200"><button onclick="addCustomCuisine()" class="px-3 py-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium hover:bg-emerald-100">+ Add</button></div></div><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">Weekly meal ideas</div></div><div class="module-subsection-copy">A few gentle breakfast, lunch, and dinner ideas for the week.</div><div class="flex gap-2 mb-4 overflow-x-auto pb-2" id="dayTabs"></div><div id="mealContent"></div></div><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">Diet tips</div></div><div class="module-subsection-copy">Small reminders that can make eating feel a little easier.</div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">🍽️</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">Aim for 5 to 6 eating moments</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 leading-relaxed mb-2">Small frequent intake is often more achievable than forcing one large meal.</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="Helpful" onclick="saveLike(-1,'tip','Aim for 5 to 6 eating moments')">Useful</button><button class="feedback-btn feedback-skip" title="Not for me" onclick="showFeedbackModal(-1,'tip','Aim for 5 to 6 eating moments')">Not for me</button></div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">🥚</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">Keep protein gentle and soft</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 leading-relaxed mb-2">Steamed egg, tofu, steamed fish, and chicken breast add more nutrition when total intake is low.</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="Helpful" onclick="saveLike(-1,'tip','Keep protein gentle and soft')">Useful</button><button class="feedback-btn feedback-skip" title="Not for me" onclick="showFeedbackModal(-1,'tip','Keep protein gentle and soft')">Not for me</button></div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">🧂</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">Replace salt when diarrhea is heavy</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 leading-relaxed mb-2">Serious diarrhea causes water and electrolyte losses, so oral rehydration solution or lightly salted rice broth fits better.</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="Helpful" onclick="saveLike(-1,'tip','Replace salt when diarrhea is heavy')">Useful</button><button class="feedback-btn feedback-skip" title="Not for me" onclick="showFeedbackModal(-1,'tip','Replace salt when diarrhea is heavy')">Not for me</button></div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">🥛</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">Pause milk and dairy for now</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 leading-relaxed mb-2">Lactose can add to diarrhea and gut burden while GI toxicity is active.</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="Helpful" onclick="saveLike(-1,'tip','Pause milk and dairy for now')">Useful</button><button class="feedback-btn feedback-skip" title="Not for me" onclick="showFeedbackModal(-1,'tip','Pause milk and dairy for now')">Not for me</button></div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">🥣</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">Separate larger fluids from meals</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 leading-relaxed mb-2">If nausea is severe, move soups and bigger drinks to at least 30 minutes before or after eating.</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="Helpful" onclick="saveLike(-1,'tip','Separate larger fluids from meals')">Useful</button><button class="feedback-btn feedback-skip" title="Not for me" onclick="showFeedbackModal(-1,'tip','Separate larger fluids from meals')">Not for me</button></div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">🍽️</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">Small frequent meals</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 leading-relaxed mb-2">Aim for 5 to 6 eating moments per day instead of one or two heavy meals to reduce nausea, bloating, and post-meal discomfort.</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="Helpful" onclick="saveLike(-1,'tip','Small frequent meals')">Useful</button><button class="feedback-btn feedback-skip" title="Not for me" onclick="showFeedbackModal(-1,'tip','Small frequent meals')">Not for me</button></div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">🥚</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">Higher-protein and easy to digest</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 leading-relaxed mb-2">Steamed fish, poached chicken breast, tofu, and steamed egg are practical ADC-treatment protein staples.</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="Helpful" onclick="saveLike(-1,'tip','Higher-protein and easy to digest')">Useful</button><button class="feedback-btn feedback-skip" title="Not for me" onclick="showFeedbackModal(-1,'tip','Higher-protein and easy to digest')">Not for me</button></div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">🧂</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">Replace fluids and salt during diarrhea</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 leading-relaxed mb-2">Significant diarrhea causes fluid and electrolyte loss, so use oral rehydration solution or lightly salted rice broth.</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="Helpful" onclick="saveLike(-1,'tip','Replace fluids and salt during diarrhea')">Useful</button><button class="feedback-btn feedback-skip" title="Not for me" onclick="showFeedbackModal(-1,'tip','Replace fluids and salt during diarrhea')">Not for me</button></div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">🥛</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">Pause dairy if diarrhea is active</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 leading-relaxed mb-2">Lactose in milk and dairy can add to gut burden when diarrhea is already present.</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="Helpful" onclick="saveLike(-1,'tip','Pause dairy if diarrhea is active')">Useful</button><button class="feedback-btn feedback-skip" title="Not for me" onclick="showFeedbackModal(-1,'tip','Pause dairy if diarrhea is active')">Not for me</button></div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">🥣</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">Separate larger liquids from meals if nausea is strong</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 leading-relaxed mb-2">Move soups and other liquid foods to at least 30 minutes before or after eating when nausea is severe.</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="Helpful" onclick="saveLike(-1,'tip','Separate larger liquids from meals if nausea is strong')">Useful</button><button class="feedback-btn feedback-skip" title="Not for me" onclick="showFeedbackModal(-1,'tip','Separate larger liquids from meals if nausea is strong')">Not for me</button></div></div></div></div><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">Submit preferences</div></div><div class="module-subsection-copy">Save what worked for you so the next page can fit you better.</div><button id="exportFeedbackBtn" onclick="exportFeedbackJSON()" style="display:none" class="w-full px-6 py-3 rounded-full text-sm font-bold bg-emerald-600 text-white shadow-md hover:bg-emerald-700 active:scale-95 transition-all">✓ Submit my preferences</button><p class="text-xs text-slate-400 mt-2 text-center" id="submitHint" style="display:none">Your feedback will shape future suggestions</p></div></div></div>
+<div class="section-card" data-section="map"><div class="section-card-header"><div class="section-card-icon" style="background:#f0f9ff">🏥</div><div class="flex-1 min-w-0"><div class="section-card-title">Nearby care &amp; parks</div><div class="section-card-summary">If you need care or want a gentle walk, nearby places are here.</div></div><div class="section-card-arrow">&#9662;</div></div><div class="section-card-body"><div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3"><div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100"><span class="text-lg">📍</span><h2 class="text-sm font-bold text-slate-800">Nearby picks</h2></div><p class="text-sm text-slate-600 mb-3">Your recent activity looks a bit low. On a nice day, a gentle walk in a nearby park can help.</p><div class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 mb-3">Set GOOGLE_MAPS_API_KEY to render the interactive map.</div><div class="grid grid-cols-1 sm:grid-cols-2 gap-2"><a class="block rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm font-semibold text-slate-700 hover:bg-slate-100 text-center" href="https://www.google.com/maps/search/hospitals/@42.2766632,-71.8079906,14z" target="_blank" rel="noopener">🏥 Nearby hospitals</a><a class="block rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm font-semibold text-slate-700 hover:bg-slate-100 text-center" href="https://www.google.com/maps/search/parks/@42.2766632,-71.8079906,14z" target="_blank" rel="noopener">🌳 Nearby parks</a></div></div></div></div>
+  </div>
+
+  <!-- Guardrail (slim footer) -->
+  <div class="px-4 py-3 bg-slate-50 border-t border-slate-200">
+    <p class="text-[11px] text-slate-400 text-center leading-relaxed">This page is restructured from clinical-trial review data for supportive understanding only. It does not replace the trial team, treating clinician, or emergency assessment.</p>
+  </div>
+
+</div>
+
+<script>
+const DAYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const MEAL_LABELS = {"breakfast":"Breakfast","lunch":"Lunch","dinner":"Dinner"};
+const rawMeals = [{"day": "Day 1", "breakfast": [{"name": "Rice porridge with steamed egg", "icon": "🥣", "condition": "Nausea", "benefit": "Warm, gentle, and easier to tolerate first thing in the day", "adc_reason": "Because you are on ADC and your stomach, hydration, and energy are easier to upset right now. This breakfast is chosen to support settling your stomach. What it can do for you: Warm, gentle, and easier to tolerate first thing in the day."}], "lunch": [{"name": "Steamed fish with soft rice", "icon": "🐟", "condition": "Poor intake", "benefit": "Higher-protein and easier to digest than fried foods", "adc_reason": "Because you are on ADC and your stomach, hydration, and energy are easier to upset right now. This lunch is chosen to support days when eating feels harder. What it can do for you: Higher-protein and easier to digest than fried foods."}], "dinner": [{"name": "Tofu pumpkin soup", "icon": "🍲", "condition": "ADC GI toxicity", "benefit": "Adds fluids while staying soft and mild", "adc_reason": "Because you are on ADC and your stomach, hydration, and energy are easier to upset right now. This dinner is chosen to support ADC-related stomach and bowel irritation. What it can do for you: Adds fluids while staying soft and mild."}]}, {"day": "Day 2", "breakfast": [{"name": "Plain crackers with warm soy milk", "icon": "🍘", "condition": "Nausea", "benefit": "A small starch first can reduce empty-stomach gagging", "adc_reason": "Because you are on ADC and your stomach, hydration, and energy are easier to upset right now. This breakfast is chosen to support settling your stomach. What it can do for you: A small starch first can reduce empty-stomach gagging."}], "lunch": [{"name": "Poached chicken breast with gourd vegetables", "icon": "🍗", "condition": "Dehydration risk", "benefit": "Light, higher-protein, and paired with water-rich vegetables", "adc_reason": "Because you are on ADC and your stomach, hydration, and energy are easier to upset right now. This lunch is chosen to support protecting hydration. What it can do for you: Light, higher-protein, and paired with water-rich vegetables."}], "dinner": [{"name": "Lightly salted rice broth with steamed egg", "icon": "🥚", "condition": "Orthostatic dizziness", "benefit": "Helps replace fluids and electrolytes without a heavy meal", "adc_reason": "Because you are on ADC and your stomach, hydration, and energy are easier to upset right now. This dinner is chosen to support days when fluids may be running low. What it can do for you: Helps replace fluids and electrolytes without a heavy meal."}]}, {"day": "Day 3", "breakfast": [{"name": "Mashed banana oatmeal", "icon": "🍌", "condition": "Glucose drifting low", "benefit": "Adds gentle carbs to reduce morning glucose dips", "adc_reason": "Because you are on ADC and your stomach, hydration, and energy are easier to upset right now. This breakfast is chosen to support keeping morning energy steadier. What it can do for you: Adds gentle carbs to reduce morning glucose dips."}], "lunch": [{"name": "Soft noodle bowl with tofu and chicken", "icon": "🍜", "condition": "Poor intake", "benefit": "Soft texture is easier to finish than dry solid foods", "adc_reason": "Because you are on ADC and your stomach, hydration, and energy are easier to upset right now. This lunch is chosen to support days when eating feels harder. What it can do for you: Soft texture is easier to finish than dry solid foods."}], "dinner": [{"name": "Steamed cod with winter melon", "icon": "🐟", "condition": "ADC GI toxicity", "benefit": "Low-fat, low-irritation, and protein-dense", "adc_reason": "Because you are on ADC and your stomach, hydration, and energy are easier to upset right now. This dinner is chosen to support ADC-related stomach and bowel irritation. What it can do for you: Low-fat, low-irritation, and protein-dense."}]}];
+const meals = DAYS.map((d, i) => ({ ...rawMeals[i % rawMeals.length], day: d }));
+let activeDay = 0;
+
+const MEAL_FEEDBACK_REASONS = [
+  "Don't like the taste",
+  "Allergic / intolerant",
+  "Can't find this ingredient",
+  "Too difficult to prepare",
+  "Other"
+];
+const GENERAL_FEEDBACK_REASONS = [
+  "Not applicable to me",
+  "Too difficult to do",
+  "Already doing this",
+  "Don't agree with this",
+  "Other"
+];
+const FEEDBACK_STORAGE_KEY = "mealFeedback_en";
+const CUISINE_STORAGE_KEY = "cuisinePrefs_en";
+let feedbackStore = JSON.parse(localStorage.getItem(FEEDBACK_STORAGE_KEY) || "{}");
+const pendingFeedbackSubmits = {};
+
+function saveFeedback(dayIdx, mealType, itemName, reason) {
+  const key = `${dayIdx}-${mealType}-${itemName}`;
+  feedbackStore[key] = { sentiment: "dislike", reason, timestamp: new Date().toISOString() };
+  localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(feedbackStore));
+  updateExportBadge();
+}
+
+function saveLike(dayIdx, mealType, itemName) {
+  const key = `${dayIdx}-${mealType}-${itemName}`;
+  feedbackStore[key] = { sentiment: "like", reason: null, timestamp: new Date().toISOString() };
+  localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(feedbackStore));
+  renderMeals();
+  updateExportBadge();
+}
+
+function getFeedback(dayIdx, mealType, itemName) {
+  return feedbackStore[`${dayIdx}-${mealType}-${itemName}`];
+}
+
+function buildPreferencePayload() {
+  const likes = [];
+  const dislikes = [];
+  for (const [key, val] of Object.entries(feedbackStore)) {
+    const entry = { item_key: key, ...val };
+    if (val.sentiment === "like") likes.push(entry);
+    else dislikes.push(entry);
+  }
+  const selectedCuisines = Object.entries(cuisinePrefs).map(([name, meta]) => ({
+    cuisine: name, ...meta
+  }));
+  return {
+    user_id: "ct_emily",
+    data_type: "scenario",
+    language: "en",
+    timestamp: new Date().toISOString(),
+    data: {
+      bundle: {
+        type: "user_preference",
+        report_time: "Jun 22, 2026 21:46",
+        total_feedback: likes.length + dislikes.length,
+        cuisine_preferences: selectedCuisines,
+        liked: likes,
+        disliked: dislikes
+      }
+    }
+  };
+}
+
+function exportFeedbackJSON() {
+  const payload = buildPreferencePayload();
+  const btn = document.getElementById("exportFeedbackBtn");
+  if (!btn) return;
+  const origText = btn.textContent;
+  const feedbackId = "feedback_" + Date.now() + "_" + Math.random().toString(36).slice(2);
+  pendingFeedbackSubmits[feedbackId] = { btn, origText };
+  btn.textContent = "⏳ Submitting...";
+  btn.disabled = true;
+  window.parent.postMessage({
+    type: "skill_feedback",
+    feedback_id: feedbackId,
+    payload
+  }, "*");
+  setTimeout(() => {
+    if (!pendingFeedbackSubmits[feedbackId]) return;
+    delete pendingFeedbackSubmits[feedbackId];
+    btn.textContent = origText;
+    btn.disabled = false;
+  }, 8000);
+}
+
+window.addEventListener("message", function(event) {
+  const data = event.data || {};
+  if (data.type !== "skill_feedback_result" || !data.feedback_id) return;
+  const pending = pendingFeedbackSubmits[data.feedback_id];
+  if (!pending) return;
+  delete pendingFeedbackSubmits[data.feedback_id];
+  pending.btn.textContent = data.ok === false ? "Submission failed" : "✓ Submitted";
+  setTimeout(() => {
+    pending.btn.textContent = pending.origText;
+    pending.btn.disabled = false;
+  }, 2500);
+});
+
+function updateExportBadge() {
+  const btn = document.getElementById("exportFeedbackBtn");
+  const hint = document.getElementById("submitHint");
+  if (!btn) return;
+  const fbCount = Object.keys(feedbackStore).length;
+  const cuisineCount = Object.keys(cuisinePrefs).length;
+  const total = fbCount + cuisineCount;
+  if (total > 0) {
+    btn.textContent = "✓ Submit my preferences (" + total + ")";
+    btn.style.display = "inline-block";
+    if (hint) hint.style.display = "block";
+  } else {
+    btn.style.display = "none";
+    if (hint) hint.style.display = "none";
+  }
+}
+
+function showFeedbackModal(dayIdx, mealType, itemName) {
+  const existing = document.querySelector('.feedback-modal');
+  if (existing) existing.remove();
+  const isMeal = dayIdx >= 0;
+  const reasons = isMeal ? MEAL_FEEDBACK_REASONS : GENERAL_FEEDBACK_REASONS;
+  const title = isMeal ? "Why don't you want this food?" : "Why doesn't this work for you?";
+  const displayName = itemName.length > 60 ? itemName.substring(0, 57) + "..." : itemName;
+  const modal = document.createElement('div');
+  modal.className = 'feedback-modal';
+  modal.innerHTML = `
+    <div class="feedback-modal-box">
+      <div class="text-sm font-bold text-slate-800 mb-1">${title}</div>
+      <div class="text-xs text-slate-500 mb-3">${displayName}</div>
+      ${reasons.map(r => `<button class="feedback-reason" data-reason="${r}">${r}</button>`).join('')}
+      <button class="feedback-reason" style="color:#94a3b8;border-color:#e2e8f0;margin-top:8px" data-reason="__cancel__">Cancel</button>
+    </div>`;
+  modal.addEventListener('click', function(e) {
+    const reason = e.target.dataset.reason;
+    if (!reason) return;
+    if (reason === '__cancel__') { modal.remove(); return; }
+    saveFeedback(dayIdx, mealType, itemName, reason);
+    modal.remove();
+    if (isMeal) renderMeals();
+    e.target.closest('.feedback-modal').remove();
+  });
+  document.body.appendChild(modal);
+}
+
+function renderTabs() {
+  const container = document.getElementById("dayTabs");
+  container.innerHTML = DAYS.map((d, i) =>
+    `<button onclick="switchDay(${i})" class="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${i === activeDay ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">${d}</button>`
+  ).join("");
+}
+
+function switchDay(i) {
+  activeDay = i;
+  renderTabs();
+  renderMeals();
+}
+
+function renderMeals() {
+  const day = meals[activeDay];
+  if (!day) { document.getElementById("mealContent").innerHTML = '<p class="text-sm text-slate-400">No data</p>'; return; }
+  let html = "";
+  for (const [key, label] of Object.entries(MEAL_LABELS)) {
+    const items = day[key] || [];
+    if (!items.length) continue;
+    html += `<div class="mb-4"><div class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">${label}</div><div class="grid grid-cols-1 sm:grid-cols-2 gap-2">`;
+    for (const it of items) {
+      const fb = getFeedback(activeDay, key, it.name);
+      const likeClass = fb && fb.sentiment === "like" ? "liked" : "";
+      const dislikeClass = fb && fb.sentiment === "dislike" ? "disliked" : "";
+      const safeName = it.name.replace(/'/g, "&#39;");
+      const reason = it.adc_reason || (
+        it.condition && it.benefit
+          ? "For your " + it.condition.toLowerCase() + ": " + it.benefit.toLowerCase()
+          : (it.benefit || "")
+      );
+      html += `<div class="meal-card flex items-start gap-3 bg-slate-50 rounded-lg p-3 border border-slate-100">
+        <span class="text-2xl mt-0.5">${it.icon || "🍽️"}</span>
+        <div class="flex-1 min-w-0">
+          <div class="text-sm font-semibold text-slate-800">${it.name}</div>
+          <div class="text-xs text-emerald-600 mt-0.5 leading-relaxed italic">${reason}</div>
+        </div>
+        <div class="feedback-actions">
+          <button class="feedback-btn like ${likeClass}" title="Keep this meal idea" onclick="saveLike(${activeDay},'${key}','${safeName}')">Keep this</button>
+          <button class="feedback-btn feedback-skip ${dislikeClass}" title="This meal is not for me" onclick="showFeedbackModal(${activeDay},'${key}','${safeName}')">Not for me</button>
+        </div>
+      </div>`;
+    }
+    html += "</div></div>";
+  }
+  document.getElementById("mealContent").innerHTML = html;
+}
+
+// ─── Cuisine Preferences ───
+const DEFAULT_CUISINES = [
+  { name: "American", icon: "🍔" },
+  { name: "Italian", icon: "🍝" },
+  { name: "Japanese", icon: "🍣" },
+  { name: "Korean", icon: "🥘" },
+  { name: "Mexican", icon: "🌮" },
+  { name: "Indian", icon: "🍛" },
+  { name: "Mediterranean", icon: "🫒" },
+  { name: "Sichuan", icon: "🌶️" },
+  { name: "Cantonese", icon: "🥡" },
+  { name: "Thai", icon: "🍜" },
+  { name: "French", icon: "🥐" },
+  { name: "Vietnamese", icon: "🍲" },
+];
+
+let cuisinePrefs = JSON.parse(localStorage.getItem(CUISINE_STORAGE_KEY) || "{}");
+
+function renderCuisineChips() {
+  const container = document.getElementById("cuisineChips");
+  if (!container) return;
+  const allCuisines = [...DEFAULT_CUISINES];
+  const customNames = Object.keys(cuisinePrefs).filter(n => !DEFAULT_CUISINES.some(d => d.name === n));
+  for (const cn of customNames) {
+    allCuisines.push({ name: cn, icon: "🍽️" });
+  }
+  container.innerHTML = allCuisines.map(c => {
+    const sel = cuisinePrefs[c.name] ? "selected" : "";
+    return `<span class="cuisine-chip ${sel}" onclick="toggleCuisine('${c.name.replace(/'/g,"&#39;")}')">${c.icon} ${c.name}<span class="chip-x" onclick="event.stopPropagation();removeCuisine('${c.name.replace(/'/g,"&#39;")}')">✕</span></span>`;
+  }).join("");
+  updateExportBadge();
+}
+
+function toggleCuisine(name) {
+  if (cuisinePrefs[name]) {
+    delete cuisinePrefs[name];
+  } else {
+    cuisinePrefs[name] = { selected_at: new Date().toISOString() };
+  }
+  localStorage.setItem(CUISINE_STORAGE_KEY, JSON.stringify(cuisinePrefs));
+  renderCuisineChips();
+  showCuisineToast();
+}
+
+function showCuisineToast() {
+  const selected = Object.keys(cuisinePrefs);
+  if (!selected.length) return;
+  let existing = document.getElementById("cuisineToast");
+  if (!existing) {
+    existing = document.createElement("div");
+    existing.id = "cuisineToast";
+    existing.style.cssText = "position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#065f46;color:#fff;padding:10px 20px;border-radius:12px;font-size:0.8em;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,0.2);z-index:9999;transition:opacity 0.3s;max-width:90%;text-align:center";
+    document.body.appendChild(existing);
+  }
+  existing.textContent = "✓ Saved! Next report will include " + selected.join(", ") + " recipes.";
+  existing.style.opacity = "1";
+  clearTimeout(existing._timer);
+  existing._timer = setTimeout(() => { existing.style.opacity = "0"; }, 3000);
+}
+
+function removeCuisine(name) {
+  delete cuisinePrefs[name];
+  localStorage.setItem(CUISINE_STORAGE_KEY, JSON.stringify(cuisinePrefs));
+  renderCuisineChips();
+}
+
+function addCustomCuisine() {
+  const input = document.getElementById("customCuisineInput");
+  const name = (input.value || "").trim();
+  if (!name) return;
+  cuisinePrefs[name] = { selected_at: new Date().toISOString(), custom: true };
+  localStorage.setItem(CUISINE_STORAGE_KEY, JSON.stringify(cuisinePrefs));
+  input.value = "";
+  renderCuisineChips();
+}
+
+document.getElementById("customCuisineInput").addEventListener("keydown", function(e) {
+  if (e.key === "Enter") { e.preventDefault(); addCustomCuisine(); }
+});
+
+renderCuisineChips();
+renderTabs();
+renderMeals();
+updateExportBadge();
+
+// ─── Card Accordion Toggle ───
+document.querySelectorAll(".section-card-header").forEach(function(header) {
+  header.addEventListener("click", function() {
+    const card = header.closest(".section-card");
+    if (!card) return;
+    const wasExpanded = card.classList.contains("expanded");
+    card.classList.toggle("expanded");
+    if (!wasExpanded) {
+      setTimeout(function() { card.scrollIntoView({ behavior: "smooth", block: "start" }); }, 100);
+    }
+  });
+});
+
+// ─── Sub-card Toggle (tap item to expand its details) ───
+document.querySelectorAll(".sub-card-header").forEach(function(header) {
+  header.addEventListener("click", function(e) {
+    e.stopPropagation();
+    header.closest(".sub-card").classList.toggle("open");
+  });
+});
+</script>
+</body>
+</html>
