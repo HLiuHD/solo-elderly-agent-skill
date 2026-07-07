@@ -3,97 +3,328 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>2026年06月11日 异常报告</title>
+<title>2026年07月06日 异常报告</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script type="text/javascript" src="https://api.map.baidu.com/api?v=3.0&ak=6zXfgKZZiCdrL3MZBH7DGpjemq5IRxRC"></script>
 <style>
-  body { font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; }
+  :root {
+    --app-bg-top: #fff8f6;
+    --app-bg-bottom: #eef4ff;
+    --app-card-shadow: 0 18px 36px rgba(15,23,42,.10), 0 6px 14px rgba(15,23,42,.06);
+    --app-icon-shadow: 0 10px 22px rgba(148,163,184,.24), inset 0 1px 0 rgba(255,255,255,.95), inset 0 -10px 16px rgba(15,23,42,.08);
+  }
+  body {
+    font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    margin:0;
+    color:#0f172a;
+    background:
+      radial-gradient(circle at top left, rgba(251,146,60,.16), transparent 24%),
+      radial-gradient(circle at top right, rgba(96,165,250,.18), transparent 26%),
+      linear-gradient(180deg, var(--app-bg-top) 0%, var(--app-bg-bottom) 100%);
+  }
+  * { box-sizing:border-box; }
+  .app-shell {
+    max-width: 460px;
+    margin: 0 auto;
+    min-height: 100vh;
+    position: relative;
+    padding-bottom: 20px;
+  }
+  .app-shell::before {
+    content:"";
+    position:absolute;
+    inset:14px 12px auto;
+    height:120px;
+    border-radius:28px;
+    background:linear-gradient(180deg, rgba(255,255,255,.9), rgba(255,255,255,.32));
+    box-shadow:0 14px 36px rgba(148,163,184,.16);
+    filter:blur(8px);
+    z-index:-1;
+  }
+  .app-header {
+    margin:0 10px;
+    border:1px solid rgba(255,255,255,.82);
+    border-top:none;
+    border-radius:0 0 24px 24px;
+    background:linear-gradient(180deg, rgba(255,255,255,.94), rgba(248,250,252,.84));
+    backdrop-filter:blur(18px) saturate(1.2);
+    box-shadow:0 16px 30px rgba(15,23,42,.09), inset 0 1px 0 rgba(255,255,255,.95);
+  }
+  .status-pill {
+    box-shadow:0 10px 20px rgba(244,63,94,.18), inset 0 1px 0 rgba(255,255,255,.45);
+  }
+  .condition-chip {
+    box-shadow:0 8px 18px rgba(15,23,42,.12), inset 0 1px 0 rgba(255,255,255,.35);
+  }
+  .hero-summary {
+    border-radius: 28px;
+    border: 1px solid rgba(255,255,255,.9);
+    background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(255,247,237,.94));
+    box-shadow: var(--app-card-shadow);
+    padding: 18px;
+  }
+  .hero-summary-badge {
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    padding:8px 12px;
+    border-radius:999px;
+    font-size:.78rem;
+    font-weight:800;
+    color:#9f1239;
+    background:#fff1f2;
+    border:1px solid #fecdd3;
+    box-shadow:0 8px 16px rgba(244,63,94,.10);
+  }
+  .hero-vitals {
+    background: linear-gradient(180deg, rgba(255,255,255,.98) 0%, rgba(244,248,252,.95) 100%);
+    border: 1px solid rgba(255,255,255,.92);
+    border-radius: 26px;
+    box-shadow: var(--app-card-shadow);
+    padding: 18px;
+  }
+  .hero-vitals-grid {
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:12px;
+  }
+  .hero-vital-card {
+    border-radius:20px;
+    padding:14px;
+    border:1px solid rgba(255,255,255,.95);
+    background:#fff;
+    min-height:118px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    box-shadow:0 12px 24px rgba(15,23,42,.06);
+  }
+  .hero-vital-top {
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .hero-vital-icon {
+    width:42px;
+    height:42px;
+    border-radius:15px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:1.3em;
+    background:linear-gradient(180deg,#ffffff 0%, #e6eef8 100%);
+    border:1px solid rgba(255,255,255,.9);
+    box-shadow:var(--app-icon-shadow);
+  }
+  .hero-vital-label { font-size:.78em; color:#64748b; font-weight:700; }
+  .hero-vital-value { font-size:1.35em; font-weight:800; color:#0f172a; line-height:1.1; }
+  .hero-vital-range {
+    font-size:.74em;
+    color:#475569;
+    background:#f8fafc;
+    border:1px solid #e2e8f0;
+    border-radius:999px;
+    padding:5px 9px;
+    width:max-content;
+  }
+  .em-card {
+    border-radius:24px;
+    border:1px solid rgba(255,255,255,.92);
+    background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(246,249,252,.96));
+    box-shadow:var(--app-card-shadow);
+    padding:18px;
+    margin-bottom:16px;
+  }
+  .em-card-danger {
+    background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(255,241,242,.97));
+    border-color:#fecdd3;
+  }
+  .section-head {
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:12px;
+    padding-bottom:12px;
+    border-bottom:1px solid rgba(226,232,240,.8);
+  }
+  .section-kicker {
+    width:40px;
+    height:40px;
+    border-radius:14px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(180deg,#ffffff 0%, #e6eef8 100%);
+    border:1px solid rgba(255,255,255,.92);
+    box-shadow:var(--app-icon-shadow);
+  }
+  .action-step {
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    padding:14px;
+    border-radius:18px;
+    background:linear-gradient(180deg,#fff7f7 0%, #fff1f2 100%);
+    border:1px solid #fecdd3;
+    margin-bottom:10px;
+  }
+  .action-step-index {
+    flex-shrink:0;
+    width:30px;
+    height:30px;
+    border-radius:999px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#e11d48;
+    color:#fff;
+    font-size:.8rem;
+    font-weight:800;
+    box-shadow:0 10px 18px rgba(225,29,72,.24);
+  }
+  .action-step-copy {
+    font-size:.95rem;
+    line-height:1.6;
+    color:#334155;
+    font-weight:600;
+  }
+  .monitor-row {
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    padding:13px 14px;
+    border-radius:16px;
+    background:#f8fafc;
+    border:1px solid #e2e8f0;
+    margin-bottom:10px;
+  }
+  .monitor-row-label {
+    font-size:.7rem;
+    color:#64748b;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+  }
+  .monitor-row-value {
+    font-size:.92rem;
+    color:#334155;
+    line-height:1.55;
+    margin-top:2px;
+  }
+  .care-card {
+    border-radius:22px;
+    background:linear-gradient(180deg, #fff7ed 0%, #ffffff 100%);
+    border:1px solid #fed7aa;
+    padding:14px;
+    color:#9a3412;
+    font-size:.92rem;
+    line-height:1.6;
+  }
+  .app-footer {
+    margin: 8px 10px 0;
+    border:1px solid rgba(255,255,255,.85);
+    border-radius:20px 20px 0 0;
+    background:rgba(248,250,252,.82);
+    backdrop-filter:blur(14px);
+  }
+  @media (max-width: 640px) {
+    body { font-size:16px; line-height:1.6; }
+    .app-header { margin:0 8px; border-radius:0 0 22px 22px; }
+    .em-card, .hero-summary, .hero-vitals { border-radius:22px; }
+  }
 </style>
 </head>
-<body class="bg-slate-50 text-slate-800">
-<div class="max-w-2xl mx-auto px-4 py-6">
+<body>
+<div class="app-shell">
 
-  <!-- Header -->
-  <div class="bg-gradient-to-br from-rose-600 to-red-700 text-white rounded-2xl p-6 mb-4 shadow-lg">
-    <div class="flex items-center gap-3 mb-2">
-      <span class="text-2xl">🚨</span>
-      <h1 class="text-xl font-bold">2026年06月11日 异常报告</h1>
+  <div class="app-header sticky top-0 z-50 px-4 py-3 shadow-sm">
+    <div class="flex items-center justify-between gap-3">
+      <div>
+        <h1 class="text-lg font-bold text-slate-900">2026年07月06日 异常报告</h1>
+        <p class="text-xs text-slate-500">2026年05月13日 10:15</p>
+      </div>
+      <span class="status-pill inline-flex items-center gap-1 bg-rose-100 text-rose-800 px-3 py-1.5 rounded-full text-xs font-semibold">🚨 请立即就医</span>
     </div>
-    <p class="text-sm opacity-80">2026年05月13日 10:15</p>
-    <div class="flex items-center gap-2 mt-3">
-      <span class="inline-flex items-center gap-1 bg-rose-100 text-rose-800 px-3 py-1 rounded-full text-xs font-semibold">🚨 请立即就医</span>
-      <span class="inline-block bg-slate-500 text-white px-3 py-1 rounded-full text-xs font-semibold">Hypertension</span>
-<span class="inline-block bg-slate-500 text-white px-3 py-1 rounded-full text-xs font-semibold">Type 2 diabetes</span>
-<span class="inline-block bg-slate-500 text-white px-3 py-1 rounded-full text-xs font-semibold">Coronary artery disease</span>
-    </div>
+    <div class="flex gap-1.5 mt-2 flex-wrap"><span class="condition-chip inline-block bg-slate-500 text-white px-3 py-1 rounded-full text-xs font-semibold">Hypertension</span>
+<span class="condition-chip inline-block bg-slate-500 text-white px-3 py-1 rounded-full text-xs font-semibold">Type 2 diabetes</span>
+<span class="condition-chip inline-block bg-slate-500 text-white px-3 py-1 rounded-full text-xs font-semibold">Coronary artery disease</span></div>
   </div>
 
-  <!-- Situation Summary -->
-  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
-    <div class="flex items-center gap-2 mb-3 pb-3 border-b border-slate-100">
-      <span class="text-lg">📋</span>
-      <h2 class="text-sm font-bold text-slate-800">当前情况</h2>
-    </div>
-    <p class="text-sm text-slate-700 leading-relaxed">Your blood pressure reading of 186/118 mmHg is significantly above the safe range, and your heart rate is elevated at 102 bpm. You also reported feeling dizzy this morning. These readings indicate a hypertensive urgency that needs immediate attention.</p>
+  <div class="px-3 pt-3">
+    <section class="hero-summary">
+      <div class="hero-summary-badge mb-3">🚨 先按下面步骤处理当前情况</div>
+      <div class="text-sm font-bold text-slate-900 mb-2">当前发生了什么</div>
+      <p class="text-sm text-slate-700 leading-relaxed">Your blood pressure reading of 186/118 mmHg is significantly above the safe range, and your heart rate is elevated at 102 bpm. You also reported feeling dizzy this morning. These readings indicate a hypertensive urgency that needs immediate attention.</p>
+    </section>
   </div>
 
-  <!-- Physician Status -->
-  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
-    <div class="flex items-center gap-2 mb-3 pb-3 border-b border-slate-100">
-      <span class="text-lg">👨‍⚕️</span>
-      <h2 class="text-sm font-bold text-slate-800">医生回复</h2>
-    </div>
-    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border bg-blue-50 text-blue-700 border-blue-200 mb-3">👁️ 您的医生已查看您的读数。</div><div class="text-sm text-slate-700 bg-slate-50 rounded-lg p-3 leading-relaxed border border-slate-100">Your doctor has reviewed your readings and is concerned about the high blood pressure. They are adding a new medication (losartan 50mg) to your regimen and will follow up within the hour. In the meantime, you need to rest and monitor closely.</div>
+  <div class="px-3 pt-3">
+    <section class="hero-vitals">
+      <div class="flex items-center gap-2 mb-3">
+        <span class="section-kicker">📊</span>
+        <div>
+          <div class="text-sm font-bold text-slate-900">当前体征</div>
+          <div class="text-xs text-slate-500 mt-1">这些是本次异常提醒最相关的最新数据。</div>
+        </div>
+      </div>
+      <div class="hero-vitals-grid"><div class="hero-vital-card"><div class="hero-vital-top"><div><div class="hero-vital-label">血压</div><div class="hero-vital-value">186/118</div></div><div class="hero-vital-icon">💓</div></div><div class="hero-vital-range">mmHg</div></div>
+<div class="hero-vital-card"><div class="hero-vital-top"><div><div class="hero-vital-label">心率</div><div class="hero-vital-value">102</div></div><div class="hero-vital-icon">❤️</div></div><div class="hero-vital-range">bpm</div></div>
+<div class="hero-vital-card"><div class="hero-vital-top"><div><div class="hero-vital-label">血氧</div><div class="hero-vital-value">94</div></div><div class="hero-vital-icon">🫁</div></div><div class="hero-vital-range">%</div></div>
+<div class="hero-vital-card"><div class="hero-vital-top"><div><div class="hero-vital-label">血糖</div><div class="hero-vital-value">7.2</div></div><div class="hero-vital-icon">🩸</div></div><div class="hero-vital-range">mmol/L</div></div></div>
+    </section>
   </div>
 
-  <!-- Doctor's Detailed Notes -->
-  <div class="bg-white rounded-xl shadow-sm border border-blue-100 p-5 mb-3"><div class="flex items-center gap-2 mb-3 pb-3 border-b border-blue-50"><span class="text-lg">📋</span><div class="flex-1"><h2 class="text-sm font-bold text-slate-800">Dr. Robert Chen的详细反馈</h2><div class="text-[10px] text-slate-400">2026年05月13日 10:20</div></div></div><div class="text-sm text-slate-700 bg-blue-50 rounded-lg p-3 leading-relaxed border border-blue-100 mb-3" style="border-left:3px solid #3b82f6">I&#x27;ve reviewed James&#x27;s readings and this is a hypertensive urgency. Add losartan 50mg now. Do not take an extra dose of amlodipine. If BP remains above 180/120 after 30 minutes of rest, go to the ER.</div><div class="mt-2"><div class="text-[11px] text-slate-500 font-semibold mb-2">用药调整</div><div class="space-y-2"><div class="text-xs text-blue-700 bg-blue-50 rounded px-3 py-2 border border-blue-100">💊 add: Losartan 50mg once daily, starting now</div></div></div></div>
-
-  <!-- Current Vitals -->
-  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
-    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
-      <span class="text-lg">📊</span>
-      <h2 class="text-sm font-bold text-slate-800">当前体征</h2>
-    </div>
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2"><div class="bg-slate-50 rounded-lg p-3 text-center border border-slate-100"><div class="text-lg mb-0.5">💓</div><div class="text-[11px] text-slate-500 font-medium mb-1">血压</div><div class="text-xl font-bold text-slate-800">186/118</div><div class="text-[10px] text-slate-400">mmHg</div></div>
-<div class="bg-slate-50 rounded-lg p-3 text-center border border-slate-100"><div class="text-lg mb-0.5">❤️</div><div class="text-[11px] text-slate-500 font-medium mb-1">心率</div><div class="text-xl font-bold text-slate-800">102</div><div class="text-[10px] text-slate-400">bpm</div></div>
-<div class="bg-slate-50 rounded-lg p-3 text-center border border-slate-100"><div class="text-lg mb-0.5">🫁</div><div class="text-[11px] text-slate-500 font-medium mb-1">血氧</div><div class="text-xl font-bold text-slate-800">94</div><div class="text-[10px] text-slate-400">%</div></div>
-<div class="bg-slate-50 rounded-lg p-3 text-center border border-slate-100"><div class="text-lg mb-0.5">🩸</div><div class="text-[11px] text-slate-500 font-medium mb-1">血糖</div><div class="text-xl font-bold text-slate-800">7.2</div><div class="text-[10px] text-slate-400">mmol/L</div></div></div>
+  <div class="px-3 pt-3">
+    <section class="em-card">
+      <div class="section-head">
+        <span class="section-kicker">👨‍⚕️</span>
+        <div class="text-sm font-bold text-slate-900">医生回复</div>
+      </div>
+      <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border bg-blue-50 text-blue-700 border-blue-200 mb-3">👁️ 您的医生已查看您的读数。</div><div class="text-sm text-slate-700 bg-slate-50 rounded-lg p-3 leading-relaxed border border-slate-100">Your doctor has reviewed your readings and is concerned about the high blood pressure. They are adding a new medication (losartan 50mg) to your regimen and will follow up within the hour. In the meantime, you need to rest and monitor closely.</div>
+    </section>
   </div>
 
-  <!-- Immediate Actions -->
-  <div class="bg-white rounded-xl shadow-sm border border-rose-200 p-5 mb-3">
-    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-rose-100">
-      <span class="text-lg">🚨</span>
-      <h2 class="text-sm font-bold text-rose-700">请立即执行</h2>
-    </div>
-    <div class="space-y-2"><div class="flex items-start gap-3 bg-rose-50 rounded-lg p-3 border border-rose-100"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-rose-600 text-white text-xs font-bold flex items-center justify-center mt-0.5">1</span><div class="text-sm text-slate-700 leading-relaxed">Sit down in a comfortable position and try to stay calm. Do not exert yourself.</div></div>
-<div class="flex items-start gap-3 bg-rose-50 rounded-lg p-3 border border-rose-100"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-rose-600 text-white text-xs font-bold flex items-center justify-center mt-0.5">2</span><div class="text-sm text-slate-700 leading-relaxed">Retake your blood pressure in 15 minutes and write down the result.</div></div>
-<div class="flex items-start gap-3 bg-rose-50 rounded-lg p-3 border border-rose-100"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-rose-600 text-white text-xs font-bold flex items-center justify-center mt-0.5">3</span><div class="text-sm text-slate-700 leading-relaxed">If your blood pressure is still above 180/120 or you feel chest pain, severe headache, or vision changes, call 911 immediately.</div></div>
-<div class="flex items-start gap-3 bg-rose-50 rounded-lg p-3 border border-rose-100"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-rose-600 text-white text-xs font-bold flex items-center justify-center mt-0.5">4</span><div class="text-sm text-slate-700 leading-relaxed">Take your regular amlodipine if you haven&#x27;t already today.</div></div>
-<div class="flex items-start gap-3 bg-rose-50 rounded-lg p-3 border border-rose-100"><span class="flex-shrink-0 w-6 h-6 rounded-full bg-rose-600 text-white text-xs font-bold flex items-center justify-center mt-0.5">5</span><div class="text-sm text-slate-700 leading-relaxed">Do not eat salty food or drink caffeine right now.</div></div></div>
+  <div class="px-3 pt-1"><div class="bg-white rounded-xl shadow-sm border border-blue-100 p-5 mb-3"><div class="flex items-center gap-2 mb-3 pb-3 border-b border-blue-50"><span class="text-lg">📋</span><div class="flex-1"><h2 class="text-sm font-bold text-slate-800">Dr. Robert Chen的详细反馈</h2><div class="text-[10px] text-slate-400">2026年05月13日 10:20</div></div></div><div class="text-sm text-slate-700 bg-blue-50 rounded-lg p-3 leading-relaxed border border-blue-100 mb-3" style="border-left:3px solid #3b82f6">I&#x27;ve reviewed James&#x27;s readings and this is a hypertensive urgency. Add losartan 50mg now. Do not take an extra dose of amlodipine. If BP remains above 180/120 after 30 minutes of rest, go to the ER.</div><div class="mt-2"><div class="text-[11px] text-slate-500 font-semibold mb-2">用药调整</div><div class="space-y-2"><div class="text-xs text-blue-700 bg-blue-50 rounded px-3 py-2 border border-blue-100">💊 add: Losartan 50mg once daily, starting now</div></div></div></div></div>
+
+  <div class="px-3 pt-2">
+    <section class="em-card em-card-danger">
+      <div class="section-head">
+        <span class="section-kicker">🚨</span>
+        <div class="text-sm font-bold text-rose-700">现在就做</div>
+      </div>
+      <div><div class="action-step"><span class="action-step-index">1</span><div class="action-step-copy">Sit down in a comfortable position and try to stay calm. Do not exert yourself.</div></div>
+<div class="action-step"><span class="action-step-index">2</span><div class="action-step-copy">Retake your blood pressure in 15 minutes and write down the result.</div></div>
+<div class="action-step"><span class="action-step-index">3</span><div class="action-step-copy">If your blood pressure is still above 180/120 or you feel chest pain, severe headache, or vision changes, call 911 immediately.</div></div>
+<div class="action-step"><span class="action-step-index">4</span><div class="action-step-copy">Take your regular amlodipine if you haven&#x27;t already today.</div></div>
+<div class="action-step"><span class="action-step-index">5</span><div class="action-step-copy">Do not eat salty food or drink caffeine right now.</div></div></div>
+    </section>
   </div>
 
-  <!-- Monitoring Plan -->
-  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
-    <div class="flex items-center gap-2 mb-3 pb-3 border-b border-slate-100">
-      <span class="text-lg">⏱️</span>
-      <h2 class="text-sm font-bold text-slate-800">监测计划</h2>
-    </div>
-    <div class="flex items-start gap-3 bg-slate-50 rounded-lg p-3 border border-slate-100"><span class="text-base mt-0.5">📌</span><div><div class="text-[11px] text-slate-500 font-medium uppercase tracking-wide">监测内容</div><div class="text-sm text-slate-700 mt-0.5">Blood pressure, heart rate, and any symptoms (dizziness, headache, chest pain, vision changes)</div></div></div>
-<div class="flex items-start gap-3 bg-slate-50 rounded-lg p-3 border border-slate-100"><span class="text-base mt-0.5">🔄</span><div><div class="text-[11px] text-slate-500 font-medium uppercase tracking-wide">监测频率</div><div class="text-sm text-slate-700 mt-0.5">Every 15 minutes for the next hour, then every 30 minutes</div></div></div>
-<div class="flex items-start gap-3 bg-slate-50 rounded-lg p-3 border border-slate-100"><span class="text-base mt-0.5">📅</span><div><div class="text-[11px] text-slate-500 font-medium uppercase tracking-wide">下次回访</div><div class="text-sm text-slate-700 mt-0.5">The system will check on you in 30 minutes. Your doctor will follow up within 1 hour.</div></div></div>
+  <div class="px-3 pt-2">
+    <section class="em-card">
+      <div class="section-head">
+        <span class="section-kicker">⏱️</span>
+        <div class="text-sm font-bold text-slate-900">监测计划</div>
+      </div>
+      <div class="monitor-row"><span class="text-base mt-0.5">📌</span><div><div class="monitor-row-label">监测内容</div><div class="monitor-row-value">Blood pressure, heart rate, and any symptoms (dizziness, headache, chest pain, vision changes)</div></div></div>
+<div class="monitor-row"><span class="text-base mt-0.5">🔄</span><div><div class="monitor-row-label">监测频率</div><div class="monitor-row-value">Every 15 minutes for the next hour, then every 30 minutes</div></div></div>
+<div class="monitor-row"><span class="text-base mt-0.5">📅</span><div><div class="monitor-row-label">下次回访</div><div class="monitor-row-value">The system will check on you in 30 minutes. Your doctor will follow up within 1 hour.</div></div></div>
+    </section>
   </div>
 
-  <!-- Nearest Care + Map -->
-  <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">
-    <div class="flex items-center gap-2 mb-3 pb-3 border-b border-slate-100">
-      <span class="text-lg">🏥</span>
-      <h2 class="text-sm font-bold text-slate-800">就医指引</h2>
-    </div>
-    <p class="text-sm text-slate-700 leading-relaxed mb-3">If your symptoms worsen or your blood pressure stays above 180/120 after retaking it, please go to the nearest emergency room. You can call 911 for an ambulance, or ask a neighbor to drive you. Do not drive yourself.</p>
+  <div class="px-3 pt-2">
+    <section class="em-card">
+      <div class="section-head">
+        <span class="section-kicker">🏥</span>
+        <div class="text-sm font-bold text-slate-900">就医指引</div>
+      </div>
+      <div class="care-card">If your symptoms worsen or your blood pressure stays above 180/120 after retaking it, please go to the nearest emergency room. You can call 911 for an ambulance, or ask a neighbor to drive you. Do not drive yourself.</div>
+    </section>
   </div>
-  <style>#bmap{width:100%;height:100%}#locate-btn{position:absolute;bottom:12px;right:12px;z-index:999;width:38px;height:38px;border-radius:50%;border:none;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.2);cursor:pointer;font-size:1.1em;display:flex;align-items:center;justify-content:center}#locate-btn:active{transform:scale(0.92)}.map-place{display:flex;align-items:center;gap:10px;background:#f8fafc;border-radius:10px;padding:12px;margin-top:8px;cursor:pointer;border:2px solid transparent;transition:all 0.15s}.map-place:active{transform:scale(0.98)}.map-place.focused{border-color:#1e88e5;box-shadow:0 2px 10px rgba(30,136,229,0.15)}.map-place-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1em;flex-shrink:0;background:#e3f2fd}.map-place-nav{flex-shrink:0;width:30px;height:30px;border-radius:50%;border:none;background:#1e88e5;color:#fff;font-size:0.9em;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(30,136,229,0.35)}.map-place-nav:active{transform:scale(0.9)}.map-dist{font-size:0.75em;font-weight:700;padding:3px 8px;border-radius:16px;white-space:nowrap;flex-shrink:0;background:#e3f2fd;color:#1565c0}</style>
+
+  <div class="px-3 pt-2 pb-3">
+    <style>#bmap{width:100%;height:100%}#locate-btn{position:absolute;bottom:12px;right:12px;z-index:999;width:38px;height:38px;border-radius:50%;border:none;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.2);cursor:pointer;font-size:1.1em;display:flex;align-items:center;justify-content:center}#locate-btn:active{transform:scale(0.92)}.map-place{display:flex;align-items:center;gap:10px;background:#f8fafc;border-radius:10px;padding:12px;margin-top:8px;cursor:pointer;border:2px solid transparent;transition:all 0.15s}.map-place:active{transform:scale(0.98)}.map-place.focused{border-color:#1e88e5;box-shadow:0 2px 10px rgba(30,136,229,0.15)}.map-place-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1em;flex-shrink:0;background:#e3f2fd}.map-place-nav{flex-shrink:0;width:30px;height:30px;border-radius:50%;border:none;background:#1e88e5;color:#fff;font-size:0.9em;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(30,136,229,0.35)}.map-place-nav:active{transform:scale(0.9)}.map-dist{font-size:0.75em;font-weight:700;padding:3px 8px;border-radius:16px;white-space:nowrap;flex-shrink:0;background:#e3f2fd;color:#1565c0}</style>
 <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3"><div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100"><span class="text-lg">📍</span><h2 class="text-sm font-bold text-slate-800">附近医院</h2></div><p class="text-sm text-slate-600 mb-3" id="ai-map-text">下方为您查询了附近医院。若症状加重，请尽快前往最近的一家或拨打 120。</p><div class="rounded-2xl overflow-hidden border border-slate-200 relative" style="height:240px"><div id="bmap"></div><button id="locate-btn" title="回到我的位置">📍</button></div><div id="map-cards"></div></div>
 <script>
 (function() {
@@ -241,13 +472,12 @@
   }
 })();
 </script>
-
-  <!-- Guardrail -->
-  <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
-    <p class="text-xs text-amber-800 leading-relaxed">This instruction was generated by an AI health assistant for guidance only. It is not a medical diagnosis. If you feel unwell or your condition worsens, call 911 or go to the nearest emergency room immediately. Always follow your doctor&#x27;s advice.</p>
   </div>
 
-  <div class="text-center text-xs text-slate-400 pb-6">AI 健康管家 · 紧急指引仅供参考，请遵医嘱</div>
+  <div class="app-footer px-4 py-3">
+    <p class="text-[11px] text-slate-400 text-center leading-relaxed">This instruction was generated by an AI health assistant for guidance only. It is not a medical diagnosis. If you feel unwell or your condition worsens, call 911 or go to the nearest emergency room immediately. Always follow your doctor&#x27;s advice.</p>
+  </div>
+
 </div>
 </body>
 </html>

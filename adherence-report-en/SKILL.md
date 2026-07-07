@@ -20,6 +20,9 @@ This report is for the **patient** (solo older adult)—warm, readable, moderate
 ## Input rules
 
 - Use **only** data present in the payload; do not invent vitals, diagnoses, or numbers.
+- The report should **prefer the patient's own concrete facts** over generic disease-level advice.
+  - If the payload includes history, surgery, current medications, medication reactions, abnormal readings, device anomalies, or monitoring gaps, try to surface them in `assistant_message_patient`, `health_guidance.summary`, `health_guidance.tips[].why`, and `recommendations[].reason`.
+  - Recommendations should answer: "Why does this matter for this patient right now?" For example: because of post-surgery recovery, metformin-related nausea, recent glucose elevation, or declining step count.
 - Source priority:
   1. `latest_health` — latest vitals (BP, HR, SpO2, glucose, steps)
   2. `memory.patient_long_term_profile` — demographics, history, medications
@@ -44,9 +47,12 @@ This report is for the **patient** (solo older adult)—warm, readable, moderate
      - `cuisine_preferences`: array of cuisine names (e.g. `["Cantonese", "Italian"]`) — use to guide `weekly_meal_plan` food choices
      - `liked`: items the patient previously marked as helpful/enjoyable — prefer similar recommendations
      - `disliked`: items the patient rejected + reason — avoid similar recommendations
+  11. `memory.case_history` / `memory.clinical_notes` / `memory.doctor_notes` (future optional) — fuller chart summary, physician notes, surgery and complication context
+  12. `memory.latest_labs` / `outlier_analysis` (future optional) — recent bloodwork, urine tests, imaging, or summarized abnormal markers
 - If `latest_health` is empty or all null, infer the latest values from `memory.recent_health_dynamics` or `signals.summary_text` and fill `latest_health_summary` accordingly.
 - When a dimension has no data, use empty strings or empty arrays—do not fabricate.
 - When `user_preference.cuisine_preferences` is present, the `weekly_meal_plan` **must** reflect those cuisines (e.g., if patient prefers Cantonese, suggest congee, steamed fish, bok choy stir-fry instead of oatmeal and salmon).
+- If future chart fields appear (stent history, post-op complications, doctor notes, lab abnormalities), treat them as high-priority evidence and explain how they change nutrition, activity, monitoring, or medication advice.
 
 ## Output format
 
@@ -61,6 +67,10 @@ Strict JSON, top-level keys:
     - `type`: `"good_news"` | `"attention"` | `"plan"` | `"encouragement"` — determines icon and color
     - `title`: short label (e.g. "Good news", "Things to watch", "What we've prepared", "You've got this")
     - `content`: 1-2 sentences for that section
+  - `personalized_evidence` (recommended):
+    - 3-5 items, each shaped like `{ "title": "...", "evidence": "...", "why_it_matters": "...", "category": "history|surgery|medication|lab|symptom|monitoring" }`
+    - This should explicitly tell the patient which facts drove the current advice: history, medication reactions, recovery stage, abnormal tests, or recent monitoring changes
+    - If medication side effects, post-op recovery, or abnormal tests are present, try to cover them directly
   - `adherence_analysis`: object with:
     - `period`: string, e.g. `"Past 14 days"`
     - `medication`: object `{ "status": "...", "issues": "...", "adjustments": "..." }`
@@ -95,6 +105,8 @@ Strict JSON, top-level keys:
     - authority: "Your surgeon recommends increased protein to ensure proper healing of the surgical site."
     - gentle: "Don't worry too much — just try to have a little protein when you eat, even a few bites help your knee heal."
 - Reference specific recent events from the payload (e.g. "Over the past two weeks, your appetite has been lower than usual...").
+- If the payload includes a specific medication name, procedure, date, abnormal lab, or physician note, keep that anchor in the wording whenever possible instead of flattening it into vague phrases like "your recent health has been unstable."
+- `recommendations[].reason` should not stop at "helpful for hypertension" or "good for diabetes." Make it as patient-specific as the data allows: "Because you recently..." or "Since your recovery is still..."
 - No new diagnoses beyond what the payload supports.
 - If sources conflict, note it in `reasoning`.
 - Meal plan: exactly **3 days**; keep each `benefit` short.

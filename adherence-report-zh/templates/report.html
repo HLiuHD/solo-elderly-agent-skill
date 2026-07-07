@@ -7,10 +7,120 @@
 <script src="https://cdn.tailwindcss.com"></script>
 {maps_script}
 <style>
-  body {{ font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; margin:0; padding:0; -webkit-text-size-adjust:100%; }}
+  :root {{
+    --app-bg-top: #f7fbff;
+    --app-bg-bottom: #edf4ff;
+    --app-ink: #0f172a;
+    --app-muted: #64748b;
+    --app-line: rgba(148, 163, 184, 0.24);
+    --app-card-shadow: 0 16px 36px rgba(15,23,42,.08), 0 3px 10px rgba(15,23,42,.05);
+    --app-card-shadow-strong: 0 22px 46px rgba(15,23,42,.12), 0 10px 22px rgba(15,23,42,.08);
+    --app-icon-shadow: 0 10px 22px rgba(148,163,184,.24), inset 0 1px 0 rgba(255,255,255,.95), inset 0 -10px 16px rgba(15,23,42,.08);
+  }}
+  body {{
+    font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    margin:0;
+    padding:0;
+    -webkit-text-size-adjust:100%;
+    color: var(--app-ink);
+    background:
+      radial-gradient(circle at top left, rgba(96,165,250,.18), transparent 28%),
+      radial-gradient(circle at top right, rgba(52,211,153,.16), transparent 24%),
+      linear-gradient(180deg, var(--app-bg-top) 0%, var(--app-bg-bottom) 100%);
+    min-height:100vh;
+    position:relative;
+  }}
+  body::before {{
+    content:"";
+    position:fixed;
+    inset:0;
+    background:
+      linear-gradient(135deg, rgba(255,255,255,.22), transparent 36%),
+      repeating-linear-gradient(180deg, rgba(255,255,255,.06) 0 1px, transparent 1px 18px);
+    pointer-events:none;
+    opacity:.65;
+  }}
   * {{ box-sizing: border-box; }}
+  .app-shell {{
+    position:relative;
+    isolation:isolate;
+  }}
+  .app-shell::before {{
+    content:"";
+    position:absolute;
+    inset:14px 12px auto;
+    height:120px;
+    border-radius:28px;
+    background:linear-gradient(180deg, rgba(255,255,255,.95), rgba(255,255,255,.35));
+    box-shadow:0 14px 36px rgba(148,163,184,.18);
+    filter:blur(8px);
+    z-index:-1;
+  }}
+  .app-header {{
+    margin:0 10px;
+    border:1px solid rgba(255,255,255,.8);
+    border-top:none;
+    border-radius:0 0 24px 24px;
+    background:linear-gradient(180deg, rgba(255,255,255,.92), rgba(248,250,252,.82));
+    backdrop-filter:blur(20px) saturate(1.3);
+    box-shadow:0 16px 30px rgba(15,23,42,.09), inset 0 1px 0 rgba(255,255,255,.95);
+  }}
+  .status-pill {{
+    box-shadow:0 8px 18px rgba(251,191,36,.18), inset 0 1px 0 rgba(255,255,255,.65);
+  }}
+  .condition-chip {{
+    box-shadow:0 8px 18px rgba(15,23,42,.12), inset 0 1px 0 rgba(255,255,255,.35);
+    transform:translateY(0);
+    transition:transform .18s ease, box-shadow .18s ease;
+  }}
+  .context-chip {{
+    display:inline-flex;
+    align-items:center;
+    padding:6px 10px;
+    border-radius:999px;
+    font-size:.74rem;
+    font-weight:700;
+    color:#334155;
+    background:linear-gradient(180deg, #ffffff 0%, #eff6ff 100%);
+    border:1px solid rgba(203,213,225,.95);
+    box-shadow:0 6px 14px rgba(148,163,184,.12);
+  }}
+  .condition-chip:hover {{
+    transform:translateY(-1px);
+    box-shadow:0 12px 24px rgba(15,23,42,.16), inset 0 1px 0 rgba(255,255,255,.35);
+  }}
+  .ai-panel {{
+    border:1px solid rgba(255,255,255,.9);
+    background:linear-gradient(180deg, rgba(255,255,255,.94), rgba(248,250,252,.88));
+    box-shadow:var(--app-card-shadow);
+  }}
+  .top-overview-panel {{
+    border:1px solid rgba(255,255,255,.92);
+    background:linear-gradient(180deg, rgba(239,246,255,.96), rgba(248,250,252,.92));
+    box-shadow:var(--app-card-shadow);
+  }}
+  .ai-panel-kicker {{
+    width:34px;
+    height:34px;
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(180deg, #f8fbff 0%, #ddeafe 100%);
+    box-shadow:var(--app-icon-shadow);
+  }}
+  .top-overview-kicker {{
+    width:34px;
+    height:34px;
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(180deg, #ffffff 0%, #dbeafe 100%);
+    box-shadow:var(--app-icon-shadow);
+  }}
   .meal-card {{ transition: all .2s; }}
-  .meal-card:hover {{ transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.08); }}
+  .meal-card:hover {{ transform: translateY(-2px); box-shadow: 0 12px 24px rgba(15,23,42,.1); }}
   .feedback-actions {{ display:flex; flex-direction:column; gap:6px; align-self:stretch; }}
   .feedback-btn {{
     opacity:1;
@@ -40,18 +150,18 @@
   .feedback-btn.feedback-skip:hover {{ background:#f8fafc; border-color:#cbd5e1; }}
   .feedback-btn.liked {{ color:#fff; background:#059669; border-color:#059669; box-shadow:0 0 0 3px rgba(5,150,105,.16); }}
   .feedback-btn.disliked {{ color:#fff; background:#64748b; border-color:#64748b; box-shadow:0 0 0 3px rgba(100,116,139,.16); }}
-  .section-card[data-section="meal_plan"] #mealContent .grid {{
+  .section-card[data-section="meal_bundle"] #mealContent .grid {{
     grid-template-columns:1fr !important;
     gap:12px !important;
   }}
-  .section-card[data-section="meal_plan"] .meal-card {{
+  .section-card[data-section="meal_bundle"] .meal-card {{
     display:grid !important;
     grid-template-columns:auto minmax(0,1fr);
     align-items:start;
     gap:12px;
     padding:14px !important;
   }}
-  .section-card[data-section="meal_plan"] .meal-card > div:last-child {{
+  .section-card[data-section="meal_bundle"] .meal-card > div:last-child {{
     grid-column:1 / -1;
     display:grid !important;
     grid-template-columns:repeat(2,minmax(0,1fr));
@@ -59,7 +169,7 @@
     width:100%;
     margin-top:4px;
   }}
-  .section-card[data-section="meal_plan"] .meal-card .feedback-btn {{
+  .section-card[data-section="meal_bundle"] .meal-card .feedback-btn {{
     opacity:1 !important;
     width:100%;
     min-width:0;
@@ -78,18 +188,26 @@
 
   /* ─── Card/Accordion Layout (Message Center Style) ─── */
   .section-card {{
-    border-radius: 18px;
+    border-radius: 24px;
     overflow: hidden;
-    margin-bottom: 14px;
-    border: 2px solid #e8ecf0;
-    background: #fff;
-    transition: border-color .25s, box-shadow .25s, transform .15s;
-    box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    margin-bottom: 16px;
+    border: 1px solid rgba(255,255,255,.95);
+    background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(246,249,252,.96));
+    transition: border-color .25s, box-shadow .25s, transform .18s ease;
+    box-shadow: var(--app-card-shadow);
+    position:relative;
   }}
-  .section-card:active {{ transform: scale(0.985); }}
+  .section-card::before {{
+    content:"";
+    position:absolute;
+    inset:0;
+    background:linear-gradient(180deg, rgba(255,255,255,.55), transparent 28%);
+    pointer-events:none;
+  }}
+  .section-card:active {{ transform: scale(0.988) translateY(1px); }}
   .section-card.expanded {{
-    border-color: #6ee7b7;
-    box-shadow: 0 6px 24px rgba(16,185,129,.12);
+    border-color: rgba(110,231,183,.68);
+    box-shadow: var(--app-card-shadow-strong);
   }}
   .section-card-header {{
     display: flex;
@@ -100,7 +218,7 @@
     user-select: none;
     min-height: 88px;
   }}
-  .section-card-header:hover {{ background: #fafbfc; }}
+  .section-card-header:hover {{ background: rgba(255,255,255,.28); }}
   .section-card-icon {{
     font-size: 1.8em;
     flex-shrink: 0;
@@ -109,7 +227,20 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 16px;
+    border-radius: 18px;
+    box-shadow: var(--app-icon-shadow);
+    border: 1px solid rgba(255,255,255,.72);
+    position:relative;
+    transform: translateY(-1px);
+  }}
+  .section-card-icon::after {{
+    content:"";
+    position:absolute;
+    inset:7px 8px auto;
+    height:14px;
+    border-radius:999px;
+    background:rgba(255,255,255,.42);
+    filter:blur(1px);
   }}
   .section-card-title {{
     font-size: 1.2em;
@@ -139,11 +270,13 @@
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    background: #f1f5f9;
+    background: linear-gradient(180deg, #ffffff 0%, #e8f0fb 100%);
+    border:1px solid rgba(255,255,255,.9);
+    box-shadow: 0 8px 18px rgba(148,163,184,.18), inset 0 1px 0 rgba(255,255,255,.85);
   }}
   .section-card.expanded .section-card-arrow {{
     transform: rotate(180deg);
-    background: #d1fae5;
+    background: linear-gradient(180deg, #f0fdf4 0%, #c9f7dd 100%);
     color: #065f46;
   }}
   .section-card-body {{
@@ -160,16 +293,22 @@
 
   /* ─── Sub-card (nested tap-to-expand items) ─── */
   .sub-card {{
-    border-radius: 12px;
-    margin-bottom: 8px;
-    border: 1px solid #f1f5f9;
-    background: #f8fafc;
+    border-radius: 18px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(255,255,255,.92);
+    background: linear-gradient(180deg, #fbfdff 0%, #f4f8fc 100%);
     overflow: hidden;
-    transition: border-color .2s, box-shadow .2s;
+    transition: border-color .2s, box-shadow .2s, transform .18s ease;
+    box-shadow: 0 10px 24px rgba(15,23,42,.05);
   }}
   .sub-card.open {{
     border-color: #d1d5db;
-    box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    box-shadow: 0 16px 30px rgba(15,23,42,.08);
+  }}
+  .sub-card.sub-card-static {{
+    border-color: rgba(226,232,240,.95);
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    box-shadow: 0 12px 24px rgba(15,23,42,.06);
   }}
   .sub-card-header {{
     display: flex;
@@ -180,8 +319,20 @@
     user-select: none;
     min-height: 52px;
   }}
-  .sub-card-header:active {{ background: #f1f5f9; }}
-  .sub-card-icon {{ font-size: 1.3em; flex-shrink: 0; }}
+  .sub-card-header:active {{ background: rgba(241,245,249,.62); }}
+  .sub-card-icon {{
+    font-size: 1.15em;
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    border-radius: 13px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background: linear-gradient(180deg, #ffffff 0%, #e6eef8 100%);
+    border: 1px solid rgba(255,255,255,.92);
+    box-shadow: 0 10px 20px rgba(148,163,184,.18), inset 0 1px 0 rgba(255,255,255,.95);
+  }}
   .sub-card-label {{ font-size: 0.82em; color: #64748b; line-height: 1.2; }}
   .sub-card-value {{ font-size: 1.05em; font-weight: 700; color: #1e293b; line-height: 1.3; }}
   .sub-card-arrow {{ margin-left: auto; font-size: 0.7em; color: #94a3b8; transition: transform .3s; }}
@@ -198,23 +349,43 @@
     padding: 12px 16px 14px 16px;
     border-top: 1px solid #e8ecf0;
   }}
+  .sub-card.sub-card-static .sub-card-header {{
+    align-items: flex-start;
+    cursor: default;
+    min-height: 0;
+    padding-bottom: 8px;
+  }}
+  .sub-card.sub-card-static .sub-card-header:active {{ background: transparent; }}
+  .sub-card.sub-card-static .sub-card-arrow {{ display: none; }}
+  .sub-card.sub-card-static .sub-card-body {{
+    max-height: none;
+    overflow: visible;
+    padding: 0 16px 14px 16px;
+    border-top: none;
+  }}
+  .sub-card.sub-card-static .sub-card-value {{
+    margin-bottom: 2px;
+  }}
 
   /* ─── Mobile-First App Layout ─── */
   @media (max-width: 640px) {{
     body {{ font-size: 16px; line-height: 1.6; }}
     .max-w-md {{ max-width: 100% !important; padding: 0 !important; }}
+    .app-shell::before {{ inset:10px 8px auto; height:110px; }}
+    .app-header {{ margin:0 8px; border-radius:0 0 22px 22px; }}
 
     /* Section cards full width, less rounded */
-    .section-card {{ border-radius: 14px; margin-bottom: 10px; }}
+    .section-card {{ border-radius: 20px; margin-bottom: 12px; }}
     .section-card-header {{ padding: 16px 14px; min-height: 72px; gap: 12px; }}
-    .section-card-icon {{ width: 46px; height: 46px; font-size: 1.5em; border-radius: 12px; }}
+    .section-card-icon {{ width: 50px; height: 50px; font-size: 1.45em; border-radius: 16px; }}
     .section-card-title {{ font-size: 1.05em; }}
     .section-card-summary {{ font-size: 0.8em; }}
     .section-card-body {{ padding-left: 14px !important; padding-right: 14px !important; }}
 
     /* Sub-cards touch-friendly */
-    .sub-card {{ border-radius: 10px; margin-bottom: 6px; }}
+    .sub-card {{ border-radius: 16px; margin-bottom: 8px; }}
     .sub-card-header {{ padding: 14px 14px; min-height: 50px; }}
+    .sub-card-icon {{ width: 36px; height: 36px; border-radius: 12px; }}
     .sub-card-value {{ font-size: 1em; }}
     .sub-card-label {{ font-size: 0.85em; }}
     .sub-card-body .text-sm {{ font-size: 0.95em; }}
@@ -237,14 +408,22 @@
 
   /* ─── Larger screens (tablet+): slightly more breathing room ─── */
   @media (min-width: 641px) {{
-    .max-w-md {{ max-width: 480px; }}
+    .max-w-md {{
+      max-width: 460px;
+      margin-top: 18px;
+      margin-bottom: 28px;
+      border-radius: 34px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.86);
+      box-shadow: 0 30px 60px rgba(15,23,42,.15), 0 8px 18px rgba(15,23,42,.08);
+    }}
     body {{ font-size: 15px; }}
   }}
   .hero-vitals {{
-    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-    border: 1px solid #e2e8f0;
-    border-radius: 22px;
-    box-shadow: 0 12px 32px rgba(15,23,42,.06);
+    background: linear-gradient(180deg, rgba(255,255,255,.98) 0%, rgba(244,248,252,.95) 100%);
+    border: 1px solid rgba(255,255,255,.92);
+    border-radius: 26px;
+    box-shadow: var(--app-card-shadow);
     padding: 18px;
   }}
   .hero-vitals-grid {{
@@ -253,14 +432,15 @@
     gap:12px;
   }}
   .hero-vital-card {{
-    border-radius:18px;
+    border-radius:20px;
     padding:14px;
-    border:1px solid #e2e8f0;
+    border:1px solid rgba(255,255,255,.95);
     background:#fff;
     min-height:132px;
     display:flex;
     flex-direction:column;
     gap:8px;
+    box-shadow:0 12px 24px rgba(15,23,42,.06);
   }}
   .hero-vital-card.good {{
     background:linear-gradient(180deg,#f0fdf4 0%,#ffffff 100%);
@@ -283,12 +463,14 @@
   .hero-vital-icon {{
     width:42px;
     height:42px;
-    border-radius:14px;
+    border-radius:15px;
     display:flex;
     align-items:center;
     justify-content:center;
     font-size:1.3em;
-    background:#f8fafc;
+    background:linear-gradient(180deg,#ffffff 0%, #e6eef8 100%);
+    border:1px solid rgba(255,255,255,.9);
+    box-shadow:var(--app-icon-shadow);
   }}
   .hero-vital-label {{
     font-size:.78em;
@@ -320,9 +502,9 @@
     color:#475569;
   }}
   .module-subsection {{
-    border-top:1px solid #edf2f7;
-    padding-top:14px;
-    margin-top:14px;
+    border-top:1px solid rgba(226,232,240,.78);
+    padding-top:16px;
+    margin-top:16px;
   }}
   .module-subsection:first-child {{
     border-top:none;
@@ -346,33 +528,85 @@
     line-height:1.5;
     margin-bottom:10px;
   }}
+  .app-footer {{
+    margin: 6px 10px 0;
+    border:1px solid rgba(255,255,255,.85);
+    border-radius:20px 20px 0 0;
+    background:rgba(248,250,252,.82);
+    backdrop-filter:blur(14px);
+  }}
+  .submit-cta-shell {{
+    position: sticky;
+    bottom: 14px;
+    z-index: 48;
+    margin: 4px 12px 14px;
+    padding: 10px;
+    border-radius: 24px;
+    border: 1px solid rgba(255,255,255,.88);
+    background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(240,249,255,.82));
+    backdrop-filter: blur(18px) saturate(1.2);
+    box-shadow: 0 18px 36px rgba(15,23,42,.12), inset 0 1px 0 rgba(255,255,255,.95);
+  }}
+  .submit-cta-button {{
+    width: 100%;
+    border: none;
+    border-radius: 20px;
+    padding: 15px 18px;
+    font-size: .98rem;
+    font-weight: 800;
+    color: #fff;
+    background: linear-gradient(135deg, #10b981 0%, #0f9f8a 45%, #0ea5e9 100%);
+    box-shadow: 0 18px 28px rgba(14,165,233,.22), 0 10px 18px rgba(16,185,129,.24), inset 0 1px 0 rgba(255,255,255,.32);
+    transition: transform .18s ease, box-shadow .18s ease, filter .18s ease;
+  }}
+  .submit-cta-button:hover {{
+    transform: translateY(-1px);
+    box-shadow: 0 22px 34px rgba(14,165,233,.26), 0 12px 22px rgba(16,185,129,.28), inset 0 1px 0 rgba(255,255,255,.32);
+    filter: saturate(1.02);
+  }}
+  .submit-cta-button:active {{
+    transform: translateY(1px) scale(.992);
+  }}
+  .submit-cta-button:disabled {{
+    cursor: not-allowed;
+    background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%);
+    box-shadow: 0 10px 18px rgba(148,163,184,.18), inset 0 1px 0 rgba(255,255,255,.32);
+    filter: saturate(.92);
+  }}
+  .submit-cta-hint {{
+    margin-top: 8px;
+    text-align: center;
+    font-size: .74rem;
+    color: #64748b;
+  }}
 </style>
 </head>
-<body class="bg-slate-100 text-slate-800">
-<div class="max-w-md mx-auto px-0 py-0 {layout_class}" style="min-height:100vh">
+<body class="app-body text-slate-800">
+<div class="app-shell max-w-md mx-auto px-0 py-0 {layout_class}" style="min-height:100vh">
 
   <!-- App Header (compact, sticky) -->
-  <div class="sticky top-0 z-50 bg-white border-b border-slate-200 px-4 py-3 shadow-sm">
+  <div class="app-header sticky top-0 z-50 px-4 py-3 shadow-sm">
     <div class="flex items-center justify-between">
       <div>
         <h1 class="text-lg font-bold text-slate-900">{header_greeting}</h1>
         <p class="text-xs text-slate-500">{current_time}</p>
       </div>
-      <span class="inline-flex items-center gap-1 {status_badge_class} px-3 py-1.5 rounded-full text-xs font-semibold">{status_icon} {status_text}</span>
+      <span class="status-pill inline-flex items-center gap-1 {status_badge_class} px-3 py-1.5 rounded-full text-xs font-semibold">{status_icon} {status_text}</span>
     </div>
     <div class="flex gap-1.5 mt-2 flex-wrap">{condition_badges}</div>
   </div>
 
-  <div class="px-3 pt-3">{hero_vitals_html}</div>
+  {hero_vitals_html}
+  {top_overview_html}
 
   <!-- Escalation Banners -->
   <div class="px-3 pt-3">{escalation_html}</div>
 
   <!-- AI Message (modular sub-cards) -->
   <div class="px-3 pt-3 pb-1">
-    <div class="bg-white rounded-2xl border border-slate-200 p-3 shadow-sm">
+    <div class="ai-panel rounded-[28px] p-3 shadow-sm">
       <div class="flex items-center gap-2 mb-2 px-1">
-        <span class="text-base">🤖</span>
+        <span class="ai-panel-kicker text-base">🤖</span>
         <span class="text-xs font-bold text-slate-600 uppercase tracking-wide">AI 健康管家</span>
       </div>
       {ai_message_html}
@@ -384,8 +618,10 @@
     {cards_html}
   </div>
 
+  {submit_cta_html}
+
   <!-- Guardrail (slim footer) -->
-  <div class="px-4 py-3 bg-slate-50 border-t border-slate-200">
+  <div class="app-footer px-4 py-3 bg-slate-50 border-t border-slate-200">
     <p class="text-[11px] text-slate-400 text-center leading-relaxed">{guardrail}</p>
   </div>
 
@@ -501,19 +737,30 @@ window.addEventListener("message", function(event) {{
 }});
 
 function updateExportBadge() {{
+  const shell = document.getElementById("submitCtaShell");
   const btn = document.getElementById("exportFeedbackBtn");
   const hint = document.getElementById("submitHint");
   if (!btn) return;
   const fbCount = Object.keys(feedbackStore).length;
   const cuisineCount = Object.keys(cuisinePrefs).length;
   const total = fbCount + cuisineCount;
+  if (shell) shell.style.display = "block";
   if (total > 0) {{
     btn.textContent = "✓ 提交我的偏好 (" + total + ")";
+    btn.disabled = false;
     btn.style.display = "inline-block";
-    if (hint) hint.style.display = "block";
+    if (hint) {{
+      hint.style.display = "block";
+      hint.textContent = "您的选择会用于下次生成更合适的建议";
+    }}
   }} else {{
-    btn.style.display = "none";
-    if (hint) hint.style.display = "none";
+    btn.disabled = true;
+    btn.textContent = "✓ 先选择偏好再提交";
+    btn.style.display = "inline-block";
+    if (hint) {{
+      hint.style.display = "block";
+      hint.textContent = "请先在上面选择口味或标记适合/不适合";
+    }}
   }}
 }}
 
@@ -689,6 +936,7 @@ document.querySelectorAll(".section-card-header").forEach(function(header) {{
 
 // ─── Sub-card Toggle (tap item to expand its details) ───
 document.querySelectorAll(".sub-card-header").forEach(function(header) {{
+  if (header.closest(".sub-card-static")) return;
   header.addEventListener("click", function(e) {{
     e.stopPropagation();
     header.closest(".sub-card").classList.toggle("open");

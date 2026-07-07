@@ -20,6 +20,9 @@ scripts:
 ## 输入原则
 
 - 只使用 payload 中提供的数据，不编造体征、诊断或数值。
+- 生成内容时，**必须优先引用患者自己的具体事实**，而不是只给疾病层面的通用建议。
+  - 若 payload 中有病史、手术史、当前用药、药物反应、异常指标、设备异常、监测缺口，`assistant_message_patient`、`health_guidance.summary`、`health_guidance.tips[].why`、`recommendations[].reason` 都应尽量点出这些信息。
+  - 推荐语要回答“为什么是这个人现在需要这条建议”，例如：因为术后恢复、因为二甲双胍后恶心、因为最近血糖偏高、因为步数持续下降。
 - 数据来源优先级：
   1. `latest_health` — 最新体征（血压、心率、血氧、血糖、步数）
   2. `memory.patient_long_term_profile` — 基本信息、病史、用药
@@ -44,9 +47,12 @@ scripts:
       - `cuisine_preferences`: 菜系偏好数组（如 `["粤菜", "清淡家常菜"]`）— 用于指导 `weekly_meal_plan`
       - `liked`: 患者之前标记为喜欢/有帮助的建议或食物 — 优先给出相似建议
       - `disliked`: 患者拒绝的建议或食物及原因 — 避免相似建议
+  11. `memory.case_history` / `memory.clinical_notes` / `memory.doctor_notes`（未来可选）— 更完整的病例摘要、医生备注、手术与并发症背景
+  12. `memory.latest_labs` / `outlier_analysis`（未来可选）— 最近血检、尿检、影像或异常指标总结
 - 若 `latest_health` 为空或全为 null，从 `memory.recent_health_dynamics` 或 `signals.summary_text` 推断最新值并填入 `latest_health_summary`。
 - 某维度无数据时，使用空字符串或空数组，不要编造。
 - 当 `user_preference.cuisine_preferences` 存在时，`weekly_meal_plan` 必须体现这些菜系偏好。
+- 如果出现未来扩展字段（如支架史、术后并发症、医生备注、化验异常），应把这些信息视为高优先级依据，并明确说明它们如何影响营养、活动、监测或用药建议。
 
 ## 输出格式
 
@@ -61,6 +67,10 @@ scripts:
     - `type`: `"good_news"` | `"attention"` | `"plan"` | `"encouragement"` — 决定 icon 和颜色
     - `title`: 简短标签（如「好消息」「需要留意」「我们准备了什么」「您已经做得很好」）
     - `content`: 该部分 1–2 句话
+  - `personalized_evidence`（推荐）：
+    - 3–5 项数组，每项为 `{ "title": "...", "evidence": "...", "why_it_matters": "...", "category": "history|surgery|medication|lab|symptom|monitoring" }`
+    - 用来明确告诉患者：当前建议分别是根据哪些病史、药物反应、手术恢复阶段、检查异常或近期监测变化得出的
+    - 若存在用药反应、术后恢复、检查异常，至少各覆盖 1 项
   - `adherence_analysis`：对象，包含：
     - `period`：字符串，如 `"过去 14 天"`
     - `medication`：对象 `{ "status": "...", "issues": "...", "adjustments": "..." }`
@@ -91,6 +101,8 @@ scripts:
   - `tone_profile` 缺失时默认 `warm_encouraging`。
   - `health_guidance.summary` 和 `health_guidance.tips[].why` 必须体现所选语气。
 - 引用 payload 中的具体近期事件（如「过去两周，您的食欲比平时低一些……」）。
+- 若 payload 中存在具体药名、手术名、时间点、异常指标或医生备注，尽量在文案中保留这些具体锚点，而不是泛化成“您最近情况不太稳定”。
+- `recommendations[].reason` 不能只写“适合高血压患者”“适合糖尿病患者”，应尽可能写成“因为您最近……所以这条建议更适合您”。
 - 称呼用「您」。
 - 不添加 payload 未支持的诊断。
 - 数据源矛盾时在 `reasoning` 中说明。

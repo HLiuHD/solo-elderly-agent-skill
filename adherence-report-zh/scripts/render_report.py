@@ -172,7 +172,7 @@ _AI_MSG_STYLES = {
 
 
 def _render_ai_message(so: dict) -> str:
-    """Render AI message as sub-cards if structured sections are available."""
+    """Render AI message as always-visible sub-cards when structured sections are available."""
     sections = so.get("assistant_message_sections") or []
 
     if sections:
@@ -187,13 +187,12 @@ def _render_ai_message(so: dict) -> str:
             )
 
             html += (
-                f'<div class="sub-card" style="border-color:transparent">'
-                f'<div class="sub-card-header" style="padding:12px 14px">'
+                f'<div class="sub-card sub-card-static {style["color"]}">'
+                f'<div class="sub-card-header" style="padding:12px 14px 8px">'
                 f'<span class="sub-card-icon" style="font-size:1.2em">{style["icon"]}</span>'
                 f'<div class="flex-1 min-w-0">'
                 f'<div class="sub-card-value {style["title_color"]}" style="font-size:0.95em">{escape(title)}</div>'
                 f'</div>'
-                f'<span class="sub-card-arrow">▶</span>'
                 f'</div>'
                 f'<div class="sub-card-body">'
                 f'<div class="text-sm text-slate-700 leading-relaxed">{escape(content)}</div>'
@@ -206,13 +205,12 @@ def _render_ai_message(so: dict) -> str:
         return ""
     preview = escape(plain[:70]) + ("..." if len(plain) > 70 else "")
     return (
-        f'<div class="sub-card" style="border-color:transparent">'
-        f'<div class="sub-card-header" style="padding:12px 14px">'
+        f'<div class="sub-card sub-card-static bg-slate-50 border-slate-200">'
+        f'<div class="sub-card-header" style="padding:12px 14px 8px">'
         f'<span class="sub-card-icon" style="font-size:1.2em">💬</span>'
         f'<div class="flex-1 min-w-0">'
         f'<div class="sub-card-value" style="font-size:0.9em;font-weight:600;color:#334155">{preview}</div>'
         f'</div>'
-        f'<span class="sub-card-arrow">▶</span>'
         f'</div>'
         f'<div class="sub-card-body">'
         f'<div class="text-sm text-slate-700 leading-relaxed">{escape(plain)}</div>'
@@ -382,7 +380,7 @@ def _render_condition_badges(conditions: list[str]) -> str:
     for c in conditions:
         color = _COND_COLORS.get(c, "bg-slate-500")
         parts.append(
-            f'<span class="inline-block {color} text-white px-3 py-1 '
+            f'<span class="condition-chip inline-block {color} text-white px-3 py-1 '
             f'rounded-full text-xs font-semibold">{escape(c)}</span>'
         )
     return "\n".join(parts)
@@ -537,89 +535,357 @@ def _render_adherence(adh: dict) -> str:
     return inner
 
 
-def _render_memory(memory: dict) -> str:
-    """Render health history as sub-cards: profile, trends, events — each tappable."""
+def _render_memory_overview(memory: dict) -> str:
+    """Render profile + recent trends as always-visible top overview cards."""
     if not memory:
         return ""
 
     profile = memory.get("patient_long_term_profile") or ""
     dynamics = memory.get("recent_health_dynamics") or ""
-    events = memory.get("key_events") or []
 
-    if not profile and not dynamics and not events:
-        return ""
-
-    html = ""
+    blocks = []
 
     if profile:
-        html += (
-            '<div class="sub-card">'
+        blocks.append(
+            '<div class="sub-card sub-card-static">'
             '<div class="sub-card-header">'
             '<span class="sub-card-icon">👤</span>'
             '<div class="flex-1 min-w-0">'
             '<div class="sub-card-label">长期资料</div>'
-            f'<div class="sub-card-value">{escape(profile[:60])}...</div>'
+            '<div class="sub-card-value">先了解您的基础情况</div>'
             '</div>'
-            '<span class="sub-card-arrow">▶</span>'
             '</div>'
             f'<div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">{escape(profile)}</div></div>'
             '</div>'
         )
 
     if dynamics:
-        html += (
-            '<div class="sub-card">'
+        blocks.append(
+            '<div class="sub-card sub-card-static">'
             '<div class="sub-card-header">'
             '<span class="sub-card-icon">📈</span>'
             '<div class="flex-1 min-w-0">'
             '<div class="sub-card-label">近期趋势</div>'
-            f'<div class="sub-card-value">{escape(dynamics[:60])}...</div>'
+            '<div class="sub-card-value">这段时间身体有什么变化</div>'
             '</div>'
-            '<span class="sub-card-arrow">▶</span>'
             '</div>'
             f'<div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">{escape(dynamics)}</div></div>'
             '</div>'
         )
 
-    if events:
-        event_icons = {"surgery": "🔪", "symptom": "⚠️", "alert": "🚨", "medication": "💊", "visit": "🏥"}
-        events_body = '<div class="space-y-2">'
-        for ev in events:
-            ev_icon = event_icons.get(ev.get("type", ""), "📌")
-            ev_date = ev.get("date", "")
-            ev_desc = ev.get("description", "")
-            ev_type = ev.get("type", "")
-            type_cls = {
-                "surgery": "bg-purple-50 text-purple-700 border-purple-200",
-                "alert": "bg-rose-50 text-rose-700 border-rose-200",
-                "symptom": "bg-amber-50 text-amber-700 border-amber-200",
-                "medication": "bg-blue-50 text-blue-700 border-blue-200",
-            }.get(ev_type, "bg-slate-50 text-slate-600 border-slate-200")
-            events_body += (
-                f'<div class="flex items-start gap-3 rounded-lg p-2.5 border {type_cls}">'
-                f'<span class="text-base mt-0.5">{ev_icon}</span>'
-                f'<div class="flex-1 min-w-0">'
-                f'<div class="text-sm font-semibold">{escape(ev_desc)}</div>'
-                f'<div class="text-xs text-slate-400 mt-0.5">{escape(ev_date)}</div>'
-                f'</div></div>'
-            )
-        events_body += '</div>'
+    return "".join(blocks)
 
-        html += (
-            '<div class="sub-card">'
+
+def _render_key_events(memory: dict) -> str:
+    """Render key events as a compact timeline list."""
+    if not memory:
+        return ""
+
+    events = memory.get("key_events") or []
+    if not events:
+        return ""
+
+    event_icons = {"surgery": "🩺", "symptom": "⚠️", "alert": "🚨", "medication": "💊", "visit": "🏥"}
+    events_body = '<div class="space-y-2">'
+    for ev in events:
+        ev_icon = event_icons.get(ev.get("type", ""), "📌")
+        ev_date = ev.get("date", "")
+        ev_desc = ev.get("description", "")
+        ev_type = ev.get("type", "")
+        type_cls = {
+            "surgery": "bg-purple-50 text-purple-700 border-purple-200",
+            "alert": "bg-rose-50 text-rose-700 border-rose-200",
+            "symptom": "bg-amber-50 text-amber-700 border-amber-200",
+            "medication": "bg-blue-50 text-blue-700 border-blue-200",
+        }.get(ev_type, "bg-slate-50 text-slate-600 border-slate-200")
+        events_body += (
+            f'<div class="flex items-start gap-3 rounded-lg p-2.5 border {type_cls}">'
+            f'<span class="text-base mt-0.5">{ev_icon}</span>'
+            f'<div class="flex-1 min-w-0">'
+            f'<div class="text-sm font-semibold">{escape(ev_desc)}</div>'
+            f'<div class="text-xs text-slate-400 mt-0.5">{escape(ev_date)}</div>'
+            f'</div></div>'
+        )
+    events_body += '</div>'
+    return events_body
+
+
+def _render_memory(memory: dict) -> str:
+    """Backward-compatible combined memory rendering."""
+    return _render_memory_overview(memory) + _render_key_events(memory)
+
+
+def _stringify_compact(value: object) -> str:
+    if value in (None, "", [], {}):
+        return ""
+    if isinstance(value, str):
+        return value.strip()
+    if isinstance(value, list):
+        parts = []
+        for item in value[:4]:
+            text = _stringify_compact(item)
+            if text:
+                parts.append(text)
+        return "；".join(parts)
+    if isinstance(value, dict):
+        parts = []
+        for key, val in value.items():
+            text = _stringify_compact(val)
+            if text:
+                parts.append(f"{_field_label(key)}：{text}")
+        return "；".join(parts)
+    return str(value)
+
+
+def _extract_medications(profile: str) -> list[str]:
+    if not profile:
+        return []
+
+    segment = ""
+    patterns = [
+        r"Medications?\s*:\s*([^\.]+)",
+        r"Current medications?\s*:\s*([^\.]+)",
+        r"用药[:：]\s*([^。]+)",
+        r"正在服用[:：]\s*([^。]+)",
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, profile, flags=re.IGNORECASE)
+        if match:
+            segment = match.group(1).strip()
+            break
+
+    if not segment:
+        return []
+
+    seen = set()
+    meds = []
+    for raw in re.split(r"[;,，；]\s*", segment):
+        item = raw.strip(" .。")
+        if not item:
+            continue
+        norm = item.lower()
+        if norm in seen:
+            continue
+        seen.add(norm)
+        meds.append(item)
+    return meds[:5]
+
+
+def _render_personalized_context(so: dict, payload: dict, memory: dict) -> str:
+    evidence_items = so.get("personalized_evidence") or []
+    cards: list[str] = []
+
+    if evidence_items:
+        category_meta = {
+            "history": ("🧾", "病史重点"),
+            "surgery": ("🩺", "手术与恢复"),
+            "medication": ("💊", "当前用药"),
+            "lab": ("🧪", "最近检查"),
+            "symptom": ("⚠️", "近期症状"),
+            "monitoring": ("📈", "监测变化"),
+        }
+        for item in evidence_items[:4]:
+            if not isinstance(item, dict):
+                continue
+            category = item.get("category") or ""
+            icon, label = category_meta.get(category, ("🎯", "个性化依据"))
+            title = item.get("title") or label
+            evidence = item.get("evidence") or ""
+            why_it_matters = item.get("why_it_matters") or item.get("implication") or ""
+            body = ""
+            if evidence:
+                body += f'<div class="text-sm text-slate-700 leading-relaxed">{escape(evidence)}</div>'
+            if why_it_matters:
+                body += (
+                    '<div class="mt-3 text-xs text-slate-600 bg-slate-50 rounded-xl px-3 py-2 leading-relaxed border border-slate-200">'
+                    f'所以这里会更强调：{escape(why_it_matters)}</div>'
+                )
+            if body:
+                cards.append(
+                    '<div class="sub-card sub-card-static">'
+                    '<div class="sub-card-header">'
+                    f'<span class="sub-card-icon">{icon}</span>'
+                    '<div class="flex-1 min-w-0">'
+                    f'<div class="sub-card-label">{escape(label)}</div>'
+                    f'<div class="sub-card-value">{escape(title)}</div>'
+                    '</div>'
+                    '</div>'
+                    f'<div class="sub-card-body">{body}</div>'
+                    '</div>'
+                )
+        return "".join(cards)
+
+    conditions = so.get("conditions") or []
+    key_events = memory.get("key_events") or []
+    profile = memory.get("patient_long_term_profile") or ""
+    recent_dynamics = memory.get("recent_health_dynamics") or ""
+    meds = _extract_medications(profile)
+    latest_summary = so.get("latest_health_summary") or {}
+    signals = payload.get("signals") or {}
+    adherence = so.get("adherence_analysis") or {}
+
+    surgery_event = next(
+        (
+            ev for ev in key_events
+            if ev.get("type") == "surgery"
+            or "手术" in str(ev.get("description", ""))
+            or "surgery" in str(ev.get("description", "")).lower()
+        ),
+        None,
+    )
+
+    history_chips = []
+    if conditions:
+        history_chips.extend(conditions[:3])
+    if surgery_event:
+        history_chips.append(f'{surgery_event.get("date", "")} {surgery_event.get("description", "")}'.strip())
+    elif "术后" in profile or "post-surgery" in profile.lower():
+        history_chips.append("当前处于术后恢复阶段")
+
+    if history_chips:
+        implication_parts = []
+        if surgery_event or "术后" in profile or "post-surgery" in profile.lower():
+            implication_parts.append("恢复期会更强调蛋白质、容易入口的食物和循序渐进活动")
+        if any(c in {"高血压", "Hypertension"} for c in conditions):
+            implication_parts.append("饮食会特别强调少盐")
+        if any(c in {"2型糖尿病", "糖尿病", "Type 2 diabetes", "Diabetes"} for c in conditions):
+            implication_parts.append("也会提醒规律分餐和少精制糖")
+
+        cards.append(
+            '<div class="sub-card sub-card-static">'
             '<div class="sub-card-header">'
-            '<span class="sub-card-icon">📋</span>'
+            '<span class="sub-card-icon">🧾</span>'
             '<div class="flex-1 min-w-0">'
-            '<div class="sub-card-label">关键事件</div>'
-            f'<div class="sub-card-value">{len(events)} 条记录</div>'
+            '<div class="sub-card-label">病史重点</div>'
+            '<div class="sub-card-value">这次建议会先围绕您的基础病和恢复阶段</div>'
             '</div>'
-            '<span class="sub-card-arrow">▶</span>'
             '</div>'
-            f'<div class="sub-card-body">{events_body}</div>'
+            '<div class="sub-card-body">'
+            f'<div class="flex flex-wrap gap-2 mb-3">{"".join(f"<span class=\"context-chip\">{escape(chip)}</span>" for chip in history_chips[:4])}</div>'
+            + (
+                '<div class="text-xs text-slate-600 bg-slate-50 rounded-xl px-3 py-2 leading-relaxed border border-slate-200">'
+                f'所以这里会更强调：{escape("；".join(implication_parts))}</div>'
+                if implication_parts else ""
+            )
+            + '</div></div>'
+        )
+
+    med_issue = _stringify_compact((adherence.get("medication") or {}).get("issues"))
+    med_adjustment = _stringify_compact((adherence.get("medication") or {}).get("adjustments"))
+    if not med_issue:
+        med_issue = next(
+            (str(ev.get("description", "")).strip() for ev in key_events if "服用" in str(ev.get("description", "")) or "药" in str(ev.get("description", ""))),
+            ""
+        )
+
+    if meds or med_issue:
+        med_body = ""
+        if meds:
+            med_body += f'<div class="flex flex-wrap gap-2 mb-3">{"".join(f"<span class=\"context-chip\">{escape(med)}</span>" for med in meds)}</div>'
+        if med_issue:
+            med_body += f'<div class="text-sm text-slate-700 leading-relaxed">目前记录里提到：{escape(med_issue)}</div>'
+        if med_adjustment:
+            med_body += (
+                '<div class="mt-3 text-xs text-slate-600 bg-slate-50 rounded-xl px-3 py-2 leading-relaxed border border-slate-200">'
+                f'所以这里会更强调：{escape(med_adjustment)}</div>'
+            )
+        elif "恶心" in med_issue or "nausea" in med_issue.lower():
+            med_body += (
+                '<div class="mt-3 text-xs text-slate-600 bg-slate-50 rounded-xl px-3 py-2 leading-relaxed border border-slate-200">'
+                '所以这里会更强调：少量多餐、温热软一点的食物，以及把不适和医生继续对上。</div>'
+            )
+
+        cards.append(
+            '<div class="sub-card sub-card-static">'
+            '<div class="sub-card-header">'
+            '<span class="sub-card-icon">💊</span>'
+            '<div class="flex-1 min-w-0">'
+            '<div class="sub-card-label">当前用药</div>'
+            '<div class="sub-card-value">用药情况和身体反应会直接影响饮食建议</div>'
+            '</div>'
+            '</div>'
+            f'<div class="sub-card-body">{med_body}</div>'
             '</div>'
         )
 
-    return html
+    metric_bits = []
+    metric_labels = {
+        "blood_pressure": "血压",
+        "heart_rate": "心率",
+        "blood_oxygen": "血氧",
+        "blood_glucose": "血糖",
+        "steps_today": "步数",
+    }
+    for key in ("blood_pressure", "blood_glucose", "steps_today", "heart_rate", "blood_oxygen"):
+        value = latest_summary.get(key)
+        if value not in (None, ""):
+            metric_bits.append(f'{metric_labels.get(key, key)} {value}')
+
+    monitoring_gap = _stringify_compact((adherence.get("monitoring") or {}).get("gaps"))
+    signal_bits = [str(item).strip() for item in (signals.get("anomalies") or []) if str(item).strip()]
+    recent_focus = []
+    if metric_bits:
+        recent_focus.append("最近记录：" + "，".join(metric_bits[:3]))
+    if signal_bits:
+        recent_focus.append("设备提示：" + "、".join(signal_bits[:2]))
+    if monitoring_gap:
+        recent_focus.append("监测提醒：" + monitoring_gap)
+    elif recent_dynamics:
+        recent_focus.append(_stringify_compact(recent_dynamics)[:120] + ("..." if len(_stringify_compact(recent_dynamics)) > 120 else ""))
+
+    if recent_focus:
+        implication = []
+        if any("血糖" in bit for bit in metric_bits):
+            implication.append("饮食会更强调规律分餐")
+        if any("步数" in bit for bit in metric_bits) or any("Activity" in bit or "活动" in bit for bit in signal_bits):
+            implication.append("活动建议会更温和、循序渐进")
+        if monitoring_gap:
+            implication.append("也会提醒把监测补齐")
+
+        cards.append(
+            '<div class="sub-card sub-card-static">'
+            '<div class="sub-card-header">'
+            '<span class="sub-card-icon">📈</span>'
+            '<div class="flex-1 min-w-0">'
+            '<div class="sub-card-label">最近指标</div>'
+            '<div class="sub-card-value">不是泛泛建议，而是结合您最近几天的真实记录</div>'
+            '</div>'
+            '</div>'
+            '<div class="sub-card-body">'
+            + "".join(f'<div class="text-sm text-slate-700 leading-relaxed mb-2">{escape(line)}</div>' for line in recent_focus[:3])
+            + (
+                '<div class="text-xs text-slate-600 bg-slate-50 rounded-xl px-3 py-2 leading-relaxed border border-slate-200">'
+                f'所以这里会更强调：{escape("；".join(implication))}</div>'
+                if implication else ""
+            )
+            + '</div></div>'
+        )
+
+    extra_notes = []
+    for key, label in (
+        ("clinical_notes", "临床备注"),
+        ("doctor_notes", "医生备注"),
+        ("case_history", "病例重点"),
+        ("latest_labs", "最近检查"),
+    ):
+        text = _stringify_compact(memory.get(key) or payload.get(key))
+        if text:
+            extra_notes.append((label, text))
+    for label, text in extra_notes[:1]:
+        cards.append(
+            '<div class="sub-card sub-card-static">'
+            '<div class="sub-card-header">'
+            '<span class="sub-card-icon">🧠</span>'
+            '<div class="flex-1 min-w-0">'
+            f'<div class="sub-card-label">{escape(label)}</div>'
+            '<div class="sub-card-value">如果后面接入更深的病例，这里会直接引用</div>'
+            '</div>'
+            '</div>'
+            f'<div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">{escape(text)}</div></div>'
+            '</div>'
+        )
+
+    return "".join(cards)
 
 
 _CONDITION_CONTEXTS = {
@@ -725,7 +991,7 @@ _TONE_STYLES = {
 
 
 def _render_health_guidance(guidance: dict, conditions: list[str], tone_profile: dict = None) -> str:
-    """Render health guidance as sub-cards: summary always visible, each tip is tappable."""
+    """Render health guidance as always-visible sub-cards with distinct topics."""
     if not guidance and not conditions:
         return ""
 
@@ -779,13 +1045,12 @@ def _render_health_guidance(guidance: dict, conditions: list[str], tone_profile:
             )
 
         html += (
-            f'<div class="sub-card">'
+            f'<div class="sub-card sub-card-static">'
             f'<div class="sub-card-header">'
             f'<span class="sub-card-icon">{icon}</span>'
             f'<div class="flex-1 min-w-0">'
             f'<div class="sub-card-value" style="font-size:0.95em">{escape(text)}</div>'
             f'</div>'
-            f'<span class="sub-card-arrow">▶</span>'
             f'</div>'
         )
         if body_html:
@@ -823,7 +1088,7 @@ def _render_diet_table(diet_table: list[dict]) -> str:
 
 
 def _render_diet_tips(tips: list[dict]) -> str:
-    """Render each diet tip as a tappable sub-card: title visible, detail on tap."""
+    """Render each diet tip as an always-visible sub-card."""
     if not tips:
         return ""
 
@@ -847,13 +1112,12 @@ def _render_diet_tips(tips: list[dict]) -> str:
             )
 
         html += (
-            f'<div class="sub-card">'
+            f'<div class="sub-card sub-card-static">'
             f'<div class="sub-card-header">'
             f'<span class="sub-card-icon">{icon}</span>'
             f'<div class="flex-1 min-w-0">'
             f'<div class="sub-card-value" style="font-size:0.92em">{escape(title)}</div>'
             f'</div>'
-            f'<span class="sub-card-arrow">▶</span>'
             f'</div>'
         )
         if body_html:
@@ -1213,11 +1477,12 @@ def main() -> None:
             '</div>'
         )
 
-    def _section_card(section_key: str, icon: str, bg_color: str, title: str, summary: str, content: str) -> str:
+    def _section_card(section_key: str, icon: str, bg_color: str, title: str, summary: str, content: str, expanded: bool = False) -> str:
         if not content or not content.strip():
             return ""
+        expanded_class = " expanded" if expanded else ""
         return (
-            f'<div class="section-card" data-section="{section_key}">'
+            f'<div class="section-card{expanded_class}" data-section="{section_key}">'
             f'<div class="section-card-header">'
             f'<div class="section-card-icon" style="background:{bg_color}">{icon}</div>'
             f'<div class="flex-1 min-w-0">'
@@ -1474,45 +1739,109 @@ def main() -> None:
         '<div class="flex gap-2 mb-4 overflow-x-auto pb-2" id="dayTabs"></div>'
         '<div id="mealContent"></div>'
     )
-    submit_html = (
-        '<button id="exportFeedbackBtn" onclick="exportFeedbackJSON()" style="display:none" '
-        'class="w-full px-6 py-3 rounded-full text-sm font-bold bg-emerald-600 text-white shadow-md '
-        'hover:bg-emerald-700 active:scale-95 transition-all">'
-        '✓ 提交我的偏好</button>'
-        '<p class="text-xs text-slate-400 mt-2 text-center" id="submitHint" style="display:none">'
-        '您的选择会用于下次生成更合适的建议</p>'
-    )
+    submit_cta_html = (
+        '<div id="submitCtaShell" class="submit-cta-shell">'
+        '<button id="exportFeedbackBtn" onclick="exportFeedbackJSON()" '
+        'class="submit-cta-button" disabled>✓ 先选择偏好再提交</button>'
+        '<p class="submit-cta-hint" id="submitHint">'
+        '请先在上面选择口味或标记适合/不适合</p>'
+        '</div>'
+    ) if "submit" in visible else ""
 
-    hero_vitals_html = _render_vitals(so.get("latest_health_summary") or {}) if "vitals" in visible else ""
+    hero_vitals_block = _render_vitals(so.get("latest_health_summary") or {}) if "vitals" in visible else ""
+    hero_vitals_html = f'<div class="px-3 pt-3">{hero_vitals_block}</div>' if hero_vitals_block else ""
+    memory_overview_html = _render_memory_overview(memory) if "memory" in visible else ""
+    top_overview_html = (
+        '<div class="px-3 pt-3">'
+        '<div class="top-overview-panel rounded-[28px] p-3 shadow-sm">'
+        '<div class="flex items-center gap-2 mb-2 px-1">'
+        '<span class="top-overview-kicker text-base">🗂️</span>'
+        '<span class="text-xs font-bold text-slate-600 uppercase tracking-wide">长期情况</span>'
+        '</div>'
+        f'{memory_overview_html}'
+        '</div>'
+        '</div>'
+    ) if memory_overview_html else ""
 
     regrouped_cards = []
-    health_html = "".join([
-        _module_subsection("依从性概览", "先看看最近用药、饮食、活动和监测的大致情况。", _adherence_subcards()) if "adherence" in visible else "",
+
+    guidance_bundle_html = "".join([
+        _module_subsection("为什么这些建议和您有关", "先把您的病史、当前用药和最近指标放在前面，后面的建议会更容易看懂。", _render_personalized_context(so, payload, memory)) if ("guidance" in visible or "recommendations" in visible) else "",
         _module_subsection("健康指导", "结合您最近的感受，整理出现在最值得留意的重点。", _render_health_guidance(so.get("health_guidance") or {}, conditions, tone_profile=tone_profile)) if "guidance" in visible else "",
         _module_subsection("健康建议", "这些是现在更适合您去做的小步骤。", _recs_subcards()) if "recommendations" in visible else "",
-        _module_subsection("健康记录", "这里可以回看近期变化和之前的重要记录。", _render_memory(memory)) if "memory" in visible else "",
     ])
-    if health_html:
-        regrouped_cards.append(_section_card("health_hub", "💚", "#d1fae5", "健康管理", "您现在最需要看的提醒和近况，都放在这里。", health_html))
+    if guidance_bundle_html:
+        regrouped_cards.append(
+            _section_card(
+                "guidance_bundle",
+                "💚",
+                "#d1fae5",
+                "现在怎么做",
+                "把重点提醒和建议放在一起，更容易看懂。",
+                guidance_bundle_html,
+            )
+        )
 
-    nutrition_html = "".join([
+    adherence_body_parts = []
+    if "adherence" in visible:
+        adherence_html = _adherence_subcards()
+        if adherence_html.strip():
+            adherence_body_parts.append(
+                _module_subsection("执行情况", "看看最近用药、饮食、活动和监测情况。", adherence_html)
+            )
+    key_events_html = _render_key_events(memory) if "memory" in visible else ""
+    if key_events_html.strip():
+        adherence_body_parts.append(
+            _module_subsection("关键事件", "把最近的重要记录放在一起，前后变化会更好理解。", key_events_html)
+        )
+    adherence_bundle_html = "".join(adherence_body_parts)
+    if adherence_bundle_html:
+        regrouped_cards.append(
+            _section_card(
+                "adherence",
+                "📋",
+                "#f3e8ff",
+                "最近情况",
+                "把最近做得怎么样和关键事件放在一起看。",
+                adherence_bundle_html,
+            )
+        )
+
+    nutrition_bundle_html = "".join([
         _module_subsection("营养建议", "先看这段时间吃什么会更适合您。", nutrition_text) if "nutrition" in visible else "",
         _module_subsection("疾病饮食对照", "哪些食物更适合，哪些先少吃一点。", _render_diet_table(so.get("diet_table") or [])) if "diet_table" in visible else "",
+        _module_subsection("饮食小贴士", "都是些更容易用得上的小提醒。", _render_diet_tips(so.get("diet_tips") or [])) if "diet_tips" in visible else "",
     ])
-    if nutrition_html:
-        regrouped_cards.append(_section_card("nutrition_hub", "🥗", "#ecfdf5", "营养与疾病饮食", "这里整理了更适合您现在状态的吃法和食物选择。", nutrition_html))
+    if nutrition_bundle_html:
+        regrouped_cards.append(
+            _section_card(
+                "nutrition_bundle",
+                "🥗",
+                "#ecfdf5",
+                "吃什么更合适",
+                "把吃法、对照和小提醒放在一起，更好参考。",
+                nutrition_bundle_html,
+            )
+        )
 
-    meal_html = "".join([
+    meal_bundle_html = "".join([
         _module_subsection("口味偏好", "选一些您平时更愿意吃的口味，后面的建议会更贴近您。", cuisine_html) if "cuisine" in visible else "",
         _module_subsection("一周餐食灵感", "给您一些这周更容易照着吃的早、中、晚餐想法。", meal_plan_html) if "meal_plan" in visible else "",
-        _module_subsection("饮食小贴士", "都是些更容易用得上的小提醒。", _render_diet_tips(so.get("diet_tips") or [])) if "diet_tips" in visible else "",
-        _module_subsection("提交偏好", "把适合您的选择记下来，下次页面会更贴近您。", submit_html) if "submit" in visible else "",
     ])
-    if meal_html:
-        regrouped_cards.append(_section_card("meal_hub", "🍽️", "#eff6ff", "口味偏好与餐食灵感", "吃什么、怎么搭配、哪些更适合您，这里一起看会更方便。", meal_html))
+    if meal_bundle_html:
+        regrouped_cards.append(
+            _section_card(
+                "meal_bundle",
+                "🍽️",
+                "#eff6ff",
+                "吃饭灵感",
+                "喜欢吃什么、这一周怎么吃，都放在这里。",
+                meal_bundle_html,
+            )
+        )
 
     if "map" in visible and map_section.strip():
-        regrouped_cards.append(_section_card("map", "🏥", "#f0f9ff", "附近医疗与公园", "如果想就医或出门走一走，附近地点可以直接在这里看。", map_section))
+        regrouped_cards.append(_section_card("map", "🏥", "#f0f9ff", "附近地点", "附近医院和公园，都可以在这里看。", map_section))
 
     cards_html = "\n".join(part for part in regrouped_cards if part)
 
@@ -1528,9 +1857,11 @@ def main() -> None:
         status_text=status_text,
         condition_badges=_render_condition_badges(conditions),
         hero_vitals_html=hero_vitals_html,
+        top_overview_html=top_overview_html,
         escalation_html=_render_escalation_banner(escalations) if "escalation" in visible else "",
         ai_message_html=_render_ai_message(so),
         cards_html=cards_html,
+        submit_cta_html=submit_cta_html,
         meal_data_json=meal_json,
         maps_script=maps_script,
         guardrail=escape(

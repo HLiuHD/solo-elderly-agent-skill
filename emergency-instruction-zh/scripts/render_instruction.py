@@ -68,19 +68,22 @@ def _render_vitals(vitals: dict) -> str:
         val = vitals.get(key)
         if val is not None and val != "":
             parts.append(
-                f'<div class="bg-slate-50 rounded-lg p-3 text-center border border-slate-100">'
-                f'<div class="text-lg mb-0.5">{icon}</div>'
-                f'<div class="text-[11px] text-slate-500 font-medium mb-1">{label}</div>'
-                f'<div class="text-xl font-bold text-slate-800">{escape(str(val))}</div>'
-                f'<div class="text-[10px] text-slate-400">{unit}</div>'
+                f'<div class="hero-vital-card">'
+                f'<div class="hero-vital-top">'
+                f'<div><div class="hero-vital-label">{label}</div><div class="hero-vital-value">{escape(str(val))}</div></div>'
+                f'<div class="hero-vital-icon">{icon}</div>'
+                f'</div>'
+                f'<div class="hero-vital-range">{unit}</div>'
                 f'</div>'
             )
         else:
             parts.append(
-                f'<div class="bg-slate-50 rounded-lg p-3 text-center border border-slate-100">'
-                f'<div class="text-lg mb-0.5">{icon}</div>'
-                f'<div class="text-[11px] text-slate-500 font-medium mb-1">{label}</div>'
-                f'<div class="text-base text-slate-300">--</div>'
+                f'<div class="hero-vital-card">'
+                f'<div class="hero-vital-top">'
+                f'<div><div class="hero-vital-label">{label}</div><div class="hero-vital-value">--</div></div>'
+                f'<div class="hero-vital-icon">{icon}</div>'
+                f'</div>'
+                f'<div class="hero-vital-range">{unit}</div>'
                 f'</div>'
             )
     return "\n".join(parts)
@@ -91,7 +94,7 @@ def _render_condition_badges(conditions: list[str]) -> str:
     for c in conditions:
         color = _COND_COLORS.get(c, "bg-slate-500")
         parts.append(
-            f'<span class="inline-block {color} text-white px-3 py-1 '
+            f'<span class="condition-chip inline-block {color} text-white px-3 py-1 '
             f'rounded-full text-xs font-semibold">{escape(c)}</span>'
         )
     return "\n".join(parts)
@@ -103,10 +106,9 @@ def _render_actions(actions: list[str]) -> str:
     parts = []
     for i, action in enumerate(actions, 1):
         parts.append(
-            f'<div class="flex items-start gap-3 bg-rose-50 rounded-lg p-3 border border-rose-100">'
-            f'<span class="flex-shrink-0 w-6 h-6 rounded-full bg-rose-600 text-white text-xs '
-            f'font-bold flex items-center justify-center mt-0.5">{i}</span>'
-            f'<div class="text-sm text-slate-700 leading-relaxed">{escape(action)}</div>'
+            f'<div class="action-step">'
+            f'<span class="action-step-index">{i}</span>'
+            f'<div class="action-step-copy">{escape(action)}</div>'
             f'</div>'
         )
     return "\n".join(parts)
@@ -180,11 +182,11 @@ def _render_monitoring(plan: dict) -> str:
     parts = []
     for icon, label, value in rows:
         parts.append(
-            f'<div class="flex items-start gap-3 bg-slate-50 rounded-lg p-3 border border-slate-100">'
+            f'<div class="monitor-row">'
             f'<span class="text-base mt-0.5">{icon}</span>'
             f'<div>'
-            f'<div class="text-[11px] text-slate-500 font-medium uppercase tracking-wide">{label}</div>'
-            f'<div class="text-sm text-slate-700 mt-0.5">{escape(value)}</div>'
+            f'<div class="monitor-row-label">{label}</div>'
+            f'<div class="monitor-row-value">{escape(value)}</div>'
             f'</div>'
             f'</div>'
         )
