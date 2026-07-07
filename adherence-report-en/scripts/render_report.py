@@ -294,7 +294,7 @@ def _render_vitals(summary: dict) -> str:
                 note = "Your blood pressure is high. Try to limit salt, keep monitoring, and follow up with your care team."
             elif systolic > 120 or diastolic > 80:
                 status = "caution"
-                note = "Your blood pressure is a little above the usual range. Rest, keep meals lighter, and continue watching the trend."
+                note = "Your blood pressure is a little above the usual range. Rest, keep your nutrition lighter, and continue watching the trend."
             elif systolic < 90 or diastolic < 60:
                 status = "caution"
                 note = "Your blood pressure is on the low side. If you feel dizzy or weak, contact your clinician."
@@ -327,9 +327,9 @@ def _render_vitals(summary: dict) -> str:
                 note = "Your glucose is quite far from the target range. Recheck when appropriate and follow your care plan for food or medication adjustments."
             elif value > 7.8:
                 status = "caution"
-                note = "Your glucose is a bit elevated. Lighter meals, regular portions, and continued monitoring may help."
+                note = "Your glucose is a bit elevated. Lighter nutrition choices, regular portions, and continued monitoring may help."
             else:
-                note = "Your glucose is within the reference range. Keep your meal routine and monitoring consistent."
+                note = "Your glucose is within the reference range. Keep your nutrition routine and monitoring consistent."
         elif key == "steps_today" and numbers:
             value = numbers[0]
             if value < 3000:
@@ -746,7 +746,7 @@ def _render_personalized_context(so: dict, payload: dict, memory: dict) -> str:
         if any(c in {"Hypertension"} for c in conditions):
             implication_parts.append("salt control stays important")
         if any(c in {"Type 2 diabetes", "Diabetes"} for c in conditions):
-            implication_parts.append("regular meals and lower-sugar choices matter more")
+            implication_parts.append("steady nutrition timing and lower-sugar choices matter more")
         cards.append(
             '<div class="sub-card sub-card-static">'
             '<div class="sub-card-header">'
@@ -782,7 +782,7 @@ def _render_personalized_context(so: dict, payload: dict, memory: dict) -> str:
         elif "nausea" in med_issue.lower():
             med_body += (
                 '<div class="mt-3 text-xs text-slate-600 bg-slate-50 rounded-xl px-3 py-2 leading-relaxed border border-slate-200">'
-                'Why it changes your plan: smaller meals, gentler textures, and tracking symptoms with your doctor become more important.</div>'
+                'Why it changes your plan: smaller portions, gentler textures, and tracking symptoms with your doctor become more important.</div>'
             )
         cards.append(
             '<div class="sub-card sub-card-static">'
@@ -826,7 +826,7 @@ def _render_personalized_context(so: dict, payload: dict, memory: dict) -> str:
     if recent_focus:
         implication = []
         if any("Glucose" in bit or "blood_glucose" in bit for bit in metric_bits):
-            implication.append("meal timing and steadier carbs matter more")
+            implication.append("nutrition timing and steadier carbohydrates matter more")
         if any("Steps" in bit for bit in metric_bits) or any("activity" in bit.lower() for bit in signal_bits):
             implication.append("activity advice should stay gentle and realistic")
         if monitoring_gap:
@@ -1592,13 +1592,12 @@ def main() -> None:
             body_html = "".join(body_parts)
 
             html += (
-                f'<div class="sub-card">'
+                f'<div class="sub-card sub-card-static">'
                 f'<div class="sub-card-header">'
                 f'<span class="sub-card-icon">{icon}</span>'
                 f'<div class="flex-1 min-w-0">'
                 f'<div class="sub-card-value" style="font-size:0.92em">{escape(text)}</div>'
                 f'</div>'
-                f'<span class="sub-card-arrow">▶</span>'
                 f'</div>'
                 f'<div class="sub-card-body">{body_html}</div>'
                 f'</div>'
@@ -1625,7 +1624,7 @@ def main() -> None:
         ("nutrition", "🥗", "#ecfdf5", "Nutrition Advice",
          lambda: (
              '<p style="font-size:0.95em;line-height:1.7;color:#334155;padding:8px 0">'
-             + escape(so.get("nutrition_advice") or "Aim for balanced meals with plenty of vegetables and adequate hydration.")
+             + escape(so.get("nutrition_advice") or "Aim for balanced nutrition with plenty of vegetables and adequate hydration.")
              + '</p>'
          )),
         ("diet_table", "📑", "#fff7ed", "Diet by Condition",
@@ -1633,7 +1632,7 @@ def main() -> None:
         ("cuisine", "🍜", "#fdf2f8", "Cuisine Preferences",
          lambda: (
              '<p class="text-sm text-slate-500 mb-3">Select cuisines you enjoy — '
-             "we'll tailor future meal plans to your taste.</p>"
+             "we'll tailor future nutrition suggestions to your taste.</p>"
              '<div class="flex flex-wrap gap-2 mb-3" id="cuisineChips"></div>'
              '<div class="flex items-center gap-2">'
              '<input id="customCuisineInput" type="text" placeholder="Add another cuisine..." '
@@ -1643,12 +1642,12 @@ def main() -> None:
              'border border-emerald-200 text-emerald-700 text-sm font-medium hover:bg-emerald-100">'
              '+ Add</button></div>'
          )),
-        ("meal_plan", "📅", "#eff6ff", "Weekly Meal Ideas",
+        ("meal_plan", "📅", "#eff6ff", "Weekly Nutrition Plan",
          lambda: (
              '<div class="flex gap-2 mb-4 overflow-x-auto pb-2" id="dayTabs"></div>'
              '<div id="mealContent"></div>'
          )),
-        ("diet_tips", "✨", "#f0fdf4", "Diet Tips",
+        ("diet_tips", "✨", "#f0fdf4", "Nutrition Tips",
          lambda: _render_diet_tips(so.get("diet_tips") or [])),
         ("map", "🏥", "#f0f9ff", "Nearby Care & Parks",
          lambda: map_section),
@@ -1678,13 +1677,13 @@ def main() -> None:
         "guidance": guidance_preview,
         "memory": "Your health history and past events",
         "vitals": vitals_preview,
-        "adherence": "How you've been doing with medication, diet, and exercise",
+        "adherence": "How you've been doing with medication, nutrition, and exercise",
         "recommendations": "Actionable suggestions for your health",
-        "nutrition": "What to eat and why",
+        "nutrition": "Nutrition priorities and why they matter",
         "diet_table": "Foods to prefer and avoid for each condition",
         "cuisine": "Tell us what cuisines you enjoy",
-        "meal_plan": "Breakfast, lunch, and dinner ideas for the week",
-        "diet_tips": "Quick tips for healthier eating",
+        "meal_plan": "A weekly nutrition plan for breakfast, lunch, and dinner",
+        "diet_tips": "Quick nutrition tips you can use right away",
         "map": "Hospitals and parks near you",
         "submit": "Save your feedback and preferences",
     }
@@ -1719,11 +1718,11 @@ def main() -> None:
     nutrition_text = (
         '<div class="rounded-xl bg-emerald-50 border border-emerald-100 px-4 py-4 '
         'text-[0.95em] leading-7 text-slate-700">'
-        + escape(so.get("nutrition_advice") or "Aim for balanced meals with plenty of vegetables and adequate hydration.")
+        + escape(so.get("nutrition_advice") or "Aim for balanced nutrition with plenty of vegetables and adequate hydration.")
         + '</div>'
     )
     cuisine_html = (
-        "<p class=\"text-sm text-slate-500 mb-3\">Tell us which cuisines you enjoy so future meal ideas feel more natural for you.</p>"
+        "<p class=\"text-sm text-slate-500 mb-3\">Tell us which cuisines you enjoy so future nutrition suggestions feel more natural for you.</p>"
         '<div class="flex flex-wrap gap-2 mb-3" id="cuisineChips"></div>'
         '<div class="flex items-center gap-2">'
         '<input id="customCuisineInput" type="text" placeholder="Add another cuisine..." '
@@ -1785,7 +1784,7 @@ def main() -> None:
         adherence_html = _adherence_subcards()
         if adherence_html.strip():
             adherence_body_parts.append(
-                _module_subsection("How things have been going", "A quick look at medicine, meals, activity, and monitoring.", adherence_html)
+                _module_subsection("How things have been going", "A quick look at medication, nutrition, activity, and monitoring.", adherence_html)
             )
     key_events_html = _render_key_events(memory) if "memory" in visible else ""
     if key_events_html.strip():
@@ -1806,9 +1805,9 @@ def main() -> None:
         )
 
     nutrition_bundle_html = "".join([
-        _module_subsection("Nutrition advice", "The eating focus that matters most for you right now.", nutrition_text) if "nutrition" in visible else "",
+        _module_subsection("Nutrition advice", "The nutrition priorities that matter most for you right now.", nutrition_text) if "nutrition" in visible else "",
         _module_subsection("Diet by condition", "Helpful food choices and foods to go easier on.", _render_diet_table(so.get("diet_table") or [])) if "diet_table" in visible else "",
-        _module_subsection("Diet tips", "Small reminders that can make eating feel a little easier.", _render_diet_tips(so.get("diet_tips") or [])) if "diet_tips" in visible else "",
+        _module_subsection("Nutrition tips", "Small reminders that can make your nutrition plan easier to follow.", _render_diet_tips(so.get("diet_tips") or [])) if "diet_tips" in visible else "",
     ])
     if nutrition_bundle_html:
         regrouped_cards.append(
@@ -1816,15 +1815,15 @@ def main() -> None:
                 "nutrition_bundle",
                 "🥗",
                 "#ecfdf5",
-                "What to eat",
-                "Keep food guidance, comparisons, and practical reminders in one place.",
+                "Nutrition focus",
+                "Keep nutrition guidance, comparisons, and practical reminders in one place.",
                 nutrition_bundle_html,
             )
         )
 
     meal_bundle_html = "".join([
-        _module_subsection("Cuisine preferences", "Choose flavors you enjoy so future suggestions feel more like your own meals.", cuisine_html) if "cuisine" in visible else "",
-        _module_subsection("Weekly meal ideas", "A few gentle breakfast, lunch, and dinner ideas for the week.", meal_plan_html) if "meal_plan" in visible else "",
+        _module_subsection("Cuisine preferences", "Choose flavors you enjoy so future suggestions feel more aligned with your preferences.", cuisine_html) if "cuisine" in visible else "",
+        _module_subsection("Weekly nutrition plan", "A gentle weekly nutrition plan for breakfast, lunch, and dinner.", meal_plan_html) if "meal_plan" in visible else "",
     ])
     if meal_bundle_html:
         regrouped_cards.append(
@@ -1832,8 +1831,8 @@ def main() -> None:
                 "meal_bundle",
                 "🍽️",
                 "#eff6ff",
-                "Meal ideas",
-                "Your taste preferences and weekly meal inspiration live together here.",
+                "Nutrition plan",
+                "Your taste preferences and weekly nutrition plan live together here.",
                 meal_bundle_html,
             )
         )

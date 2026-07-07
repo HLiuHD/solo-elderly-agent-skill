@@ -179,8 +179,8 @@ def _render_ai_message(so: dict) -> str:
         html = ""
         for sec in sections:
             sec_type = sec.get("type", "")
-            title = sec.get("title", "")
-            content = sec.get("content", "")
+            title = _localize_zh_text(sec.get("title", ""))
+            content = _localize_zh_text(sec.get("content", ""))
             style = _AI_MSG_STYLES.get(
                 sec_type,
                 {"icon": "💬", "color": "bg-slate-50 border-slate-200", "title_color": "text-slate-800"},
@@ -200,7 +200,7 @@ def _render_ai_message(so: dict) -> str:
             )
         return html
 
-    plain = so.get("assistant_message_patient") or ""
+    plain = _localize_zh_text(so.get("assistant_message_patient") or "")
     if not plain:
         return ""
     preview = escape(plain[:70]) + ("..." if len(plain) > 70 else "")
@@ -263,6 +263,301 @@ def _load_env() -> None:
             if line and not line.startswith("#") and "=" in line:
                 key, _, value = line.partition("=")
                 os.environ.setdefault(key.strip(), value.strip())
+
+
+_ZH_PHRASE_REPLACEMENTS = [
+    ("Margaret Chen, female, 71 years old.", "Margaret Chen，女性，71岁。"),
+    ("Diagnosed with", "已诊断"),
+    ("Post-surgery recovery", "术后恢复期"),
+    ("knee replacement", "膝关节置换术"),
+    ("weeks ago", "周前"),
+    ("Lives alone, daughter visits weekly.", "独居，女儿每周探访一次。"),
+    ("Over the past 14 days:", "过去14天："),
+    ("appetite noticeably decreased", "食欲明显下降"),
+    ("likely related to metformin side effects and post-surgery discomfort", "可能与二甲双胍副作用及术后不适有关"),
+    ("Steps dropped from average 4,000/day to about 1,500/day.", "步数从日均4,000步下降到约1,500步。"),
+    ("Blood pressure stable around 138/85.", "血压大致稳定在138/85左右。"),
+    ("Blood glucose slightly elevated at 7.0-7.4 fasting.", "空腹血糖轻度偏高，约为7.0-7.4。"),
+    ("Reports feeling tired and not wanting to eat much.", "近期容易疲劳，营养摄入意愿下降。"),
+    ("Hypertension", "高血压"),
+    ("hypertension", "高血压"),
+    ("Type 2 diabetes", "2型糖尿病"),
+    ("type 2 diabetes", "2型糖尿病"),
+    ("Diabetes", "糖尿病"),
+    ("diabetes", "糖尿病"),
+    ("Hyperlipidemia", "高脂血症"),
+    ("hyperlipidemia", "高脂血症"),
+    ("Coronary artery disease", "冠心病"),
+    ("coronary artery disease", "冠心病"),
+    ("During chemotherapy", "化疗期间"),
+    ("during chemotherapy", "化疗期间"),
+    ("Current medications", "当前用药"),
+    ("Medications", "用药"),
+    ("blood pressure", "血压"),
+    ("heart rate", "心率"),
+    ("blood oxygen", "血氧"),
+    ("blood glucose", "血糖"),
+    ("glucose", "血糖"),
+    ("Activity level declining", "活动量下降"),
+    ("Low activity level", "活动量偏低"),
+    ("No home exits in 5 days", "连续5天未外出"),
+    ("Appetite decreased", "食欲下降"),
+    ("Glucose monitoring gaps", "血糖监测有缺口"),
+    ("Mostly on track", "基本稳定"),
+    ("Decreased", "下降"),
+    ("Below target", "低于目标"),
+    ("Needs improvement", "需要加强"),
+    ("Skipped metformin twice due to nausea after meals", "曾因进食后恶心，二甲双胍漏服两次"),
+    ("Consider taking metformin with food or asking your doctor about extended-release formulation", "可考虑改为随餐服用二甲双胍，或与医生讨论是否调整为缓释剂型"),
+    ("Likely metformin-related nausea combined with post-surgery fatigue and reduced activity", "可能与二甲双胍引起的恶心、术后疲劳及活动减少共同相关"),
+    ("Try smaller, more frequent meals. Warm soups and soft foods may be easier to tolerate.", "可尝试少量多次的营养补充，温热流质或软质食物通常更容易耐受。"),
+    ("Knee pain from recent surgery limits walking distance and duration", "近期手术后的膝部疼痛限制了步行距离和时长"),
+    ("Start with 10-minute seated exercises twice daily. Add short walks (5 min) as tolerated.", "可先从每日两次10分钟坐姿练习开始，再根据耐受情况加入5分钟短距离步行。"),
+    ("Missed glucose checks on 3 days. Blood pressure monitoring is consistent.", "有3天漏测血糖，血压监测相对稳定。"),
+    ("Missed 血糖 checks on 3 days. Blood pressure monitoring is consistent.", "有3天漏测血糖，血压监测相对稳定。"),
+    ("Small & frequent", "少量多次"),
+    ("Medication timing", "用药时机"),
+    ("Gentle foods first", "先选择温和易耐受的食物"),
+    ("Stay hydrated", "注意补水"),
+    ("When appetite is low, eat 5-6 small meals rather than 3 large ones. Even a few bites help.", "当营养摄入意愿下降时，可将三餐分成5到6次少量补充，即使只吃几口也有帮助。"),
+    ("Take metformin in the middle of eating (not on an empty stomach) to reduce nausea.", "二甲双胍建议随餐服用，避免空腹，以减少恶心。"),
+    ("Start with warm, soft foods like oatmeal, soups, and eggs when your stomach feels sensitive.", "胃部较敏感时，可优先选择燕麦粥、汤类、鸡蛋等温热软质食物。"),
+    ("Sip water throughout the day. Warm herbal tea can also help with appetite and digestion.", "白天分次补水即可，温热花草茶也有助于改善食欲与消化。"),
+    ("Margaret, since your appetite is lower right now, focus on nutrient-dense foods in smaller portions. Warm oatmeal, soft-boiled eggs, and broth-based soups are gentle on the stomach. Add a handful of nuts or a small piece of fruit as snacks between meals to keep your energy up.", "Margaret，您目前营养摄入意愿偏低，建议优先选择高营养密度、少量多次的饮食安排。温热燕麦粥、溏心蛋和清汤类食物对胃部更温和，两餐之间可加一小把坚果或少量水果，帮助维持体力。"),
+    ("Margaret's adherence data over 14 days shows a clear pattern: medication compliance is good except for metformin-related nausea, appetite is reduced likely due to the combination of metformin side effects and post-surgery recovery, and activity levels have dropped significantly due to knee pain. The meal plan focuses on easy-to-digest, nutrient-dense options that address all three conditions while being gentle on her stomach.", "Margaret近14天的执行数据呈现出较清晰的模式：除二甲双胍相关恶心外，用药总体较稳定；营养摄入下降可能与药物副作用和术后恢复共同相关；活动量则因膝部疼痛明显减少。当前膳食计划优先选择易消化、营养密度高、同时兼顾三项慢病管理的方案。"),
+    ("Low sodium, high potassium", "低钠、高钾"),
+    ("Low GI, controlled portions", "低升糖指数、控制份量"),
+    ("Low saturated fat, high fiber", "低饱和脂肪、高纤维"),
+    ("Leafy greens, bananas, sweet potatoes, fish", "绿叶蔬菜、香蕉、红薯、鱼类"),
+    ("Canned soups, deli meats, soy sauce, pickles", "罐头汤、加工肉类、酱油、腌制食品"),
+    ("Oatmeal, lentils, non-starchy vegetables, nuts", "燕麦、扁豆、非淀粉类蔬菜、坚果"),
+    ("White bread, sugary drinks, pastries, white rice", "白面包、含糖饮料、糕点、白米饭"),
+    ("Salmon, olive oil, oats, almonds", "三文鱼、橄榄油、燕麦、杏仁"),
+    ("Fried foods, butter, fatty meats, full-fat dairy", "油炸食品、黄油、高脂肉类、全脂乳制品"),
+    ("Warm oatmeal with banana", "香蕉燕麦粥"),
+    ("Soft-boiled egg", "溏心蛋"),
+    ("Chicken broth with vegetables", "蔬菜鸡汤"),
+    ("Whole wheat crackers", "全麦饼干"),
+    ("Baked salmon fillet", "烤三文鱼"),
+    ("Steamed broccoli", "清蒸西兰花"),
+    ("Brown rice (small portion)", "糙米饭（小份）"),
+    ("Greek yogurt with berries", "希腊酸奶配莓果"),
+    ("Handful of almonds", "一小把杏仁"),
+    ("Lentil soup", "扁豆汤"),
+    ("Side salad with olive oil", "橄榄油蔬菜沙拉"),
+    ("Grilled chicken breast", "烤鸡胸肉"),
+    ("Roasted sweet potato", "烤红薯"),
+    ("Sauteed spinach", "清炒菠菜"),
+    ("Scrambled eggs on toast", "吐司炒蛋"),
+    ("Sliced avocado", "牛油果切片"),
+    ("Tuna salad (light mayo)", "金枪鱼沙拉（少酱）"),
+    ("Apple slices", "苹果切片"),
+    ("Turkey meatballs", "火鸡肉丸"),
+    ("Quinoa pilaf", "藜麦饭"),
+    ("Steamed green beans", "清蒸四季豆"),
+    ("Low GI, gentle on stomach", "低升糖、对胃部更温和"),
+    ("Lean protein boost", "补充优质蛋白"),
+    ("Low sodium, hydrating", "低钠、帮助补水"),
+    ("Slow-release carbs", "缓释碳水"),
+    ("Heart-healthy omega-3", "有益心血管的Omega-3"),
+    ("Potassium-rich", "富含钾"),
+    ("High fiber whole grain", "高纤维全谷物"),
+    ("Protein + low GI fruit", "蛋白质搭配低升糖水果"),
+    ("Healthy fats, fiber", "健康脂肪与膳食纤维"),
+    ("Low GI, high protein", "低升糖、高蛋白"),
+    ("Heart-healthy fats", "有益心血管的脂肪来源"),
+    ("Lean protein", "优质瘦蛋白"),
+    ("Magnesium + potassium", "补充镁和钾"),
+    ("Protein-rich start", "高蛋白开场"),
+    ("Healthy monounsaturated fat", "富含健康单不饱和脂肪"),
+    ("Omega-3 fatty acids", "富含Omega-3脂肪酸"),
+    ("Fiber-rich, low GI snack", "高纤维、低升糖加餐"),
+    ("Complete protein grain", "兼具完整蛋白的谷物"),
+    ("Low sodium, high fiber", "低钠、高纤维"),
+    ("This report was generated by an AI health assistant for information only. It is not medical advice. If you feel unwell, please contact your doctor or call emergency services. Always follow your clinician's instructions regarding medications and treatment.", "本报告由AI健康助手生成，仅供参考，不能替代专业医疗建议。如有不适，请及时联系医生或急救服务，并始终遵循临床医生关于用药和治疗的指导。"),
+]
+
+
+_ZH_MEDICATION_MAP = {
+    "amlodipine": "氨氯地平",
+    "metformin": "二甲双胍",
+    "atorvastatin": "阿托伐他汀",
+    "atorvastatin calcium": "阿托伐他汀钙",
+    "aspirin": "阿司匹林",
+    "clopidogrel": "氯吡格雷",
+    "losartan": "氯沙坦",
+    "valsartan": "缬沙坦",
+    "lisinopril": "赖诺普利",
+    "enalapril": "依那普利",
+    "perindopril": "培哚普利",
+    "telmisartan": "替米沙坦",
+    "irbesartan": "厄贝沙坦",
+    "olmesartan": "奥美沙坦",
+    "metoprolol": "美托洛尔",
+    "bisoprolol": "比索洛尔",
+    "carvedilol": "卡维地洛",
+    "nifedipine": "硝苯地平",
+    "felodipine": "非洛地平",
+    "hydrochlorothiazide": "氢氯噻嗪",
+    "indapamide": "吲达帕胺",
+    "spironolactone": "螺内酯",
+    "torsemide": "托拉塞米",
+    "rosuvastatin": "瑞舒伐他汀",
+    "simvastatin": "辛伐他汀",
+    "pravastatin": "普伐他汀",
+    "ezetimibe": "依折麦布",
+    "furosemide": "呋塞米",
+    "digoxin": "地高辛",
+    "warfarin": "华法林",
+    "rivaroxaban": "利伐沙班",
+    "apixaban": "阿哌沙班",
+    "dabigatran": "达比加群",
+    "nitroglycerin": "硝酸甘油",
+    "isosorbide mononitrate": "单硝酸异山梨酯",
+    "metoprolol succinate": "琥珀酸美托洛尔",
+    "metoprolol tartrate": "酒石酸美托洛尔",
+    "glimepiride": "格列美脲",
+    "gliclazide": "格列齐特",
+    "glyburide": "格列本脲",
+    "glipizide": "格列吡嗪",
+    "acarbose": "阿卡波糖",
+    "pioglitazone": "吡格列酮",
+    "sitagliptin": "西格列汀",
+    "linagliptin": "利格列汀",
+    "vildagliptin": "维格列汀",
+    "saxagliptin": "沙格列汀",
+    "empagliflozin": "恩格列净",
+    "dapagliflozin": "达格列净",
+    "canagliflozin": "卡格列净",
+    "semaglutide": "司美格鲁肽",
+    "dulaglutide": "度拉糖肽",
+    "liraglutide": "利拉鲁肽",
+    "insulin glargine": "甘精胰岛素",
+    "insulin lispro": "赖脯胰岛素",
+    "insulin aspart": "门冬胰岛素",
+    "insulin detemir": "地特胰岛素",
+    "omeprazole": "奥美拉唑",
+    "esomeprazole": "埃索美拉唑",
+    "pantoprazole": "泮托拉唑",
+    "lansoprazole": "兰索拉唑",
+    "rabeprazole": "雷贝拉唑",
+    "famotidine": "法莫替丁",
+    "sucralfate": "硫糖铝",
+    "domperidone": "多潘立酮",
+    "mosapride": "莫沙必利",
+    "levothyroxine": "左甲状腺素",
+    "allopurinol": "别嘌醇",
+    "colchicine": "秋水仙碱",
+    "gabapentin": "加巴喷丁",
+    "pregabalin": "普瑞巴林",
+    "sertraline": "舍曲林",
+    "escitalopram": "艾司西酞普兰",
+    "alprazolam": "阿普唑仑",
+    "zolpidem": "唑吡坦",
+    "acetaminophen": "对乙酰氨基酚",
+    "paracetamol": "对乙酰氨基酚",
+    "ibuprofen": "布洛芬",
+    "naproxen": "萘普生",
+    "diclofenac": "双氯芬酸",
+    "celecoxib": "塞来昔布",
+    "tramadol": "曲马多",
+    "amoxicillin": "阿莫西林",
+    "amoxicillin clavulanate": "阿莫西林克拉维酸",
+    "azithromycin": "阿奇霉素",
+    "clarithromycin": "克拉霉素",
+    "levofloxacin": "左氧氟沙星",
+    "cefuroxime": "头孢呋辛",
+    "cefdinir": "头孢地尼",
+    "omeprazole": "奥美拉唑",
+}
+
+
+_ZH_DOSING_MAP = {
+    "qd": "每日1次",
+    "bid": "每日2次",
+    "tid": "每日3次",
+    "qid": "每日4次",
+    "qhs": "每晚1次",
+    "qn": "每晚1次",
+    "prn": "按需使用",
+}
+
+
+_ZH_FORMULATION_MAP = {
+    "xr": "缓释",
+    "er": "缓释",
+    "sr": "缓释",
+    "cr": "控释",
+    "dr": "肠溶",
+    "ir": "速释",
+    "extended-release": "缓释",
+    "extended release": "缓释",
+    "sustained-release": "缓释",
+    "sustained release": "缓释",
+    "controlled-release": "控释",
+    "controlled release": "控释",
+    "delayed-release": "肠溶",
+    "delayed release": "肠溶",
+    "immediate-release": "速释",
+    "immediate release": "速释",
+    "tablet": "片",
+    "tablets": "片",
+    "capsule": "胶囊",
+    "capsules": "胶囊",
+    "cap": "胶囊",
+    "tab": "片",
+    "injection": "注射液",
+    "injectable": "注射剂",
+    "solution": "溶液",
+    "oral solution": "口服溶液",
+    "suspension": "混悬液",
+    "oral suspension": "口服混悬液",
+    "syrup": "糖浆",
+    "cream": "乳膏",
+    "ointment": "软膏",
+    "gel": "凝胶",
+    "patch": "贴剂",
+    "spray": "喷雾剂",
+    "drop": "滴剂",
+    "drops": "滴剂",
+}
+
+
+def _localize_zh_text(text: str) -> str:
+    if not text:
+        return ""
+    localized = re.sub(r"\s+", " ", str(text)).strip()
+    for source, target in _ZH_PHRASE_REPLACEMENTS:
+        localized = localized.replace(source, target)
+    for source, target in sorted(_ZH_MEDICATION_MAP.items(), key=lambda item: len(item[0]), reverse=True):
+        localized = re.sub(rf"\b{re.escape(source)}\b", target, localized, flags=re.IGNORECASE)
+    for source, target in sorted(_ZH_DOSING_MAP.items(), key=lambda item: len(item[0]), reverse=True):
+        localized = re.sub(rf"\b{re.escape(source)}\b", target, localized, flags=re.IGNORECASE)
+    for source, target in sorted(_ZH_FORMULATION_MAP.items(), key=lambda item: len(item[0]), reverse=True):
+        localized = re.sub(rf"\b{re.escape(source)}\b", target, localized, flags=re.IGNORECASE)
+    localized = re.sub(r"\((\d+)\s+years\)", r"（\1年）", localized)
+    localized = re.sub(r"\((\d+)\s+year\)", r"（\1年）", localized)
+    localized = re.sub(r"(\d+)\s+years old", r"\1岁", localized)
+    localized = re.sub(r"\b(\d+(?:\.\d+)?)\s*mg\b", r"\1mg", localized, flags=re.IGNORECASE)
+    localized = re.sub(r"\b(\d+(?:\.\d+)?)\s*ml\b", r"\1mL", localized, flags=re.IGNORECASE)
+    localized = re.sub(r"([A-Za-z\u4e00-\u9fff]+)\s+缓释\s+片", r"\1缓释片", localized)
+    localized = re.sub(r"([A-Za-z\u4e00-\u9fff]+)\s+控释\s+片", r"\1控释片", localized)
+    localized = re.sub(r"([A-Za-z\u4e00-\u9fff]+)\s+肠溶\s+片", r"\1肠溶片", localized)
+    localized = re.sub(r"([A-Za-z\u4e00-\u9fff]+)\s+片", r"\1片", localized)
+    localized = re.sub(r"([A-Za-z\u4e00-\u9fff]+)\s+胶囊", r"\1胶囊", localized)
+    localized = re.sub(r"([A-Za-z\u4e00-\u9fff]+)\s+注射液", r"\1注射液", localized)
+    localized = re.sub(r"\s{2,}", " ", localized).strip()
+    return localized
+
+
+def _localize_zh_value(value: object) -> object:
+    if isinstance(value, str):
+        return _localize_zh_text(value)
+    if isinstance(value, list):
+        return [_localize_zh_value(item) for item in value]
+    if isinstance(value, dict):
+        return {key: _localize_zh_value(item) for key, item in value.items()}
+    return value
 
 
 def _extract_numbers(value: object) -> list[float]:
@@ -381,7 +676,7 @@ def _render_condition_badges(conditions: list[str]) -> str:
         color = _COND_COLORS.get(c, "bg-slate-500")
         parts.append(
             f'<span class="condition-chip inline-block {color} text-white px-3 py-1 '
-            f'rounded-full text-xs font-semibold">{escape(c)}</span>'
+            f'rounded-full text-xs font-semibold">{escape(_localize_zh_text(c))}</span>'
         )
     return "\n".join(parts)
 
@@ -402,7 +697,7 @@ def _render_risk_tags(tags: list[str]) -> str:
                 break
         parts.append(
             f'<span class="inline-block px-3 py-1 rounded-full text-xs '
-            f'font-medium border {cls}">{escape(tag)}</span>'
+            f'font-medium border {cls}">{escape(_localize_zh_text(tag))}</span>'
         )
     return "\n".join(parts)
 
@@ -413,12 +708,12 @@ def _render_recommendations(recs: list) -> str:
     parts = []
     for i, r in enumerate(recs):
         if isinstance(r, dict):
-            text = r.get("text", "")
-            reason = r.get("reason", "")
+            text = _localize_zh_text(r.get("text", ""))
+            reason = _localize_zh_text(r.get("reason", ""))
             category = r.get("category", "")
             icon = _CATEGORY_ICONS.get(category, _REC_ICONS[i % len(_REC_ICONS)])
         else:
-            text = str(r)
+            text = _localize_zh_text(str(r))
             reason = ""
             icon = _REC_ICONS[i % len(_REC_ICONS)]
         safe_text = escape(text, quote=True)
@@ -460,7 +755,7 @@ def _render_reasoning(reasoning: str) -> str:
         '<div class="mt-4 pt-3 border-t border-slate-100">'
         '<div class="text-[11px] text-slate-400 uppercase tracking-wide font-medium mb-1.5">'
         "评估依据</div>"
-        f'<div class="text-xs text-slate-600 bg-slate-50 rounded-lg p-3 leading-relaxed">{escape(reasoning)}</div>'
+        f'<div class="text-xs text-slate-600 bg-slate-50 rounded-lg p-3 leading-relaxed">{escape(_localize_zh_text(reasoning))}</div>'
         '</div>'
     )
 
@@ -470,7 +765,7 @@ def _field_label(key: str) -> str:
 
 
 def _render_adherence_dimension(icon: str, title: str, dim: dict) -> str:
-    status = dim.get("status") or ""
+    status = _localize_zh_text(dim.get("status") or "")
     detail_keys = [k for k in dim if k != "status"]
     if not status and not detail_keys:
         return ""
@@ -500,7 +795,7 @@ def _render_adherence_dimension(icon: str, title: str, dim: dict) -> str:
             label = _field_label(key)
             html += (
                 f'<div class="text-xs text-slate-600 mt-1">'
-                f'<span class="font-medium text-slate-500">{label}：</span> {escape(str(val))}'
+                f'<span class="font-medium text-slate-500">{label}：</span> {escape(_localize_zh_text(str(val)))}'
                 f'</div>'
             )
     html += '</div>'
@@ -540,8 +835,8 @@ def _render_memory_overview(memory: dict) -> str:
     if not memory:
         return ""
 
-    profile = memory.get("patient_long_term_profile") or ""
-    dynamics = memory.get("recent_health_dynamics") or ""
+    profile = _localize_zh_text(memory.get("patient_long_term_profile") or "")
+    dynamics = _localize_zh_text(memory.get("recent_health_dynamics") or "")
 
     blocks = []
 
@@ -590,7 +885,7 @@ def _render_key_events(memory: dict) -> str:
     for ev in events:
         ev_icon = event_icons.get(ev.get("type", ""), "📌")
         ev_date = ev.get("date", "")
-        ev_desc = ev.get("description", "")
+        ev_desc = _localize_zh_text(ev.get("description", ""))
         ev_type = ev.get("type", "")
         type_cls = {
             "surgery": "bg-purple-50 text-purple-700 border-purple-200",
@@ -619,7 +914,7 @@ def _stringify_compact(value: object) -> str:
     if value in (None, "", [], {}):
         return ""
     if isinstance(value, str):
-        return value.strip()
+        return _localize_zh_text(value)
     if isinstance(value, list):
         parts = []
         for item in value[:4]:
@@ -634,7 +929,7 @@ def _stringify_compact(value: object) -> str:
             if text:
                 parts.append(f"{_field_label(key)}：{text}")
         return "；".join(parts)
-    return str(value)
+    return _localize_zh_text(str(value))
 
 
 def _extract_medications(profile: str) -> list[str]:
@@ -667,7 +962,7 @@ def _extract_medications(profile: str) -> list[str]:
         if norm in seen:
             continue
         seen.add(norm)
-        meds.append(item)
+        meds.append(_localize_zh_text(item))
     return meds[:5]
 
 
@@ -689,9 +984,9 @@ def _render_personalized_context(so: dict, payload: dict, memory: dict) -> str:
                 continue
             category = item.get("category") or ""
             icon, label = category_meta.get(category, ("🎯", "个性化依据"))
-            title = item.get("title") or label
-            evidence = item.get("evidence") or ""
-            why_it_matters = item.get("why_it_matters") or item.get("implication") or ""
+            title = _localize_zh_text(item.get("title") or label)
+            evidence = _localize_zh_text(item.get("evidence") or "")
+            why_it_matters = _localize_zh_text(item.get("why_it_matters") or item.get("implication") or "")
             body = ""
             if evidence:
                 body += f'<div class="text-sm text-slate-700 leading-relaxed">{escape(evidence)}</div>'
@@ -747,9 +1042,9 @@ def _render_personalized_context(so: dict, payload: dict, memory: dict) -> str:
         if surgery_event or "术后" in profile or "post-surgery" in profile.lower():
             implication_parts.append("恢复期会更强调蛋白质、容易入口的食物和循序渐进活动")
         if any(c in {"高血压", "Hypertension"} for c in conditions):
-            implication_parts.append("饮食会特别强调少盐")
+            implication_parts.append("营养安排会特别强调少盐")
         if any(c in {"2型糖尿病", "糖尿病", "Type 2 diabetes", "Diabetes"} for c in conditions):
-            implication_parts.append("也会提醒规律分餐和少精制糖")
+            implication_parts.append("也会提醒规律分餐和减少精制糖")
 
         cards.append(
             '<div class="sub-card sub-card-static">'
@@ -761,7 +1056,7 @@ def _render_personalized_context(so: dict, payload: dict, memory: dict) -> str:
             '</div>'
             '</div>'
             '<div class="sub-card-body">'
-            f'<div class="flex flex-wrap gap-2 mb-3">{"".join(f"<span class=\"context-chip\">{escape(chip)}</span>" for chip in history_chips[:4])}</div>'
+            f'<div class="flex flex-wrap gap-2 mb-3">{"".join(f"<span class=\"context-chip\">{escape(_localize_zh_text(chip))}</span>" for chip in history_chips[:4])}</div>'
             + (
                 '<div class="text-xs text-slate-600 bg-slate-50 rounded-xl px-3 py-2 leading-relaxed border border-slate-200">'
                 f'所以这里会更强调：{escape("；".join(implication_parts))}</div>'
@@ -801,7 +1096,7 @@ def _render_personalized_context(so: dict, payload: dict, memory: dict) -> str:
             '<span class="sub-card-icon">💊</span>'
             '<div class="flex-1 min-w-0">'
             '<div class="sub-card-label">当前用药</div>'
-            '<div class="sub-card-value">用药情况和身体反应会直接影响饮食建议</div>'
+            '<div class="sub-card-value">用药情况和身体反应会直接影响营养建议</div>'
             '</div>'
             '</div>'
             f'<div class="sub-card-body">{med_body}</div>'
@@ -822,7 +1117,7 @@ def _render_personalized_context(so: dict, payload: dict, memory: dict) -> str:
             metric_bits.append(f'{metric_labels.get(key, key)} {value}')
 
     monitoring_gap = _stringify_compact((adherence.get("monitoring") or {}).get("gaps"))
-    signal_bits = [str(item).strip() for item in (signals.get("anomalies") or []) if str(item).strip()]
+    signal_bits = [_localize_zh_text(str(item).strip()) for item in (signals.get("anomalies") or []) if str(item).strip()]
     recent_focus = []
     if metric_bits:
         recent_focus.append("最近记录：" + "，".join(metric_bits[:3]))
@@ -831,12 +1126,13 @@ def _render_personalized_context(so: dict, payload: dict, memory: dict) -> str:
     if monitoring_gap:
         recent_focus.append("监测提醒：" + monitoring_gap)
     elif recent_dynamics:
-        recent_focus.append(_stringify_compact(recent_dynamics)[:120] + ("..." if len(_stringify_compact(recent_dynamics)) > 120 else ""))
+        recent_text = _stringify_compact(recent_dynamics)
+        recent_focus.append(recent_text[:120] + ("..." if len(recent_text) > 120 else ""))
 
     if recent_focus:
         implication = []
         if any("血糖" in bit for bit in metric_bits):
-            implication.append("饮食会更强调规律分餐")
+            implication.append("营养安排会更强调规律分餐")
         if any("步数" in bit for bit in metric_bits) or any("Activity" in bit or "活动" in bit for bit in signal_bits):
             implication.append("活动建议会更温和、循序渐进")
         if monitoring_gap:
@@ -877,11 +1173,11 @@ def _render_personalized_context(so: dict, payload: dict, memory: dict) -> str:
             '<div class="sub-card-header">'
             '<span class="sub-card-icon">🧠</span>'
             '<div class="flex-1 min-w-0">'
-            f'<div class="sub-card-label">{escape(label)}</div>'
+            f'<div class="sub-card-label">{escape(_localize_zh_text(label))}</div>'
             '<div class="sub-card-value">如果后面接入更深的病例，这里会直接引用</div>'
             '</div>'
             '</div>'
-            f'<div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">{escape(text)}</div></div>'
+            f'<div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">{escape(_localize_zh_text(text))}</div></div>'
             '</div>'
         )
 
@@ -998,10 +1294,10 @@ def _render_health_guidance(guidance: dict, conditions: list[str], tone_profile:
     summary = ""
     tips = []
     if isinstance(guidance, dict):
-        summary = guidance.get("summary") or ""
+        summary = _localize_zh_text(guidance.get("summary") or "")
         tips = guidance.get("tips") or []
     elif isinstance(guidance, str):
-        summary = guidance
+        summary = _localize_zh_text(guidance)
 
     if not summary and not tips and not conditions:
         return ""
@@ -1030,11 +1326,11 @@ def _render_health_guidance(guidance: dict, conditions: list[str], tone_profile:
     for tip in tips:
         if isinstance(tip, dict):
             icon = guidance_icons.get(tip.get("category", ""), "💡")
-            text = tip.get("text", "")
-            why = tip.get("why", "")
+            text = _localize_zh_text(tip.get("text", ""))
+            why = _localize_zh_text(tip.get("why", ""))
         else:
             icon = "💡"
-            text = str(tip)
+            text = _localize_zh_text(str(tip))
             why = ""
 
         body_html = ""
@@ -1067,10 +1363,10 @@ def _render_diet_table(diet_table: list[dict]) -> str:
     for item in diet_table:
         rows += (
             f'<tr>'
-            f'<td class="px-4 py-3 font-medium text-slate-800">{escape(item.get("condition", ""))}</td>'
-            f'<td class="px-4 py-3 text-slate-600">{escape(item.get("principle", ""))}</td>'
-            f'<td class="px-4 py-3 text-emerald-700">{escape(item.get("recommend", ""))}</td>'
-            f'<td class="px-4 py-3 text-rose-600">{escape(item.get("avoid", ""))}</td>'
+            f'<td class="px-4 py-3 font-medium text-slate-800">{escape(_localize_zh_text(item.get("condition", "")))}</td>'
+            f'<td class="px-4 py-3 text-slate-600">{escape(_localize_zh_text(item.get("principle", "")))}</td>'
+            f'<td class="px-4 py-3 text-emerald-700">{escape(_localize_zh_text(item.get("recommend", "")))}</td>'
+            f'<td class="px-4 py-3 text-rose-600">{escape(_localize_zh_text(item.get("avoid", "")))}</td>'
             f'</tr>'
         )
     return (
@@ -1094,8 +1390,8 @@ def _render_diet_tips(tips: list[dict]) -> str:
 
     html = ""
     for tip in tips:
-        title = tip.get("title", "")
-        detail = tip.get("detail", "")
+        title = _localize_zh_text(tip.get("title", ""))
+        detail = _localize_zh_text(tip.get("detail", ""))
         icon = tip.get("icon", "💡")
         safe_title = escape(title).replace("'", "&#39;")
 
@@ -1447,7 +1743,7 @@ def main() -> None:
         )
     map_section = _render_map_section(ai_map_msg, ai_map_msg_park, patient_lat, patient_lon)
 
-    meal_json = json.dumps(so.get("weekly_meal_plan") or [], ensure_ascii=False)
+    meal_json = json.dumps(_localize_zh_value(so.get("weekly_meal_plan") or []), ensure_ascii=False)
 
     patient_id = meta.get("user_id") or payload.get("user_id") or payload.get("patient_id") or "unknown"
 
@@ -1527,7 +1823,7 @@ def main() -> None:
             dim = adh.get(k)
             if not isinstance(dim, dict) or not dim.get("status"):
                 continue
-            status_text_local = dim["status"]
+            status_text_local = _localize_zh_text(dim["status"])
             is_good = any(w in status_text_local.lower() or w in status_text_local for w in _GOOD_STATUS_KEYWORDS)
             color = "text-emerald-700" if is_good else "text-amber-700"
 
@@ -1538,7 +1834,7 @@ def main() -> None:
                     label = _field_label(dk)
                     detail_parts.append(
                         f'<div class="text-sm text-slate-600 mb-1">'
-                        f'<span class="font-medium text-slate-500">{label}：</span> {escape(str(val))}</div>'
+                        f'<span class="font-medium text-slate-500">{label}：</span> {escape(_localize_zh_text(str(val)))}</div>'
                     )
             body_html = "".join(detail_parts)
 
@@ -1569,12 +1865,12 @@ def main() -> None:
                 html += f'<div class="flex flex-wrap gap-2 mb-3">{tags}</div>'
         for r in recs:
             if isinstance(r, dict):
-                text = r.get("text", "")
-                reason = r.get("reason", "")
+                text = _localize_zh_text(r.get("text", ""))
+                reason = _localize_zh_text(r.get("reason", ""))
                 category = r.get("category", "")
                 icon = _CATEGORY_ICONS.get(category, "💡")
             else:
-                text = str(r)
+                text = _localize_zh_text(str(r))
                 reason = ""
                 icon = "💡"
             safe_text = escape(text).replace("'", "&#39;")
@@ -1596,18 +1892,17 @@ def main() -> None:
             body_html = "".join(body_parts)
 
             html += (
-                f'<div class="sub-card">'
+                f'<div class="sub-card sub-card-static">'
                 f'<div class="sub-card-header">'
                 f'<span class="sub-card-icon">{icon}</span>'
                 f'<div class="flex-1 min-w-0">'
                 f'<div class="sub-card-value" style="font-size:0.92em">{escape(text)}</div>'
                 f'</div>'
-                f'<span class="sub-card-arrow">▶</span>'
                 f'</div>'
                 f'<div class="sub-card-body">{body_html}</div>'
                 f'</div>'
             )
-        reasoning = so.get("reasoning") or ""
+        reasoning = _localize_zh_text(so.get("reasoning") or "")
         if reasoning and "reasoning" in visible:
             html += (
                 f'<div class="text-xs text-slate-500 mt-3 bg-slate-50 rounded-lg p-3 leading-relaxed">'
@@ -1629,7 +1924,7 @@ def main() -> None:
         ("nutrition", "🥗", "#ecfdf5", "营养建议",
          lambda: (
              '<p style="font-size:0.95em;line-height:1.7;color:#334155;padding:8px 0">'
-             + escape(so.get("nutrition_advice") or "保持均衡饮食，多吃新鲜蔬菜，注意适量饮水。")
+             + escape(_localize_zh_text(so.get("nutrition_advice") or "保持均衡营养，多摄入新鲜蔬菜，注意适量补水。"))
              + '</p>'
          )),
         ("diet_table", "📑", "#fff7ed", "疾病饮食对照",
@@ -1637,7 +1932,7 @@ def main() -> None:
         ("cuisine", "🍜", "#fdf2f8", "口味偏好",
          lambda: (
              '<p class="text-sm text-slate-500 mb-3">选择您喜欢的菜系，'
-             "后续食谱会尽量参考您的口味。</p>"
+             "后续膳食建议会尽量参考您的口味。</p>"
              '<div class="flex flex-wrap gap-2 mb-3" id="cuisineChips"></div>'
              '<div class="flex items-center gap-2">'
              '<input id="customCuisineInput" type="text" placeholder="添加其他菜系..." '
@@ -1647,12 +1942,12 @@ def main() -> None:
              'border border-emerald-200 text-emerald-700 text-sm font-medium hover:bg-emerald-100">'
              '+ 添加</button></div>'
          )),
-        ("meal_plan", "📅", "#eff6ff", "一周餐食灵感",
+        ("meal_plan", "📅", "#eff6ff", "一周膳食参考",
          lambda: (
              '<div class="flex gap-2 mb-4 overflow-x-auto pb-2" id="dayTabs"></div>'
              '<div id="mealContent"></div>'
          )),
-        ("diet_tips", "✨", "#f0fdf4", "饮食小贴士",
+        ("diet_tips", "✨", "#f0fdf4", "营养小贴士",
          lambda: _render_diet_tips(so.get("diet_tips") or [])),
         ("map", "🏥", "#f0f9ff", "附近医疗与公园",
          lambda: map_section),
@@ -1673,7 +1968,7 @@ def main() -> None:
     vitals_preview = f"血压 {bp_preview}，心率 {hr_preview}" if bp_preview else "血压、心率、血糖等最新数据"
 
     guidance_data = so.get("health_guidance") or {}
-    guidance_summary = guidance_data.get("summary", "") if isinstance(guidance_data, dict) else ""
+    guidance_summary = _localize_zh_text(guidance_data.get("summary", "")) if isinstance(guidance_data, dict) else ""
     guidance_preview = (guidance_summary or "结合您的疾病和近期情况生成的个性化建议")[:80]
     if len(guidance_summary) > 80:
         guidance_preview += "..."
@@ -1682,13 +1977,13 @@ def main() -> None:
         "guidance": guidance_preview,
         "memory": "您的长期资料、近期趋势和关键事件",
         "vitals": vitals_preview,
-        "adherence": "近期用药、饮食、运动和监测情况",
+        "adherence": "近期用药、营养、运动和监测情况",
         "recommendations": "适合当前情况的可执行建议",
-        "nutrition": "吃什么，以及为什么这样吃",
+        "nutrition": "营养重点，以及为什么这样安排",
         "diet_table": "不同疾病对应的饮食原则",
         "cuisine": "告诉我们您喜欢的口味",
-        "meal_plan": "早餐、午餐和晚餐灵感",
-        "diet_tips": "更容易坚持的饮食提醒",
+        "meal_plan": "一周早、中、晚膳食参考",
+        "diet_tips": "更容易坚持的小型营养提醒",
         "map": "附近医院和公园",
         "submit": "保存您的反馈和偏好",
     }
@@ -1721,11 +2016,11 @@ def main() -> None:
     nutrition_text = (
         '<div class="rounded-xl bg-emerald-50 border border-emerald-100 px-4 py-4 '
         'text-[0.95em] leading-7 text-slate-700">'
-        + escape(so.get("nutrition_advice") or "保持均衡饮食，多吃新鲜蔬菜，注意适量饮水。")
+        + escape(_localize_zh_text(so.get("nutrition_advice") or "保持均衡营养，多摄入新鲜蔬菜，注意适量补水。"))
         + '</div>'
     )
     cuisine_html = (
-        '<p class="text-sm text-slate-500 mb-3">选择您喜欢的菜系，后续餐食灵感会尽量参考您的口味。</p>'
+        '<p class="text-sm text-slate-500 mb-3">选择您喜欢的菜系，后续膳食建议会尽量参考您的口味。</p>'
         '<div class="flex flex-wrap gap-2 mb-3" id="cuisineChips"></div>'
         '<div class="flex items-center gap-2">'
         '<input id="customCuisineInput" type="text" placeholder="添加其他菜系..." '
@@ -1787,7 +2082,7 @@ def main() -> None:
         adherence_html = _adherence_subcards()
         if adherence_html.strip():
             adherence_body_parts.append(
-                _module_subsection("执行情况", "看看最近用药、饮食、活动和监测情况。", adherence_html)
+                _module_subsection("执行情况", "看看最近用药、营养、活动和监测情况。", adherence_html)
             )
     key_events_html = _render_key_events(memory) if "memory" in visible else ""
     if key_events_html.strip():
@@ -1808,9 +2103,9 @@ def main() -> None:
         )
 
     nutrition_bundle_html = "".join([
-        _module_subsection("营养建议", "先看这段时间吃什么会更适合您。", nutrition_text) if "nutrition" in visible else "",
+        _module_subsection("营养建议", "先看这段时间哪些营养安排更适合您。", nutrition_text) if "nutrition" in visible else "",
         _module_subsection("疾病饮食对照", "哪些食物更适合，哪些先少吃一点。", _render_diet_table(so.get("diet_table") or [])) if "diet_table" in visible else "",
-        _module_subsection("饮食小贴士", "都是些更容易用得上的小提醒。", _render_diet_tips(so.get("diet_tips") or [])) if "diet_tips" in visible else "",
+        _module_subsection("营养小贴士", "都是些更容易用得上的小提醒。", _render_diet_tips(so.get("diet_tips") or [])) if "diet_tips" in visible else "",
     ])
     if nutrition_bundle_html:
         regrouped_cards.append(
@@ -1818,15 +2113,15 @@ def main() -> None:
                 "nutrition_bundle",
                 "🥗",
                 "#ecfdf5",
-                "吃什么更合适",
-                "把吃法、对照和小提醒放在一起，更好参考。",
+                "营养重点",
+                "把营养建议、对照和小提醒放在一起，更好参考。",
                 nutrition_bundle_html,
             )
         )
 
     meal_bundle_html = "".join([
-        _module_subsection("口味偏好", "选一些您平时更愿意吃的口味，后面的建议会更贴近您。", cuisine_html) if "cuisine" in visible else "",
-        _module_subsection("一周餐食灵感", "给您一些这周更容易照着吃的早、中、晚餐想法。", meal_plan_html) if "meal_plan" in visible else "",
+        _module_subsection("口味偏好", "选一些您平时更喜欢的口味，后面的膳食建议会更贴近您。", cuisine_html) if "cuisine" in visible else "",
+        _module_subsection("一周膳食参考", "给您一些这周更容易参考的早、中、晚餐搭配。", meal_plan_html) if "meal_plan" in visible else "",
     ])
     if meal_bundle_html:
         regrouped_cards.append(
@@ -1834,8 +2129,8 @@ def main() -> None:
                 "meal_bundle",
                 "🍽️",
                 "#eff6ff",
-                "吃饭灵感",
-                "喜欢吃什么、这一周怎么吃，都放在这里。",
+                "膳食计划",
+                "口味偏好和本周膳食安排都整理在这里。",
                 meal_bundle_html,
             )
         )
@@ -1865,7 +2160,7 @@ def main() -> None:
         meal_data_json=meal_json,
         maps_script=maps_script,
         guardrail=escape(
-            so.get("guardrail")
+            _localize_zh_text(so.get("guardrail"))
             or "本报告由 AI 健康助手生成，仅供参考，不构成医疗建议。如有不适，请及时联系医生或拨打 120。"
         ),
     )
