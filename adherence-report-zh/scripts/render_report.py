@@ -14,7 +14,7 @@ import os
 import re
 import sys
 from html import escape
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 
 _TEMPLATE_PATH = Path(__file__).resolve().parent.parent / "templates" / "report.html"
@@ -563,7 +563,8 @@ def _localize_zh_value(value: object) -> object:
 def _extract_numbers(value: object) -> list[float]:
     if value is None:
         return []
-    return [float(part) for part in re.findall(r"\d+(?:\.\d+)?", str(value))]
+    cleaned = str(value).replace(",", "")
+    return [float(part) for part in re.findall(r"\d+(?:\.\d+)?", cleaned)]
 
 
 def _render_vitals(summary: dict) -> str:
@@ -1400,10 +1401,12 @@ def _render_diet_tips(tips: list[dict]) -> str:
             body_html = (
                 f'<div class="text-sm text-slate-600 leading-relaxed mb-2">{escape(detail)}</div>'
                 f'<div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap">'
-                f'<button class="feedback-btn like" title="有帮助" '
-                f"onclick=\"saveLike(-1,'tip','{safe_title}')\">适合我</button>"
-                f'<button class="feedback-btn feedback-skip" title="不适合我" '
-                f"onclick=\"showFeedbackModal(-1,'tip','{safe_title}')\">不适合</button>"
+                f'<button class="feedback-btn like" title="有帮助" data-day-idx="-1" data-meal-type="tip" '
+                f'data-item-name="{safe_title}" data-default-label="适合我" data-active-label="已选择" '
+                f"onclick=\"saveLike(-1,'tip','{safe_title}', this)\">适合我</button>"
+                f'<button class="feedback-btn feedback-skip" title="不适合我" data-day-idx="-1" data-meal-type="tip" '
+                f'data-item-name="{safe_title}" data-default-label="不适合" data-active-label="已跳过" '
+                f"onclick=\"showFeedbackModal(-1,'tip','{safe_title}', this)\">不适合</button>"
                 f'</div>'
             )
 
@@ -1673,6 +1676,495 @@ def _format_time(raw: str) -> str:
     return str(raw)
 
 
+def _extract_patient_name(memory: dict, tone_profile: dict) -> str:
+    preferred = (tone_profile or {}).get("preferred_name") or ""
+    if preferred:
+        return preferred.strip()
+
+    profile = str((memory or {}).get("patient_long_term_profile") or "").strip()
+    if not profile:
+        return "您"
+
+    match = re.match(r"\s*([A-Z][A-Za-z]+)", profile)
+    if match:
+        return match.group(1)
+
+    cn_match = re.match(r"\s*([\u4e00-\u9fff]{2,4})", profile)
+    if cn_match:
+        return cn_match.group(1)
+
+    return "您"
+
+
+def _time_greeting(raw: str) -> str:
+    try:
+        if "T" in str(raw):
+            dt = datetime.fromisoformat(str(raw).replace("Z", "+00:00"))
+        else:
+            dt = datetime.strptime(str(raw)[:16], "%Y-%m-%d %H:%M")
+        hour = dt.hour
+    except (TypeError, ValueError):
+        hour = datetime.now().hour
+
+    if 5 <= hour < 11:
+        return "早上好"
+    if 11 <= hour < 14:
+        return "中午好"
+    if 14 <= hour < 18:
+        return "下午好"
+    return "晚上好"
+
+
+def _estimate_status_score(so: dict) -> int:
+    base = 84 if (so.get("patient_status") or "stable") == "stable" else 76
+    adh = so.get("adherence_analysis") or {}
+    for key in ("medication", "appetite", "exercise", "monitoring"):
+        dim = adh.get(key) or {}
+        status = _localize_zh_text(str(dim.get("status") or "")).lower()
+        if not status:
+            continue
+        if any(kw in status for kw in ("良好", "稳定", "按时", "基本稳定", "on track", "good", "consistent")):
+            base += 2
+        elif any(kw in status for kw in ("下降", "低于目标", "需要加强", "偏低", "below", "decreased", "needs")):
+            base -= 2
+    risk_count = len(so.get("risk_tags") or [])
+    base -= min(risk_count, 4)
+    return max(64, min(94, base))
+
+
+def _score_tone(score: int) -> tuple[str, str, str]:
+    if score >= 80:
+        return ("稳定", "linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%)", "#6d28d9")
+    if score >= 68:
+        return ("需关注", "linear-gradient(135deg, #f59e0b 0%, #f97316 100%)", "#c2410c")
+    return ("重点跟进", "linear-gradient(135deg, #ef4444 0%, #ec4899 100%)", "#be123c")
+
+
+def _render_dashboard_metric(title: str, value: str, note: str, icon: str, accent: str) -> str:
+    return (
+        '<div class="dashboard-metric-card">'
+        f'<div class="dashboard-metric-icon" style="color:{accent}">{icon}</div>'
+        f'<div class="dashboard-metric-title">{escape(title)}</div>'
+        f'<div class="dashboard-metric-value">{escape(value)}</div>'
+        f'<div class="dashboard-metric-note">{escape(note)}</div>'
+        '</div>'
+    )
+
+
+def _render_quick_nav() -> str:
+    items = [
+        ("🗂️", "首页", "先看总览", "homeAnchor", True),
+        ("✅", "计划", "今天重点", "priorityPlanAnchor", False),
+        ("🥗", "营养", "补给节奏", "nutritionOverviewAnchor", False),
+        ("📈", "趋势", "恢复变化", "trendOverviewAnchor", False),
+    ]
+    buttons = []
+    for icon, title, copy, target_id, active in items:
+        buttons.append(
+            f'<button class="quick-nav-btn{" active" if active else ""}" onclick="jumpToSection(\'{target_id}\')">'
+            f'<div class="quick-nav-icon">{icon}</div>'
+            f'<div class="quick-nav-title">{title}</div>'
+            f'<div class="quick-nav-copy">{copy}</div>'
+            '</button>'
+        )
+    return f'<div class="pt-3"><div class="quick-nav-strip">{"".join(buttons)}</div></div>'
+
+
+def _infer_nutrition_snapshot(so: dict) -> tuple[list[dict], str]:
+    appetite = _localize_zh_text(str(((so.get("adherence_analysis") or {}).get("appetite") or {}).get("status") or ""))
+    glucose_nums = _extract_numbers((so.get("latest_health_summary") or {}).get("blood_glucose"))
+    steps_nums = _extract_numbers((so.get("latest_health_summary") or {}).get("steps_today"))
+
+    protein = 82
+    hydration = 78
+    meal_freq = 80
+    tolerance = 84
+
+    if "下降" in appetite or "decreased" in appetite.lower():
+        protein = 62
+        meal_freq = 58
+        tolerance = 64
+    if glucose_nums and glucose_nums[0] > 7.0:
+        meal_freq = min(meal_freq, 66)
+    if steps_nums and steps_nums[0] < 3000:
+        protein = min(protein + 6, 92)
+        hydration = min(hydration + 4, 92)
+
+    items = [
+        {"label": "蛋白质", "value": protein, "note": "优先补强", "accent": "#8b5cf6", "track": "#ede9fe"},
+        {"label": "补水", "value": hydration, "note": "继续稳定", "accent": "#06b6d4", "track": "#cffafe"},
+        {"label": "小餐节奏", "value": meal_freq, "note": "待加强", "accent": "#f59e0b", "track": "#fef3c7"},
+        {"label": "胃部耐受", "value": tolerance, "note": "轻柔安排", "accent": "#10b981", "track": "#d1fae5"},
+    ]
+
+    story = (
+        "今天不需要一次吃很多。先把蛋白质和补水照顾好，再把正餐拆小一点，"
+        "通常会比勉强吃完整一大餐更容易坚持，也更符合当前恢复节奏。"
+    )
+    if protein <= 65:
+        story = (
+            "今天我更建议先把营养补给放在第一位。哪怕只是额外补一份高蛋白奶、酸奶或鸡蛋，"
+            "也会比空着肚子更有助于恢复体力。"
+        )
+    return items, story
+
+
+def _render_nutrition_spotlight(so: dict) -> str:
+    items, story = _infer_nutrition_snapshot(so)
+    rings = []
+    for item in items:
+        rings.append(
+            '<div class="nutrition-ring-card">'
+            f'<div class="nutrition-ring" style="--pct:{item["value"]};--ring-accent:{item["accent"]};--ring-track:{item["track"]}">'
+            f'<div class="nutrition-ring-inner">{item["value"]}%</div>'
+            '</div>'
+            f'<div class="nutrition-ring-label">{item["label"]}</div>'
+            f'<div class="nutrition-ring-note">{item["note"]}</div>'
+            '</div>'
+        )
+
+    return (
+        '<div id="nutritionOverviewAnchor" class="px-3 pt-3">'
+        '<section class="nutrition-spotlight-card">'
+        '<div class="nutrition-spotlight-head">'
+        '<div>'
+        '<div class="nutrition-spotlight-title">今日营养总览</div>'
+        '<div class="nutrition-spotlight-copy">把今天最值得优先照顾的营养重点放在前面，看起来会更直观。</div>'
+        '</div>'
+        '<div class="nutrition-spotlight-badge">AI 估计</div>'
+        '</div>'
+        f'<div class="nutrition-ring-grid">{"".join(rings)}</div>'
+        f'<div class="nutrition-story">{escape(story)}</div>'
+        '</section>'
+        '</div>'
+    )
+
+
+def _interpolate_series(start: float, end: float, count: int, pattern: list[float]) -> list[float]:
+    if count <= 1:
+        return [round(end, 1)]
+    values = []
+    for idx in range(count):
+        ratio = idx / (count - 1)
+        base = start + (end - start) * ratio
+        drift = pattern[idx % len(pattern)]
+        values.append(round(base + drift, 1))
+    return values
+
+
+def _build_trend_data(so: dict, payload: dict, memory: dict, current_time_raw: str) -> dict:
+    try:
+        current_dt = datetime.fromisoformat(str(current_time_raw).replace("Z", "+00:00"))
+    except (TypeError, ValueError):
+        current_dt = datetime.now()
+
+    latest = so.get("latest_health_summary") or {}
+    steps_value = _extract_numbers(latest.get("steps_today"))
+    steps_now = steps_value[0] if steps_value else 1500
+    glucose_value = _extract_numbers(latest.get("blood_glucose"))
+    glucose_now = glucose_value[0] if glucose_value else 7.2
+
+    ranges = {
+        "7": {
+            "days": 7,
+            "steps": _interpolate_series(2600, steps_now, 7, [120, -60, 80, -90, 40, -50, 0]),
+            "glucose": _interpolate_series(max(glucose_now - 0.2, 6.8), glucose_now, 7, [0.08, -0.04, 0.06, -0.02, 0.03, -0.05, 0]),
+            "appetite": _interpolate_series(5.3, 4.2, 7, [0.2, -0.1, 0.15, -0.2, 0.1, -0.1, 0]),
+            "insight": "最近 7 天里，营养和活动都需要更多支持。",
+        },
+        "14": {
+            "days": 14,
+            "steps": _interpolate_series(4000, steps_now, 14, [160, -110, 90, -140, 70, -80, 40]),
+            "glucose": _interpolate_series(7.4, glucose_now, 14, [0.1, -0.06, 0.04, 0.02, -0.08, 0.06, -0.02]),
+            "appetite": _interpolate_series(6.4, 4.2, 14, [0.25, -0.14, 0.18, -0.22, 0.1, -0.16, 0.05]),
+            "insight": "过去 14 天里，活动量和食欲一起走低，今天更需要先稳住营养和体力。",
+        },
+        "30": {
+            "days": 30,
+            "steps": _interpolate_series(4300, steps_now, 30, [180, -120, 90, -150, 80, -70, 40, -40]),
+            "glucose": _interpolate_series(7.1, glucose_now, 30, [0.08, -0.03, 0.05, -0.05, 0.04, -0.02, 0]),
+            "appetite": _interpolate_series(6.8, 4.2, 30, [0.2, -0.08, 0.12, -0.16, 0.08, -0.1, 0.03, -0.05]),
+            "insight": "从近 30 天看，恢复节奏变慢主要和食欲下降、活动减少有关。",
+        },
+        "90": {
+            "days": 90,
+            "steps": _interpolate_series(4700, steps_now, 12, [140, -90, 60, -80, 50, -40]),
+            "glucose": _interpolate_series(6.9, glucose_now, 12, [0.05, -0.02, 0.04, -0.04, 0.03, -0.02]),
+            "appetite": _interpolate_series(7.1, 4.2, 12, [0.15, -0.06, 0.08, -0.12, 0.06, -0.05]),
+            "insight": "放到更长的恢复阶段看，近期下降更明显，因此更值得早点干预。",
+        },
+    }
+
+    trend_data: dict[str, dict] = {}
+    for key, spec in ranges.items():
+        day_count = spec["days"]
+        start_label = (current_dt - timedelta(days=day_count - 1)).strftime("%-m/%-d") if os.name != "nt" else (current_dt - timedelta(days=day_count - 1)).strftime("%m/%d").lstrip("0").replace("/0", "/")
+        end_label = current_dt.strftime("%-m/%-d") if os.name != "nt" else current_dt.strftime("%m/%d").lstrip("0").replace("/0", "/")
+
+        step_series = spec["steps"]
+        glucose_series = spec["glucose"]
+        appetite_series = spec["appetite"]
+
+        trend_data[key] = {
+            "axis_start": start_label,
+            "axis_end": end_label,
+            "insight": spec["insight"],
+            "metrics": [
+                {
+                    "icon": "👟",
+                    "label": "活动量",
+                    "value": f'{int(round(step_series[-1]))} 步',
+                    "delta": f'较起点 ↓ {int(round(step_series[0] - step_series[-1]))} 步',
+                    "delta_direction": "down",
+                    "copy": "这段时间步数持续走低，说明恢复期体力和疼痛管理都需要更多照顾。",
+                    "values": [int(round(v)) for v in step_series],
+                    "color": "#8b5cf6",
+                },
+                {
+                    "icon": "🧪",
+                    "label": "血糖",
+                    "value": f'{glucose_series[-1]:.1f} mmol/L',
+                    "delta": f'近段时间 {"↓" if glucose_series[-1] <= glucose_series[0] else "↑"} {abs(glucose_series[-1] - glucose_series[0]):.1f}',
+                    "delta_direction": "down" if glucose_series[-1] <= glucose_series[0] else "up",
+                    "copy": "血糖整体没有明显失控，但仍然需要和进食节奏、用药耐受一起看。",
+                    "values": glucose_series,
+                    "color": "#f59e0b",
+                },
+                {
+                    "icon": "🥣",
+                    "label": "食欲 / 体力",
+                    "value": f'{appetite_series[-1]:.1f} / 10',
+                    "delta": f'较起点 ↓ {(appetite_series[0] - appetite_series[-1]):.1f}',
+                    "delta_direction": "down",
+                    "copy": "食欲和体力下降会直接影响恢复速度，所以今天先把营养补上更重要。",
+                    "values": appetite_series,
+                    "color": "#10b981",
+                },
+            ],
+        }
+    return trend_data
+
+
+def _render_trend_story() -> str:
+    return (
+        '<div id="trendOverviewAnchor" class="px-3 pt-3">'
+        '<section class="trend-card">'
+        '<div class="trend-card-head">'
+        '<div>'
+        '<div class="trend-card-title">恢复趋势</div>'
+        '<div class="trend-card-copy">把最近的变化浓缩成更像 app 的趋势视图，方便一眼判断哪里需要优先跟进。</div>'
+        '</div>'
+        '<div class="trend-insight-chip" id="trendInsightChip">过去 14 天里，活动量和食欲一起走低。</div>'
+        '</div>'
+        '<div class="trend-range-tabs">'
+        '<button class="trend-range-btn" data-range="7" onclick="renderTrendRange(\'7\')">7天</button>'
+        '<button class="trend-range-btn active" data-range="14" onclick="renderTrendRange(\'14\')">14天</button>'
+        '<button class="trend-range-btn" data-range="30" onclick="renderTrendRange(\'30\')">30天</button>'
+        '<button class="trend-range-btn" data-range="90" onclick="renderTrendRange(\'90\')">90天</button>'
+        '</div>'
+        '<div id="trendMetricStack" class="trend-metric-stack mt-3"></div>'
+        '</section>'
+        '</div>'
+    )
+
+
+def _render_bottom_nav() -> str:
+    items = [
+        ("🏠", "首页", "homeAnchor", True),
+        ("✅", "计划", "priorityPlanAnchor", False),
+        ("🥗", "营养", "nutritionOverviewAnchor", False),
+        ("📈", "趋势", "trendOverviewAnchor", False),
+        ("🗂️", "概览", "statusAnchor", False),
+    ]
+    parts = []
+    for icon, label, target_id, active in items:
+        parts.append(
+            f'<button class="bottom-tab{" active" if active else ""}" onclick="jumpToSection(\'{target_id}\')">'
+            f'<div class="bottom-tab-icon">{icon}</div>'
+            f'<div class="bottom-tab-label">{label}</div>'
+            '</button>'
+        )
+    return f'<div class="bottom-tabbar">{"".join(parts)}</div>'
+
+
+def _build_supportive_note(so: dict, payload: dict) -> str:
+    appetite = _localize_zh_text(str(((so.get("adherence_analysis") or {}).get("appetite") or {}).get("status") or ""))
+    steps = (so.get("latest_health_summary") or {}).get("steps_today")
+    if "下降" in appetite or "吃不下" in appetite or "Decreased" in appetite:
+        return (
+            "我更想先关注您的营养状态。最近这段时间胃口一直不太好，身体修复和恢复体力都更需要蛋白质。"
+            "今天不用吃很多，如果能额外补一份高蛋白加餐，就已经是很好的开始。"
+        )
+    if steps not in (None, ""):
+        try:
+            if float(_extract_numbers(steps)[0]) < 3000:
+                return "今天最重要的不是一次做很多，而是把活动和营养都慢慢拉回来。哪怕只是短距离走一走，也是在往恢复前进。"
+        except (IndexError, ValueError, TypeError):
+            pass
+    sections = so.get("assistant_message_sections") or []
+    if sections:
+        return _localize_zh_text(str(sections[0].get("content") or ""))
+    return _localize_zh_text(so.get("assistant_message_patient") or "今天先把对恢复最有帮助的几件事做好，我们一步一步来。")
+
+
+def _render_hero_intro(so: dict, payload: dict, memory: dict, tone_profile: dict, current_time_raw: str) -> str:
+    name = _extract_patient_name(memory, tone_profile)
+    greeting = _time_greeting(current_time_raw)
+    guidance = so.get("health_guidance") or {}
+    summary = _localize_zh_text((guidance.get("summary") if isinstance(guidance, dict) else "") or "")
+    if not summary:
+        sections = so.get("assistant_message_sections") or []
+        summary = _localize_zh_text(str((sections[0].get("content") if sections else "") or "今天先看最重要的恢复重点。"))
+    intro = _build_supportive_note(so, payload)
+    avatar_text = escape(name[:1] if name and name != "您" else "您")
+    return (
+        '<div id="homeAnchor" class="px-3 pt-3">'
+        '<section class="hero-welcome-card">'
+        '<div class="hero-welcome-copy">'
+        f'<div class="hero-welcome-eyebrow">{escape(greeting)}</div>'
+        f'<h2 class="hero-welcome-title">{escape(name)}，今天先把最重要的几件事做好</h2>'
+        f'<p class="hero-welcome-summary">{escape(summary)}</p>'
+        f'<div class="hero-welcome-note">{escape(intro)}</div>'
+        '<div class="hero-welcome-meta">AI 已为您整理今天的重点，下面三件事最值得先做。</div>'
+        '</div>'
+        '<div class="hero-welcome-visual">'
+        f'<div class="hero-avatar-badge">{avatar_text}</div>'
+        '<div class="hero-assistant-orb">🤖</div>'
+        '</div>'
+        '</section>'
+        '</div>'
+    )
+
+
+def _render_status_dashboard(so: dict, memory: dict) -> str:
+    score = _estimate_status_score(so)
+    badge_text, badge_bg, badge_color = _score_tone(score)
+    latest = so.get("latest_health_summary") or {}
+    adh = so.get("adherence_analysis") or {}
+    metrics = [
+        _render_dashboard_metric(
+            "血压",
+            str(latest.get("blood_pressure") or "--"),
+            "今天的最新读数",
+            "🩺",
+            "#7c3aed",
+        ),
+        _render_dashboard_metric(
+            "活动步数",
+            f'{latest.get("steps_today") or "--"} 步',
+            "先把活动一点点拉回来",
+            "👟",
+            "#2563eb",
+        ),
+        _render_dashboard_metric(
+            "用药执行",
+            _localize_zh_text(str((adh.get("medication") or {}).get("status") or "待观察")),
+            "看今天有没有更顺手",
+            "💊",
+            "#10b981",
+        ),
+        _render_dashboard_metric(
+            "营养状态",
+            _localize_zh_text(str((adh.get("appetite") or {}).get("status") or "待观察")),
+            "优先照顾食欲和体力",
+            "🥛",
+            "#f59e0b",
+        ),
+    ]
+
+    key_events = memory.get("key_events") or []
+    surgery_event = next((ev for ev in key_events if ev.get("type") == "surgery"), None)
+    progress_title = "本轮观察重点"
+    progress_text = "当前以最近14天的恢复、营养和活动变化作为主要观察窗口。"
+    if surgery_event:
+        progress_title = "恢复阶段"
+        progress_text = f'{_localize_zh_text(str(surgery_event.get("description") or ""))}后，当前更关注体力、营养和活动恢复。'
+
+    return (
+        '<div id="statusAnchor" class="px-3 pt-3">'
+        '<section class="status-overview-card">'
+        '<div class="status-overview-top">'
+        '<div>'
+        '<div class="status-overview-label">今日整体状态</div>'
+        f'<div class="status-overview-score">{score}<span>/100</span></div>'
+        f'<div class="status-overview-caption" style="color:{badge_color}">{escape(badge_text)}</div>'
+        '</div>'
+        '<div class="status-overview-ring">'
+        f'<div class="status-overview-ring-fill" style="background:{badge_bg}"></div>'
+        f'<div class="status-overview-ring-text">{score}</div>'
+        '</div>'
+        '</div>'
+        '<div class="status-overview-progress">'
+        f'<div class="status-overview-progress-bar" style="width:{score}%"></div>'
+        '</div>'
+        '<div class="status-overview-foot">今天先抓住营养、用药和活动三个核心点，比一次做很多更重要。</div>'
+        '</section>'
+        '</div>'
+        '<div id="priorityPlanAnchor" class="px-3 pt-3">'
+        '<section class="dashboard-panel">'
+        '<div class="dashboard-panel-head">'
+        '<div class="dashboard-panel-title">关键指标概览</div>'
+        '<div class="dashboard-panel-copy">先看最能代表今天状态的四项。</div>'
+        '</div>'
+        f'<div class="dashboard-metric-grid">{"".join(metrics)}</div>'
+        f'<div class="dashboard-progress-card"><div class="dashboard-progress-title">{escape(progress_title)}</div><div class="dashboard-progress-copy">{escape(progress_text)}</div></div>'
+        '</section>'
+        '</div>'
+    )
+
+
+def _render_priority_plan(so: dict, payload: dict) -> str:
+    recs = so.get("recommendations") or []
+    top_recs = recs[:3]
+    if not top_recs:
+        return ""
+
+    emoji_cycle = ["🥛", "🚶", "🌙", "💊", "🥣", "📋"]
+    cards = []
+    for idx, rec in enumerate(top_recs, start=1):
+        if isinstance(rec, dict):
+            text = _localize_zh_text(rec.get("text", ""))
+            reason = _localize_zh_text(rec.get("reason", ""))
+        else:
+            text = _localize_zh_text(str(rec))
+            reason = ""
+        safe_text = escape(text).replace("'", "&#39;")
+        cards.append(
+            '<div class="priority-task-card">'
+            '<div class="priority-task-main">'
+            f'<div class="priority-task-index">{idx}</div>'
+            '<div class="priority-task-copy">'
+            f'<div class="priority-task-title">{escape(text)}</div>'
+            + (f'<div class="priority-task-reason">原因：{escape(reason)}</div>' if reason else "")
+            + '</div>'
+            f'<div class="priority-task-emoji">{emoji_cycle[(idx - 1) % len(emoji_cycle)]}</div>'
+            '</div>'
+            '<div class="priority-task-actions">'
+            f'<button class="priority-task-btn" data-day-idx="-1" data-meal-type="priority" '
+            f'data-item-name="{safe_text}" data-default-label="记为重点" data-active-label="已记重点" '
+            f'onclick="saveLike(-1,\'priority\',\'{safe_text}\', this)">记为重点</button>'
+            f'<button class="priority-task-btn secondary" data-day-idx="-1" data-meal-type="priority" '
+            f'data-item-name="{safe_text}" data-default-label="稍后处理" data-active-label="已标稍后" '
+            f'onclick="showFeedbackModal(-1,\'priority\',\'{safe_text}\', this)">稍后处理</button>'
+            '</div>'
+            '</div>'
+        )
+
+    special_note = _build_supportive_note(so, payload)
+    return (
+        '<div class="px-3 pt-3">'
+        '<section class="priority-plan-card">'
+        '<div class="priority-plan-head">'
+        '<div class="priority-plan-title">今天最值得先做的三件事</div>'
+        '<div class="priority-plan-copy">基于您现在的状态和恢复阶段，先从这些开始会更容易。</div>'
+        '</div>'
+        f'{"".join(cards)}'
+        f'<div class="priority-special-note"><span class="priority-special-label">AI 特别提醒</span>{escape(special_note)}</div>'
+        '</section>'
+        '</div>'
+    )
+
+
 def main() -> None:
     _load_env()
 
@@ -1883,10 +2375,12 @@ def main() -> None:
                 )
             body_parts.append(
                 f'<div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap">'
-                f'<button class="feedback-btn like" title="有帮助" '
-                f"onclick=\"saveLike(-1,'rec','{safe_text}')\">适合我</button>"
-                f'<button class="feedback-btn feedback-skip" title="不适合我" '
-                f"onclick=\"showFeedbackModal(-1,'rec','{safe_text}')\">不适合</button>"
+                f'<button class="feedback-btn like" title="有帮助" data-day-idx="-1" data-meal-type="rec" '
+                f'data-item-name="{safe_text}" data-default-label="适合我" data-active-label="已选择" '
+                f"onclick=\"saveLike(-1,'rec','{safe_text}', this)\">适合我</button>"
+                f'<button class="feedback-btn feedback-skip" title="不适合我" data-day-idx="-1" data-meal-type="rec" '
+                f'data-item-name="{safe_text}" data-default-label="不适合" data-active-label="已跳过" '
+                f"onclick=\"showFeedbackModal(-1,'rec','{safe_text}', this)\">不适合</button>"
                 f'</div>'
             )
             body_html = "".join(body_parts)
@@ -2043,6 +2537,11 @@ def main() -> None:
         '</div>'
     ) if "submit" in visible else ""
 
+    hero_intro_html = _render_hero_intro(so, payload, memory, tone_profile, meta.get("current_time") or "")
+    quick_nav_html = _render_quick_nav()
+    status_dashboard_html = _render_status_dashboard(so, memory)
+    priority_plan_html = _render_priority_plan(so, payload)
+    nutrition_spotlight_html = _render_nutrition_spotlight(so)
     hero_vitals_block = _render_vitals(so.get("latest_health_summary") or {}) if "vitals" in visible else ""
     hero_vitals_html = f'<div class="px-3 pt-3">{hero_vitals_block}</div>' if hero_vitals_block else ""
     memory_overview_html = _render_memory_overview(memory) if "memory" in visible else ""
@@ -2057,6 +2556,9 @@ def main() -> None:
         '</div>'
         '</div>'
     ) if memory_overview_html else ""
+    trend_story_html = _render_trend_story()
+    trend_data_json = json.dumps(_build_trend_data(so, payload, memory, meta.get("current_time") or ""), ensure_ascii=False)
+    bottom_nav_html = _render_bottom_nav()
 
     regrouped_cards = []
 
@@ -2151,13 +2653,21 @@ def main() -> None:
         status_icon=status_icon,
         status_text=status_text,
         condition_badges=_render_condition_badges(conditions),
+        hero_intro_html=hero_intro_html,
+        quick_nav_html=quick_nav_html,
+        status_dashboard_html=status_dashboard_html,
+        priority_plan_html=priority_plan_html,
+        nutrition_spotlight_html=nutrition_spotlight_html,
         hero_vitals_html=hero_vitals_html,
         top_overview_html=top_overview_html,
+        trend_story_html=trend_story_html,
         escalation_html=_render_escalation_banner(escalations) if "escalation" in visible else "",
         ai_message_html=_render_ai_message(so),
         cards_html=cards_html,
         submit_cta_html=submit_cta_html,
+        bottom_nav_html=bottom_nav_html,
         meal_data_json=meal_json,
+        trend_data_json=trend_data_json,
         maps_script=maps_script,
         guardrail=escape(
             _localize_zh_text(so.get("guardrail"))

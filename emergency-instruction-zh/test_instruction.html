@@ -2,257 +2,667 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>2026年07月06日 异常报告</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>2026年05月13日 紧急情况报告</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script type="text/javascript" src="https://api.map.baidu.com/api?v=3.0&ak=6zXfgKZZiCdrL3MZBH7DGpjemq5IRxRC"></script>
 <style>
   :root {
-    --app-bg-top: #fff8f6;
+    --app-bg-top: #fff8f4;
     --app-bg-bottom: #eef4ff;
-    --app-card-shadow: 0 18px 36px rgba(15,23,42,.10), 0 6px 14px rgba(15,23,42,.06);
-    --app-icon-shadow: 0 10px 22px rgba(148,163,184,.24), inset 0 1px 0 rgba(255,255,255,.95), inset 0 -10px 16px rgba(15,23,42,.08);
+    --card-shadow: 0 18px 40px rgba(15, 23, 42, 0.10), 0 8px 18px rgba(15, 23, 42, 0.06);
+    --icon-shadow: 0 10px 22px rgba(148, 163, 184, 0.24), inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -10px 16px rgba(15,23,42,0.08);
   }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
   body {
+    margin: 0;
     font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
-    margin:0;
-    padding:0;
-    -webkit-text-size-adjust:100%;
-    color:#0f172a;
+    color: #0f172a;
     background:
-      radial-gradient(circle at top left, rgba(251,146,60,.16), transparent 24%),
-      radial-gradient(circle at top right, rgba(96,165,250,.18), transparent 26%),
+      radial-gradient(circle at top left, rgba(251, 146, 60, 0.16), transparent 24%),
+      radial-gradient(circle at top right, rgba(96, 165, 250, 0.18), transparent 26%),
       linear-gradient(180deg, var(--app-bg-top) 0%, var(--app-bg-bottom) 100%);
-    min-height:100vh;
-    position:relative;
+    min-height: 100vh;
   }
   body::before {
-    content:"";
-    position:fixed;
-    inset:0;
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.6;
     background:
-      linear-gradient(135deg, rgba(255,255,255,.22), transparent 36%),
-      repeating-linear-gradient(180deg, rgba(255,255,255,.06) 0 1px, transparent 1px 18px);
-    pointer-events:none;
-    opacity:.65;
+      linear-gradient(135deg, rgba(255,255,255,0.22), transparent 36%),
+      repeating-linear-gradient(180deg, rgba(255,255,255,0.06) 0 1px, transparent 1px 18px);
   }
-  * { box-sizing:border-box; }
   .app-shell {
     max-width: 460px;
-    margin: 0 auto;
     min-height: 100vh;
+    margin: 0 auto;
+    padding: 0 0 calc(24px + env(safe-area-inset-bottom, 0px));
     position: relative;
-    padding-bottom: 20px;
-    isolation:isolate;
+    isolation: isolate;
   }
   .app-shell::before {
-    content:"";
-    position:absolute;
-    inset:14px 12px auto;
-    height:120px;
-    border-radius:28px;
-    background:linear-gradient(180deg, rgba(255,255,255,.9), rgba(255,255,255,.32));
-    box-shadow:0 14px 36px rgba(148,163,184,.16);
-    filter:blur(8px);
-    z-index:-1;
+    content: "";
+    position: absolute;
+    inset: 14px 12px auto;
+    height: 128px;
+    border-radius: 28px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.32));
+    box-shadow: 0 14px 36px rgba(148,163,184,0.16);
+    filter: blur(8px);
+    z-index: -1;
   }
   .app-header {
-    margin:0 10px;
-    border:1px solid rgba(255,255,255,.82);
-    border-top:none;
-    border-radius:0 0 24px 24px;
-    background:linear-gradient(180deg, rgba(255,255,255,.94), rgba(248,250,252,.84));
-    backdrop-filter:blur(18px) saturate(1.2);
-    box-shadow:0 16px 30px rgba(15,23,42,.09), inset 0 1px 0 rgba(255,255,255,.95);
+    margin: 0 10px;
+    border: 1px solid rgba(255,255,255,0.84);
+    border-top: none;
+    border-radius: 0 0 26px 26px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,250,252,0.86));
+    backdrop-filter: blur(18px) saturate(1.2);
+    box-shadow: 0 16px 30px rgba(15,23,42,0.09), inset 0 1px 0 rgba(255,255,255,0.95);
   }
   .status-pill {
-    box-shadow:0 10px 20px rgba(244,63,94,.18), inset 0 1px 0 rgba(255,255,255,.45);
+    box-shadow: 0 10px 20px rgba(244,63,94,0.18), inset 0 1px 0 rgba(255,255,255,0.45);
   }
   .condition-chip {
-    box-shadow:0 8px 18px rgba(15,23,42,.12), inset 0 1px 0 rgba(255,255,255,.35);
-    transform:translateY(0);
-    transition:transform .18s ease, box-shadow .18s ease;
+    box-shadow: 0 8px 18px rgba(15,23,42,0.12), inset 0 1px 0 rgba(255,255,255,0.35);
   }
-  .condition-chip:hover {
-    transform:translateY(-1px);
-    box-shadow:0 12px 24px rgba(15,23,42,.16), inset 0 1px 0 rgba(255,255,255,.35);
-  }
-  .hero-summary {
-    border-radius: 28px;
-    border: 1px solid rgba(255,255,255,.9);
-    background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(255,247,237,.94));
-    box-shadow: var(--app-card-shadow);
-    padding: 18px;
-  }
-  .hero-summary-badge {
-    display:inline-flex;
-    align-items:center;
-    gap:8px;
-    padding:8px 12px;
-    border-radius:999px;
-    font-size:.78rem;
-    font-weight:800;
-    color:#9f1239;
-    background:#fff1f2;
-    border:1px solid #fecdd3;
-    box-shadow:0 8px 16px rgba(244,63,94,.10);
-  }
-  .hero-vitals {
-    background: linear-gradient(180deg, rgba(255,255,255,.98) 0%, rgba(244,248,252,.95) 100%);
-    border: 1px solid rgba(255,255,255,.92);
+  .panel {
     border-radius: 26px;
-    box-shadow: var(--app-card-shadow);
+    border: 1px solid rgba(255,255,255,0.92);
+    background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(246,249,252,0.96));
+    box-shadow: var(--card-shadow);
     padding: 18px;
   }
-  .hero-vitals-grid {
-    display:grid;
-    grid-template-columns:repeat(2,minmax(0,1fr));
-    gap:12px;
+  .panel-soft {
+    background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(255,247,237,0.96));
   }
-  .hero-vital-card {
-    border-radius:20px;
-    padding:14px;
-    border:1px solid rgba(255,255,255,.95);
-    background:#fff;
-    min-height:118px;
-    display:flex;
-    flex-direction:column;
-    gap:8px;
-    box-shadow:0 12px 24px rgba(15,23,42,.06);
-  }
-  .hero-vital-top {
-    display:flex;
-    align-items:flex-start;
-    justify-content:space-between;
-    gap:10px;
-  }
-  .hero-vital-icon {
-    width:42px;
-    height:42px;
-    border-radius:15px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:1.3em;
-    background:linear-gradient(180deg,#ffffff 0%, #e6eef8 100%);
-    border:1px solid rgba(255,255,255,.9);
-    box-shadow:var(--app-icon-shadow);
-  }
-  .hero-vital-label { font-size:.78em; color:#64748b; font-weight:700; }
-  .hero-vital-value { font-size:1.35em; font-weight:800; color:#0f172a; line-height:1.1; }
-  .hero-vital-range {
-    font-size:.74em;
-    color:#475569;
-    background:#f8fafc;
-    border:1px solid #e2e8f0;
-    border-radius:999px;
-    padding:5px 9px;
-    width:max-content;
-  }
-  .em-card {
-    border-radius:24px;
-    border:1px solid rgba(255,255,255,.92);
-    background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(246,249,252,.96));
-    box-shadow:var(--app-card-shadow);
-    padding:18px;
-    margin-bottom:16px;
-  }
-  .em-card-danger {
-    background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(255,241,242,.97));
-    border-color:#fecdd3;
+  .panel-danger {
+    background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,241,242,0.97));
+    border-color: #fecdd3;
   }
   .section-head {
-    display:flex;
-    align-items:center;
-    gap:10px;
-    margin-bottom:12px;
-    padding-bottom:12px;
-    border-bottom:1px solid rgba(226,232,240,.8);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(226,232,240,0.8);
   }
   .section-kicker {
-    width:40px;
-    height:40px;
-    border-radius:14px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:linear-gradient(180deg,#ffffff 0%, #e6eef8 100%);
-    border:1px solid rgba(255,255,255,.92);
-    box-shadow:var(--app-icon-shadow);
+    width: 40px;
+    height: 40px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(180deg, #ffffff 0%, #e6eef8 100%);
+    border: 1px solid rgba(255,255,255,0.92);
+    box-shadow: var(--icon-shadow);
+    flex-shrink: 0;
+  }
+  .alert-spotlight {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 14px;
+    align-items: center;
+  }
+  .spotlight-avatar {
+    width: 58px;
+    height: 58px;
+    border-radius: 18px;
+    background: linear-gradient(180deg, #fff 0%, #e9f0ff 100%);
+    border: 1px solid rgba(255,255,255,0.96);
+    box-shadow: var(--icon-shadow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #4f46e5;
+    flex-shrink: 0;
+  }
+  .pulse-orb {
+    width: 56px;
+    height: 56px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.7rem;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.98), rgba(254,205,211,0.88) 56%, rgba(251,113,133,0.95) 100%);
+    box-shadow: 0 18px 34px rgba(251,113,133,0.26);
+  }
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .meta-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 11px;
+    border-radius: 999px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: #475569;
+    background: rgba(248,250,252,0.96);
+    border: 1px solid #e2e8f0;
+  }
+  .summary-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: #9f1239;
+    background: #fff1f2;
+    border: 1px solid #fecdd3;
+    box-shadow: 0 8px 16px rgba(244,63,94,0.10);
+  }
+  .insight-card {
+    margin-top: 12px;
+    border-radius: 20px;
+    background: linear-gradient(180deg, #fff7ed 0%, #ffffff 100%);
+    border: 1px solid #fed7aa;
+    padding: 14px;
+  }
+  .hero-vitals-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  .hero-vital-card {
+    border-radius: 20px;
+    padding: 14px;
+    border: 1px solid rgba(255,255,255,0.95);
+    background: #fff;
+    min-height: 118px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    box-shadow: 0 12px 24px rgba(15,23,42,0.06);
+  }
+  .hero-vital-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .hero-vital-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3em;
+    background: linear-gradient(180deg, #ffffff 0%, #e6eef8 100%);
+    border: 1px solid rgba(255,255,255,0.9);
+    box-shadow: var(--icon-shadow);
+  }
+  .hero-vital-label {
+    font-size: 0.78em;
+    color: #64748b;
+    font-weight: 700;
+  }
+  .hero-vital-value {
+    font-size: 1.35em;
+    font-weight: 800;
+    color: #0f172a;
+    line-height: 1.1;
+  }
+  .hero-vital-range {
+    font-size: 0.74em;
+    color: #475569;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 999px;
+    padding: 5px 9px;
+    width: max-content;
+  }
+  .doctor-card {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 14px;
+    align-items: start;
+  }
+  .doctor-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+    background: linear-gradient(180deg, #ffffff 0%, #edf4ff 100%);
+    border: 1px solid rgba(255,255,255,0.96);
+    box-shadow: var(--icon-shadow);
+  }
+  .doctor-quote {
+    margin-top: 14px;
+    border-radius: 20px;
+    background: linear-gradient(180deg, #fff7f7 0%, #ffffff 100%);
+    border: 1px solid #fecdd3;
+    padding: 15px;
+    color: #334155;
+    line-height: 1.75;
+  }
+  .doctor-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .doctor-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    background: #eef2ff;
+    color: #4338ca;
+    border: 1px solid #c7d2fe;
   }
   .action-step {
-    display:flex;
-    align-items:flex-start;
-    gap:12px;
-    padding:14px;
-    border-radius:18px;
-    background:linear-gradient(180deg,#fff7f7 0%, #fff1f2 100%);
-    border:1px solid #fecdd3;
-    margin-bottom:10px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px;
+    border-radius: 18px;
+    background: linear-gradient(180deg, #fff7f7 0%, #fff1f2 100%);
+    border: 1px solid #fecdd3;
+    margin-bottom: 10px;
   }
   .action-step-index {
-    flex-shrink:0;
-    width:30px;
-    height:30px;
-    border-radius:999px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:#e11d48;
-    color:#fff;
-    font-size:.8rem;
-    font-weight:800;
-    box-shadow:0 10px 18px rgba(225,29,72,.24);
+    width: 30px;
+    height: 30px;
+    border-radius: 999px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #e11d48;
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 800;
+    box-shadow: 0 10px 18px rgba(225,29,72,0.24);
   }
   .action-step-copy {
-    font-size:.95rem;
-    line-height:1.6;
-    color:#334155;
-    font-weight:600;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #334155;
+    font-weight: 600;
   }
   .monitor-row {
-    display:flex;
-    align-items:flex-start;
-    gap:12px;
-    padding:13px 14px;
-    border-radius:16px;
-    background:#f8fafc;
-    border:1px solid #e2e8f0;
-    margin-bottom:10px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 13px 14px;
+    border-radius: 16px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 10px;
   }
   .monitor-row-label {
-    font-size:.7rem;
-    color:#64748b;
-    font-weight:800;
-    text-transform:uppercase;
-    letter-spacing:.06em;
+    font-size: 0.7rem;
+    color: #64748b;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
   }
   .monitor-row-value {
-    font-size:.92rem;
-    color:#334155;
-    line-height:1.55;
-    margin-top:2px;
+    font-size: 0.92rem;
+    color: #334155;
+    line-height: 1.55;
+    margin-top: 2px;
   }
-  .care-card {
-    border-radius:22px;
-    background:linear-gradient(180deg, #fff7ed 0%, #ffffff 100%);
-    border:1px solid #fed7aa;
-    padding:14px;
-    color:#9a3412;
-    font-size:.92rem;
-    line-height:1.6;
+  .trend-stack {
+    display: grid;
+    gap: 12px;
+  }
+  .trend-row {
+    border-radius: 18px;
+    padding: 14px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,250,252,0.95));
+    border: 1px solid #e2e8f0;
+  }
+  .trend-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .trend-title {
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: #0f172a;
+  }
+  .trend-badge {
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 6px 9px;
+    border-radius: 999px;
+    background: #fff7ed;
+    color: #c2410c;
+    border: 1px solid #fdba74;
+  }
+  .trend-values {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .trend-current {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #0f172a;
+  }
+  .trend-shift {
+    font-size: 0.86rem;
+    font-weight: 700;
+  }
+  .trend-note {
+    margin-top: 10px;
+    font-size: 0.83rem;
+    color: #64748b;
+    line-height: 1.55;
+  }
+  .trend-svg {
+    width: 100%;
+    height: 44px;
+    display: block;
+    margin-top: 8px;
+  }
+  .contact-card {
+    display: grid;
+    gap: 14px;
+  }
+  .contact-cta-row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .cta-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 48px;
+    border-radius: 16px;
+    text-decoration: none;
+    font-size: 0.92rem;
+    font-weight: 800;
+    border: 1px solid transparent;
+  }
+  .cta-button-primary {
+    color: #fff;
+    background: linear-gradient(135deg, #ff6b7a 0%, #f43f5e 100%);
+    box-shadow: 0 14px 24px rgba(244,63,94,0.24);
+  }
+  .cta-button-secondary {
+    color: #2563eb;
+    background: #eff6ff;
+    border-color: #bfdbfe;
+  }
+  .contact-note {
+    border-radius: 18px;
+    background: linear-gradient(180deg, #fff7ed 0%, #ffffff 100%);
+    border: 1px solid #fed7aa;
+    padding: 14px;
+    color: #9a3412;
+    font-size: 0.92rem;
+    line-height: 1.65;
+  }
+  .symptom-card {
+    position: relative;
+    overflow: hidden;
+  }
+  .symptom-card::after {
+    content: "";
+    position: absolute;
+    right: -22px;
+    top: -22px;
+    width: 108px;
+    height: 108px;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(96,165,250,0.14), transparent 70%);
+    pointer-events: none;
+  }
+  .symptom-intro {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .symptom-copy {
+    flex: 1;
+    min-width: 0;
+  }
+  .symptom-mascot {
+    width: 58px;
+    height: 58px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    background: linear-gradient(180deg, #ffffff 0%, #ede9fe 100%);
+    border: 1px solid rgba(255,255,255,0.96);
+    box-shadow: var(--icon-shadow);
+    flex-shrink: 0;
+  }
+  .mood-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .mood-button {
+    border: 1px solid #e2e8f0;
+    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+    border-radius: 18px;
+    padding: 10px 6px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+  }
+  .mood-button:active {
+    transform: scale(0.98);
+  }
+  .mood-button.is-active {
+    border-color: #a78bfa;
+    background: linear-gradient(180deg, #f5f3ff 0%, #ede9fe 100%);
+    box-shadow: 0 12px 20px rgba(139,92,246,0.16);
+  }
+  .mood-emoji {
+    display: block;
+    font-size: 1.25rem;
+    line-height: 1;
+  }
+  .mood-label {
+    display: block;
+    margin-top: 6px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #475569;
+    line-height: 1.25;
+  }
+  .feedback-block {
+    margin-top: 14px;
+  }
+  .feedback-label {
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: #64748b;
+    margin-bottom: 8px;
+  }
+  .symptom-chip-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .symptom-chip {
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    border-radius: 999px;
+    padding: 9px 12px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #475569;
+    cursor: pointer;
+    transition: transform .18s ease, border-color .18s ease, background .18s ease, color .18s ease;
+  }
+  .symptom-chip:active {
+    transform: scale(0.98);
+  }
+  .symptom-chip.is-active {
+    color: #7c3aed;
+    background: #f5f3ff;
+    border-color: #c4b5fd;
+  }
+  .feedback-textarea {
+    width: 100%;
+    min-height: 92px;
+    resize: vertical;
+    border-radius: 18px;
+    border: 1px solid #dbe4ee;
+    background: rgba(255,255,255,0.96);
+    padding: 14px;
+    font: inherit;
+    color: #334155;
+    box-shadow: inset 0 1px 2px rgba(15,23,42,0.04);
+  }
+  .feedback-textarea::placeholder {
+    color: #94a3b8;
+  }
+  .feedback-submit-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+  .feedback-submit {
+    border: none;
+    border-radius: 16px;
+    min-height: 48px;
+    padding: 0 18px;
+    font-size: 0.92rem;
+    font-weight: 800;
+    color: #fff;
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    box-shadow: 0 14px 24px rgba(34,197,94,0.24);
+    cursor: pointer;
+  }
+  .feedback-submit.is-saved {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    box-shadow: 0 14px 24px rgba(139,92,246,0.24);
+  }
+  .feedback-status {
+    flex: 1;
+    min-width: 180px;
+    border-radius: 16px;
+    padding: 10px 12px;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: #64748b;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+  }
+  .support-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 28px;
+    border: 1px solid rgba(255,255,255,0.92);
+    background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(243,232,255,0.95));
+    box-shadow: var(--card-shadow);
+    padding: 20px 18px;
+  }
+  .support-card::after {
+    content: "";
+    position: absolute;
+    right: -28px;
+    top: -24px;
+    width: 120px;
+    height: 120px;
+    border-radius: 999px;
+    background: radial-gradient(circle, rgba(251,113,133,0.18), transparent 70%);
+  }
+  .support-list {
+    display: grid;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .support-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9rem;
+    color: #334155;
+  }
+  .support-check {
+    width: 24px;
+    height: 24px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: #16a34a;
+    background: rgba(220,252,231,0.92);
+    border: 1px solid #bbf7d0;
+    font-size: 0.82rem;
+    font-weight: 800;
   }
   .app-footer {
     margin: 8px 10px 0;
-    border:1px solid rgba(255,255,255,.85);
-    border-radius:20px 20px 0 0;
-    background:rgba(248,250,252,.82);
-    backdrop-filter:blur(14px);
+    border: 1px solid rgba(255,255,255,0.85);
+    border-radius: 20px 20px 0 0;
+    background: rgba(248,250,252,0.84);
+    backdrop-filter: blur(14px);
   }
   @media (max-width: 640px) {
-    body { font-size:16px; line-height:1.6; }
-    .app-header { margin:0 8px; border-radius:0 0 22px 22px; }
-    .em-card, .hero-summary, .hero-vitals { border-radius:22px; }
+    body {
+      font-size: 16px;
+      line-height: 1.6;
+    }
+    .app-header {
+      margin: 0 8px;
+      border-radius: 0 0 24px 24px;
+    }
+    .panel,
+    .support-card {
+      border-radius: 24px;
+    }
+  }
+  @media (max-width: 420px) {
+    .alert-spotlight {
+      grid-template-columns: auto 1fr;
+    }
+    .pulse-orb {
+      grid-column: 2;
+      justify-self: end;
+      width: 50px;
+      height: 50px;
+      border-radius: 18px;
+    }
+  }
+  @media (max-width: 360px) {
+    .hero-vitals-grid,
+    .contact-cta-row {
+      grid-template-columns: 1fr;
+    }
   }
 </style>
 </head>
@@ -262,31 +672,36 @@
   <div class="app-header sticky top-0 z-50 px-4 py-3 shadow-sm">
     <div class="flex items-center justify-between gap-3">
       <div>
-        <h1 class="text-lg font-bold text-slate-900">2026年07月06日 异常报告</h1>
+        <h1 class="text-lg font-bold text-slate-900">2026年05月13日 紧急情况报告</h1>
         <p class="text-xs text-slate-500">2026年05月13日 10:15</p>
       </div>
       <span class="status-pill inline-flex items-center gap-1 bg-rose-100 text-rose-800 px-3 py-1.5 rounded-full text-xs font-semibold">🚨 请立即就医</span>
     </div>
-    <div class="flex gap-1.5 mt-2 flex-wrap"><span class="condition-chip inline-block bg-slate-500 text-white px-3 py-1 rounded-full text-xs font-semibold">Hypertension</span>
-<span class="condition-chip inline-block bg-slate-500 text-white px-3 py-1 rounded-full text-xs font-semibold">Type 2 diabetes</span>
-<span class="condition-chip inline-block bg-slate-500 text-white px-3 py-1 rounded-full text-xs font-semibold">Coronary artery disease</span></div>
+    <div class="flex gap-1.5 mt-2 flex-wrap"><span class="condition-chip inline-block bg-rose-500 text-white px-3 py-1 rounded-full text-xs font-semibold">高血压</span>
+<span class="condition-chip inline-block bg-amber-500 text-white px-3 py-1 rounded-full text-xs font-semibold">2型糖尿病</span>
+<span class="condition-chip inline-block bg-red-500 text-white px-3 py-1 rounded-full text-xs font-semibold">冠心病</span></div>
   </div>
 
   <div class="px-3 pt-3">
-    <section class="hero-summary">
-      <div class="hero-summary-badge mb-3">🚨 先按下面步骤处理当前情况</div>
+    <section class="panel panel-soft"><div class="alert-spotlight"><div class="spotlight-avatar">JW</div><div><div class="text-xs font-semibold text-slate-500">AI 持续监测中</div><h2 class="text-lg font-bold text-slate-900 mt-1">James Wilson，当前需要优先关注</h2><p class="text-sm text-slate-700 leading-relaxed mt-2">结合您已有的高血压、2型糖尿病、冠心病背景，这次波动更需要优先处理。</p><p class="text-xs text-slate-500 leading-relaxed mt-2">近 3 天血压持续偏高，今晨语音随访中提到头晕。</p></div><div class="pulse-orb">💗</div></div><div class="meta-row"><span class="meta-chip">🚨 请立即就医</span><span class="meta-chip">⏱️ 系统将在 30 分钟后再次提醒，医生将在 1 小时内进一步跟进</span><span class="meta-chip">🩺 医生审核与建议已整理</span></div></section>
+  </div>
+
+  <div class="px-3 pt-3">
+    <section class="panel panel-soft">
+      <div class="summary-badge mb-3">🚨 请先按照下方建议处理当前情况</div>
       <div class="text-sm font-bold text-slate-900 mb-2">当前发生了什么</div>
-      <p class="text-sm text-slate-700 leading-relaxed">Your blood pressure reading of 186/118 mmHg is significantly above the safe range, and your heart rate is elevated at 102 bpm. You also reported feeling dizzy this morning. These readings indicate a hypertensive urgency that needs immediate attention.</p>
+      <p class="text-sm text-slate-700 leading-relaxed">您本次血压读数为 186/118 mmHg，已明显高于安全范围，同时心率升高至 102 bpm，并伴有头晕症状。这些信号提示需要立即处理并密切观察。</p>
+      <div class="insight-card"><div class="text-[11px] font-bold tracking-[0.18em] text-orange-500 uppercase mb-2">AI 重点判断</div><p class="text-sm text-slate-700 leading-relaxed">结合您已有的高血压、2型糖尿病、冠心病情况，这次异常更需要谨慎处理。 近 3 天血压持续偏高，今晨语音随访中提到头晕。</p></div>
     </section>
   </div>
 
   <div class="px-3 pt-3">
-    <section class="hero-vitals">
-      <div class="flex items-center gap-2 mb-3">
+    <section class="panel">
+      <div class="section-head">
         <span class="section-kicker">📊</span>
         <div>
           <div class="text-sm font-bold text-slate-900">当前体征</div>
-          <div class="text-xs text-slate-500 mt-1">这些是本次异常提醒最相关的最新数据。</div>
+          <div class="text-xs text-slate-500 mt-1">以下是本次预警最相关的最新数据。</div>
         </div>
       </div>
       <div class="hero-vitals-grid"><div class="hero-vital-card"><div class="hero-vital-top"><div><div class="hero-vital-label">血压</div><div class="hero-vital-value">186/118</div></div><div class="hero-vital-icon">💓</div></div><div class="hero-vital-range">mmHg</div></div>
@@ -297,56 +712,50 @@
   </div>
 
   <div class="px-3 pt-3">
-    <section class="em-card">
-      <div class="section-head">
-        <span class="section-kicker">👨‍⚕️</span>
-        <div class="text-sm font-bold text-slate-900">医生回复</div>
-      </div>
-      <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border bg-blue-50 text-blue-700 border-blue-200 mb-3">👁️ 您的医生已查看您的读数。</div><div class="text-sm text-slate-700 bg-slate-50 rounded-lg p-3 leading-relaxed border border-slate-100">Your doctor has reviewed your readings and is concerned about the high blood pressure. They are adding a new medication (losartan 50mg) to your regimen and will follow up within the hour. In the meantime, you need to rest and monitor closely.</div>
-    </section>
+    <section class="panel"><div class="section-head"><span class="section-kicker">👨‍⚕️</span><div class="flex-1"><div class="text-sm font-bold text-slate-900">医生已审核</div><div class="text-xs text-slate-500 mt-1">当前建议已按医生反馈整理，优先执行下方步骤。</div></div></div><div class="doctor-card"><div class="doctor-avatar">🩺</div><div><div class="flex flex-wrap items-center gap-2"><div class="text-base font-bold text-slate-900">Dr. Robert Chen</div><span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border bg-blue-50 text-blue-700 border-blue-200">👁️ 医生已审核当前读数。</span></div><div class="doctor-meta"><span class="doctor-pill">🕒 2026年05月13日 10:20</span><span class="doctor-pill">💊 氯沙坦 50mg 每日一次，立即开始</span></div><div class="doctor-quote">我已经查看了 James 的最新读数，目前更符合高血压紧急情况。请现在加用氯沙坦 50mg，不要额外补服氨氯地平。若休息 30 分钟后血压仍高于 180/120，请直接前往急诊。</div><div class="mt-3 text-sm text-slate-600 leading-relaxed bg-slate-50 rounded-2xl border border-slate-200 px-4 py-3">医生已审核当前异常读数，并建议您立即休息、复测血压，同时开始新的降压用药方案。</div></div></div></section>
   </div>
 
-  <div class="px-3 pt-1"><div class="bg-white rounded-xl shadow-sm border border-blue-100 p-5 mb-3"><div class="flex items-center gap-2 mb-3 pb-3 border-b border-blue-50"><span class="text-lg">📋</span><div class="flex-1"><h2 class="text-sm font-bold text-slate-800">Dr. Robert Chen的详细反馈</h2><div class="text-[10px] text-slate-400">2026年05月13日 10:20</div></div></div><div class="text-sm text-slate-700 bg-blue-50 rounded-lg p-3 leading-relaxed border border-blue-100 mb-3" style="border-left:3px solid #3b82f6">I&#x27;ve reviewed James&#x27;s readings and this is a hypertensive urgency. Add losartan 50mg now. Do not take an extra dose of amlodipine. If BP remains above 180/120 after 30 minutes of rest, go to the ER.</div><div class="mt-2"><div class="text-[11px] text-slate-500 font-semibold mb-2">用药调整</div><div class="space-y-2"><div class="text-xs text-blue-700 bg-blue-50 rounded px-3 py-2 border border-blue-100">💊 add: Losartan 50mg once daily, starting now</div></div></div></div></div>
-
   <div class="px-3 pt-2">
-    <section class="em-card em-card-danger">
+    <section class="panel panel-danger">
       <div class="section-head">
         <span class="section-kicker">🚨</span>
         <div class="text-sm font-bold text-rose-700">现在就做</div>
       </div>
-      <div><div class="action-step"><span class="action-step-index">1</span><div class="action-step-copy">Sit down in a comfortable position and try to stay calm. Do not exert yourself.</div></div>
-<div class="action-step"><span class="action-step-index">2</span><div class="action-step-copy">Retake your blood pressure in 15 minutes and write down the result.</div></div>
-<div class="action-step"><span class="action-step-index">3</span><div class="action-step-copy">If your blood pressure is still above 180/120 or you feel chest pain, severe headache, or vision changes, call 911 immediately.</div></div>
-<div class="action-step"><span class="action-step-index">4</span><div class="action-step-copy">Take your regular amlodipine if you haven&#x27;t already today.</div></div>
-<div class="action-step"><span class="action-step-index">5</span><div class="action-step-copy">Do not eat salty food or drink caffeine right now.</div></div></div>
+      <div><div class="action-step"><span class="action-step-index">1</span><div class="action-step-copy">请先坐下休息，保持安静，不要继续活动或外出。</div></div>
+<div class="action-step"><span class="action-step-index">2</span><div class="action-step-copy">15 分钟后再次测量血压，并记录新的结果。</div></div>
+<div class="action-step"><span class="action-step-index">3</span><div class="action-step-copy">如果复测后仍高于 180/120，或出现胸痛、剧烈头痛、视物模糊、呼吸困难，请立即拨打 120。</div></div>
+<div class="action-step"><span class="action-step-index">4</span><div class="action-step-copy">如果今天尚未按时服用常规降压药，请按医嘱服用；不要自行重复加量。</div></div>
+<div class="action-step"><span class="action-step-index">5</span><div class="action-step-copy">此时避免高盐饮食、浓茶、咖啡或任何会进一步升高血压的刺激。</div></div></div>
     </section>
   </div>
 
   <div class="px-3 pt-2">
-    <section class="em-card">
+    <section class="panel">
       <div class="section-head">
         <span class="section-kicker">⏱️</span>
         <div class="text-sm font-bold text-slate-900">监测计划</div>
       </div>
-      <div class="monitor-row"><span class="text-base mt-0.5">📌</span><div><div class="monitor-row-label">监测内容</div><div class="monitor-row-value">Blood pressure, heart rate, and any symptoms (dizziness, headache, chest pain, vision changes)</div></div></div>
-<div class="monitor-row"><span class="text-base mt-0.5">🔄</span><div><div class="monitor-row-label">监测频率</div><div class="monitor-row-value">Every 15 minutes for the next hour, then every 30 minutes</div></div></div>
-<div class="monitor-row"><span class="text-base mt-0.5">📅</span><div><div class="monitor-row-label">下次回访</div><div class="monitor-row-value">The system will check on you in 30 minutes. Your doctor will follow up within 1 hour.</div></div></div>
+      <div class="monitor-row"><span class="text-base mt-0.5">📌</span><div><div class="monitor-row-label">监测内容</div><div class="monitor-row-value">血压、心率，以及头晕、胸闷、胸痛、视物模糊等症状变化</div></div></div>
+<div class="monitor-row"><span class="text-base mt-0.5">🔄</span><div><div class="monitor-row-label">监测频率</div><div class="monitor-row-value">未来 1 小时每 15 分钟一次，之后根据医生建议继续监测</div></div></div>
+<div class="monitor-row"><span class="text-base mt-0.5">📅</span><div><div class="monitor-row-label">下次回访</div><div class="monitor-row-value">系统将在 30 分钟后再次提醒，医生将在 1 小时内进一步跟进</div></div></div>
     </section>
   </div>
 
   <div class="px-3 pt-2">
-    <section class="em-card">
-      <div class="section-head">
-        <span class="section-kicker">🏥</span>
-        <div class="text-sm font-bold text-slate-900">就医指引</div>
-      </div>
-      <div class="care-card">If your symptoms worsen or your blood pressure stays above 180/120 after retaking it, please go to the nearest emergency room. You can call 911 for an ambulance, or ask a neighbor to drive you. Do not drive yourself.</div>
-    </section>
+    <section class="panel symptom-card" data-symptom-feedback data-storage-key="emergency-symptom-feedback-zh"><div class="section-head"><span class="section-kicker">📝</span><div><div class="text-sm font-bold text-slate-900">症状反馈</div><div class="text-xs text-slate-500 mt-1">可快速补充您现在的感觉，便于后续跟进与演示。</div></div></div><div class="symptom-intro"><div class="symptom-copy"><div class="text-sm font-bold text-slate-900">James Wilson，您现在感觉怎么样？</div><div class="text-xs text-slate-500 mt-1">先选整体状态，再勾选其他症状变化。</div></div><div class="symptom-mascot">🤖</div></div><div class="mood-grid"><button type="button" class="mood-button" data-mood="明显好转"><span class="mood-emoji">😄</span><span class="mood-label">明显好转</span></button><button type="button" class="mood-button" data-mood="有点好转"><span class="mood-emoji">🙂</span><span class="mood-label">有点好转</span></button><button type="button" class="mood-button" data-mood="无变化"><span class="mood-emoji">😐</span><span class="mood-label">无变化</span></button><button type="button" class="mood-button" data-mood="有些恶化"><span class="mood-emoji">😟</span><span class="mood-label">有些恶化</span></button><button type="button" class="mood-button" data-mood="明显恶化"><span class="mood-emoji">😣</span><span class="mood-label">明显恶化</span></button></div><div class="feedback-block"><div class="feedback-label">其他症状变化（可多选）</div><div class="symptom-chip-grid"><button type="button" class="symptom-chip" data-symptom="咳嗽加重">😷 咳嗽加重</button><button type="button" class="symptom-chip" data-symptom="头晕">💫 头晕</button><button type="button" class="symptom-chip" data-symptom="发热">🌡️ 发热</button><button type="button" class="symptom-chip" data-symptom="呼吸困难">🫁 呼吸困难</button><button type="button" class="symptom-chip" data-symptom="乏力加重">🔋 乏力加重</button><button type="button" class="symptom-chip" data-symptom="胸闷胸痛">❤️ 胸闷胸痛</button></div></div><div class="feedback-block"><div class="feedback-label">补充说明（可选）</div><textarea class="feedback-textarea" data-feedback-notes maxlength="120" placeholder="例如：刚刚复测血压仍偏高，起身时头晕更明显。"></textarea></div><div class="feedback-submit-row"><button type="button" class="feedback-submit" data-feedback-submit>提交症状更新</button><div class="feedback-status" data-feedback-status>可补充最近症状变化，提交后会在本机演示页保留当前选择。</div></div></section>
   </div>
 
-  <div class="px-3 pt-2 pb-3">
-    <style>#bmap{width:100%;height:100%}#locate-btn{position:absolute;bottom:12px;right:12px;z-index:999;width:38px;height:38px;border-radius:50%;border:none;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.2);cursor:pointer;font-size:1.1em;display:flex;align-items:center;justify-content:center}#locate-btn:active{transform:scale(0.92)}.map-place{display:flex;align-items:center;gap:10px;background:#f8fafc;border-radius:10px;padding:12px;margin-top:8px;cursor:pointer;border:2px solid transparent;transition:all 0.15s}.map-place:active{transform:scale(0.98)}.map-place.focused{border-color:#1e88e5;box-shadow:0 2px 10px rgba(30,136,229,0.15)}.map-place-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1em;flex-shrink:0;background:#e3f2fd}.map-place-nav{flex-shrink:0;width:30px;height:30px;border-radius:50%;border:none;background:#1e88e5;color:#fff;font-size:0.9em;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(30,136,229,0.35)}.map-place-nav:active{transform:scale(0.9)}.map-dist{font-size:0.75em;font-weight:700;padding:3px 8px;border-radius:16px;white-space:nowrap;flex-shrink:0;background:#e3f2fd;color:#1565c0}</style>
-<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3"><div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100"><span class="text-lg">📍</span><h2 class="text-sm font-bold text-slate-800">附近医院</h2></div><p class="text-sm text-slate-600 mb-3" id="ai-map-text">下方为您查询了附近医院。若症状加重，请尽快前往最近的一家或拨打 120。</p><div class="rounded-2xl overflow-hidden border border-slate-200 relative" style="height:240px"><div id="bmap"></div><button id="locate-btn" title="回到我的位置">📍</button></div><div id="map-cards"></div></div>
+  <div class="px-3 pt-2">
+    <section class="panel"><div class="section-head"><span class="section-kicker">📈</span><div class="flex-1"><div class="text-sm font-bold text-slate-900">趋势追踪</div><div class="text-xs text-slate-500 mt-1">结合近一段时间波动，帮助理解这次提醒为什么需要优先处理。</div></div><span class="meta-chip">近 24 小时</span></div><div class="trend-stack"><div class="trend-row"><div class="trend-top"><div class="trend-title">收缩压</div><span class="trend-badge">明显偏高</span></div><div class="trend-values"><div class="trend-current">186 mmHg</div><div class="trend-shift" style="color:#dc2626">↑ 18</div></div><svg class="trend-svg" viewBox="0 0 240 44" preserveAspectRatio="none" aria-hidden="true"><polyline points="8.0,36.0 64.0,25.1 120.0,18.9 176.0,12.7 232.0,8.0" fill="none" stroke="#ef4444" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"></polyline><circle cx="232.0" cy="8.0" r="4.5" fill="#ef4444" stroke="#fff" stroke-width="2"></circle></svg><div class="trend-note">建议按计划休息后复测，如持续高于 180/120 请尽快就医。</div></div><div class="trend-row"><div class="trend-top"><div class="trend-title">心率</div><span class="trend-badge">偏快</span></div><div class="trend-values"><div class="trend-current">102 bpm</div><div class="trend-shift" style="color:#ea580c">↑ 6</div></div><svg class="trend-svg" viewBox="0 0 240 44" preserveAspectRatio="none" aria-hidden="true"><polyline points="8.0,36.0 64.0,26.7 120.0,17.3 176.0,12.7 232.0,8.0" fill="none" stroke="#f97316" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"></polyline><circle cx="232.0" cy="8.0" r="4.5" fill="#f97316" stroke="#fff" stroke-width="2"></circle></svg><div class="trend-note">保持静坐与补水，避免额外活动后再次升高。</div></div><div class="trend-row"><div class="trend-top"><div class="trend-title">血氧</div><span class="trend-badge">略低</span></div><div class="trend-values"><div class="trend-current">94%</div><div class="trend-shift" style="color:#2563eb">-3</div></div><svg class="trend-svg" viewBox="0 0 240 44" preserveAspectRatio="none" aria-hidden="true"><polyline points="8.0,8.0 64.0,17.3 120.0,17.3 176.0,26.7 232.0,36.0" fill="none" stroke="#3b82f6" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"></polyline><circle cx="232.0" cy="36.0" r="4.5" fill="#3b82f6" stroke="#fff" stroke-width="2"></circle></svg><div class="trend-note">若继续下降或伴呼吸困难，请优先前往急诊评估。</div></div></div></section>
+  </div>
+
+  <div class="px-3 pt-2">
+    <section class="panel"><div class="section-head"><span class="section-kicker">📞</span><div><div class="text-sm font-bold text-slate-900">联系与就医</div><div class="text-xs text-slate-500 mt-1">如症状加重，请直接拨打急救电话，不要自行驾车。</div></div></div><div class="contact-card"><div class="meta-row"><span class="meta-chip">📍 Boston, MA</span><span class="meta-chip">👨‍⚕️ Dr. Robert Chen</span></div><div class="contact-cta-row"><a class="cta-button cta-button-primary" href="tel:120">📞 紧急呼叫 120</a><a class="cta-button cta-button-secondary" href="#nearby-care">🏥 查看附近医院</a></div><div class="contact-note">如果症状加重，或复测后血压仍高于 180/120，请尽快前往最近急诊科。建议呼叫救护车或由他人陪同前往，请勿自行驾车。</div></div></section>
+  </div>
+
+  <div class="px-3 pt-2 pb-3" id="nearby-care">
+    <style>#bmap{width:100%;height:100%}#locate-btn{position:absolute;bottom:12px;right:12px;z-index:999;width:38px;height:38px;border-radius:50%;border:none;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.2);cursor:pointer;font-size:1.1em;display:flex;align-items:center;justify-content:center}#locate-btn:active{transform:scale(0.92)}.map-place{display:flex;align-items:center;gap:10px;background:#f8fafc;border-radius:14px;padding:12px;margin-top:8px;cursor:pointer;border:2px solid transparent;transition:all 0.15s}.map-place:active{transform:scale(0.98)}.map-place.focused{border-color:#1e88e5;box-shadow:0 2px 10px rgba(30,136,229,0.15)}.map-place-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1em;flex-shrink:0;background:#e3f2fd}.map-place-nav{flex-shrink:0;width:30px;height:30px;border-radius:50%;border:none;background:#1e88e5;color:#fff;font-size:0.9em;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(30,136,229,0.35)}.map-place-nav:active{transform:scale(0.9)}.map-dist{font-size:0.75em;font-weight:700;padding:3px 8px;border-radius:16px;white-space:nowrap;flex-shrink:0;background:#e3f2fd;color:#1565c0}</style>
+<section class="panel"><div class="section-head"><span class="section-kicker">📍</span><div><div class="text-sm font-bold text-slate-900">附近医院</div><div class="text-xs text-slate-500 mt-1">如症状持续或加重，请尽快前往最近的医疗机构。</div></div></div><p class="text-sm text-slate-600 mb-3" id="ai-map-text">下方为您整理了附近医院信息。如头晕加重、胸闷胸痛或复测后仍明显异常，请尽快前往最近医院或直接拨打 120。</p><div class="rounded-2xl overflow-hidden border border-slate-200 relative" style="height:240px"><div id="bmap"></div><button id="locate-btn" title="回到我的位置">📍</button></div><div id="map-cards"></div></section>
 <script>
 (function() {
   var bmap = new BMap.Map("bmap");
@@ -377,7 +786,7 @@
     var marker = new BMap.Marker(userPoint, { icon: USER_ICON });
     bmap.addOverlay(marker);
     userOverlays.push(marker);
-    var label = new BMap.Label('\u60a8\u5728\u8fd9\u91cc', {
+    var label = new BMap.Label('您在这里', {
       position: userPoint,
       offset: new BMap.Size(16, -8)
     });
@@ -414,7 +823,7 @@
         var container = document.getElementById('map-cards');
         container.innerHTML = '';
         if (!results || local.getStatus() !== BMAP_STATUS_SUCCESS || results.getCurrentNumPois() === 0) {
-          container.innerHTML = '<div style="text-align:center;color:#bbb;padding:16px;font-size:0.85em">\u9644\u8fd1\u6682\u65e0\u533b\u9662</div>';
+          container.innerHTML = '<div style="text-align:center;color:#bbb;padding:16px;font-size:0.85em">附近暂时未找到医院</div>';
           return;
         }
         var count = results.getCurrentNumPois();
@@ -429,11 +838,11 @@
             marker.addEventListener('click', function() { focusMapCard(idx, poi); });
             var card = document.createElement('div');
             card.className = 'map-place';
-            card.innerHTML = '<div class="map-place-icon">\ud83c\udfe5</div>'
+            card.innerHTML = '<div class="map-place-icon">🏥</div>'
               +'<div style="flex:1;min-width:0"><div style="font-size:0.9em;font-weight:600;color:#222;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+poi.title+'</div>'
-              +'<div style="font-size:0.75em;color:#999;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(poi.address||'\u6682\u65e0\u5730\u5740')+'</div></div>'
+              +'<div style="font-size:0.75em;color:#999;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(poi.address||'暂无地址')+'</div></div>'
               +'<div class="map-dist">'+distText+'</div>'
-              +'<button class="map-place-nav" title="\u5bfc\u822a">\u27a4</button>';
+              +'<button class="map-place-nav" title="导航">➤</button>';
             card.addEventListener('click', function(e) {
               if (e.target.classList.contains('map-place-nav')) return;
               focusMapCard(idx, poi);
@@ -448,7 +857,7 @@
         }
       }
     });
-    local.searchNearby('\u533b\u9662', userPoint, 5000);
+    local.searchNearby('医院', userPoint, 5000);
   }
 
   function focusMapCard(idx, poi) {
@@ -495,9 +904,110 @@
 </script>
   </div>
 
-  <div class="app-footer px-4 py-3">
-    <p class="text-[11px] text-slate-400 text-center leading-relaxed">This instruction was generated by an AI health assistant for guidance only. It is not a medical diagnosis. If you feel unwell or your condition worsens, call 911 or go to the nearest emergency room immediately. Always follow your doctor&#x27;s advice.</p>
+  <div class="px-3 pt-1">
+    <section class="support-card"><div class="text-xs font-semibold text-violet-500">持续支持</div><h2 class="text-xl font-bold text-slate-900 mt-1">您不是一个人在处理这次异常</h2><p class="text-sm text-slate-600 leading-relaxed mt-2">先完成上方最关键的步骤。我们会继续提示您什么时候复测、什么时候需要尽快联系医院。</p><div class="support-list"><div class="support-item"><span class="support-check">✓</span><span>系统会继续监测关键体征变化</span></div><div class="support-item"><span class="support-check">✓</span><span>Dr. Robert Chen的审核意见已同步到本页</span></div><div class="support-item"><span class="support-check">✓</span><span>系统将在 30 分钟后再次提醒，医生将在 1 小时内进一步跟进</span></div></div><div class="mt-4 text-sm text-slate-500">如果出现胸痛、呼吸困难、明显乏力或意识变化，请不要等待下一次提醒，立即求助。</div></section>
   </div>
+
+  <div class="app-footer px-4 py-3">
+    <p class="text-[11px] text-slate-400 text-center leading-relaxed">本页面由 AI 健康助手生成，仅用于辅助提醒，不构成医疗诊断。如您感觉不适或症状加重，请立即拨打 120 或前往最近急诊。最终请以医生意见为准。</p>
+  </div>
+
+  <script>
+(function () {
+  var root = document.querySelector('[data-symptom-feedback]');
+  if (!root) return;
+
+  var storageKey = root.getAttribute('data-storage-key') || 'emergency-symptom-feedback-zh';
+  var moodButtons = Array.from(root.querySelectorAll('[data-mood]'));
+  var symptomButtons = Array.from(root.querySelectorAll('[data-symptom]'));
+  var notesField = root.querySelector('[data-feedback-notes]');
+  var submitButton = root.querySelector('[data-feedback-submit]');
+  var statusBox = root.querySelector('[data-feedback-status]');
+
+  function getState() {
+    try {
+      var raw = window.localStorage.getItem(storageKey);
+      return raw ? JSON.parse(raw) : { mood: '', symptoms: [], notes: '', submittedAt: '' };
+    } catch (error) {
+      return { mood: '', symptoms: [], notes: '', submittedAt: '' };
+    }
+  }
+
+  function saveState(state) {
+    window.localStorage.setItem(storageKey, JSON.stringify(state));
+  }
+
+  function render(state) {
+    moodButtons.forEach(function (button) {
+      button.classList.toggle('is-active', button.getAttribute('data-mood') === state.mood);
+    });
+    symptomButtons.forEach(function (button) {
+      var symptom = button.getAttribute('data-symptom');
+      button.classList.toggle('is-active', state.symptoms.indexOf(symptom) !== -1);
+    });
+    notesField.value = state.notes || '';
+
+    if (state.submittedAt) {
+      var parts = [];
+      if (state.mood) parts.push(state.mood);
+      if (state.symptoms && state.symptoms.length) parts.push(state.symptoms.join('、'));
+      statusBox.textContent = '已记录：' + (parts.join(' · ') || '本次反馈') + ' · ' + state.submittedAt;
+      submitButton.textContent = '已提交，可再次更新';
+      submitButton.classList.add('is-saved');
+    } else {
+      statusBox.textContent = '可补充最近症状变化，提交后会在本机演示页保留当前选择。';
+      submitButton.textContent = '提交症状更新';
+      submitButton.classList.remove('is-saved');
+    }
+  }
+
+  var state = getState();
+  render(state);
+
+  moodButtons.forEach(function (button) {
+    button.addEventListener('click', function () {
+      var mood = button.getAttribute('data-mood');
+      state.mood = state.mood === mood ? '' : mood;
+      state.submittedAt = '';
+      saveState(state);
+      render(state);
+    });
+  });
+
+  symptomButtons.forEach(function (button) {
+    button.addEventListener('click', function () {
+      var symptom = button.getAttribute('data-symptom');
+      var next = Array.isArray(state.symptoms) ? state.symptoms.slice() : [];
+      var index = next.indexOf(symptom);
+      if (index === -1) {
+        next.push(symptom);
+      } else {
+        next.splice(index, 1);
+      }
+      state.symptoms = next;
+      state.submittedAt = '';
+      saveState(state);
+      render(state);
+    });
+  });
+
+  notesField.addEventListener('input', function () {
+    state.notes = notesField.value.trim();
+    state.submittedAt = '';
+    saveState(state);
+    render(state);
+  });
+
+  submitButton.addEventListener('click', function () {
+    var now = new Date();
+    var hours = String(now.getHours()).padStart(2, '0');
+    var minutes = String(now.getMinutes()).padStart(2, '0');
+    state.submittedAt = hours + ':' + minutes;
+    saveState(state);
+    render(state);
+  });
+})();
+</script>
 
 </div>
 </body>
