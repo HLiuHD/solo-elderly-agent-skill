@@ -2,7 +2,6 @@
 name: adherence-report-zh
 description: 当用户（患者端）在常规随访中要求健康报告、健康总结、个性化营养建议或一周食谱时激活。聚焦近几天/几周的依从性——用药、食欲、运动、监测。不用于紧急或急症分诊场景。
 scripts:
-  pre_llm: scripts/mock_latest_health.py
   post_llm: scripts/render_report.py
 ---
 
@@ -19,40 +18,32 @@ scripts:
 
 ## 输入原则
 
+- 本 skill 当前只支持 MVP payload；旧 payload 字段即使存在也应忽略。
 - 只使用 payload 中提供的数据，不编造体征、诊断或数值。
 - 生成内容时，**必须优先引用患者自己的具体事实**，而不是只给疾病层面的通用建议。
   - 若 payload 中有病史、手术史、当前用药、药物反应、异常指标、设备异常、监测缺口，`assistant_message_patient`、`health_guidance.summary`、`health_guidance.tips[].why`、`recommendations[].reason` 都应尽量点出这些信息。
-  - 推荐语要回答“为什么是这个人现在需要这条建议”，例如：因为术后恢复、因为二甲双胍后恶心、因为最近血糖偏高、因为步数持续下降。
-- 数据来源优先级：
-  1. `latest_health` — 最新体征（血压、心率、血氧、血糖、步数）
-  2. `memory.patient_long_term_profile` — 基本信息、病史、用药
-  3. `memory.recent_health_dynamics` — 近期健康动态
-  4. `memory.tone_profile`（可选）— 患者沟通风格与当前状态上下文：
-     - `condition_context`: `"feeling_unwell"` | `"post_chemotherapy"` | `"post_surgery_recovering"` | `"stable_routine"` — **控制页面信息密度**：
-       - `feeling_unwell` → 简化页面（仅：指导 + 体征 + 食谱），患者此时不适合读太多。
-       - `post_chemotherapy` → 更安抚的语气，强调营养和休息（隐藏：依从性分析、diet table、地图）。
-       - `post_surgery_recovering` → 大多数 section 可见，语气鼓励。
-       - `stable_routine` → 展示完整页面。
-     - `style`: `"warm_encouraging"` | `"direct_practical"` | `"authority_based"` | `"gentle_patient"` — 决定整体语气。
-     - `preferred_name`: 患者希望被如何称呼。
-     - `age_group`: `"elderly_70plus"` | `"senior_60_70"` | `"middle_aged"` — 影响语言复杂度和鼓励程度。
-     - `personality_notes`: 照护者/医生关于如何与患者沟通的自由文本。
-     - `communication_preferences`: `formality`, `motivation_style` (`positive_reinforcement` | `accountability` | `authority_trust`), `information_density` (`simple_focused` | `moderate` | `detailed`), `reference_authority`（为 true 时，可表述为「您的医生建议……」）。
-  5. `memory.key_events` — timestamped events（手术、反复症状、告警）
-  6. `adherence_analysis` — 用药/饮食/运动/监测依从性
-  7. `signals` — 设备信号、异常标签
-  8. `outlier_analysis` — 异常分析
-  9. `location` — 位置信息
-  10. `user_preference`（可选）— 过往收集的患者偏好：
-      - `cuisine_preferences`: 菜系偏好数组（如 `["粤菜", "清淡家常菜"]`）— 用于指导 `weekly_meal_plan`
-      - `liked`: 患者之前标记为喜欢/有帮助的建议或食物 — 优先给出相似建议
-      - `disliked`: 患者拒绝的建议或食物及原因 — 避免相似建议
-  11. `memory.case_history` / `memory.clinical_notes` / `memory.doctor_notes`（未来可选）— 更完整的病例摘要、医生备注、手术与并发症背景
-  12. `memory.latest_labs` / `outlier_analysis`（未来可选）— 最近血检、尿检、影像或异常指标总结
-- 若 `latest_health` 为空或全为 null，从 `memory.recent_health_dynamics` 或 `signals.summary_text` 推断最新值并填入 `latest_health_summary`。
+  - 推荐语要回答“为什么是这个人现在需要这条建议”，例如：因为术后恢复、因为服药后不适、因为最近血压/血氧变化、因为活动量下降。
+- MVP 输入只依赖这些字段：
+  1. `memory.archive` — 长期健康档案总摘要，来自 `memory_archive.scenario_answer`
+  2. `memory.recent.adherence` — 近期依从动态总摘要，来自 `query_health_memory_by_type.light_summary_answer`
+  3. `memory.recent.outlier` — 近期异常动态总摘要，来自 `query_health_memory_by_type.light_summary_answer`
+  4. `latest_health` — 真实最新测量值；只展示 payload 中存在的指标
+  5. `latest_health_meta` — 最新测量时间、来源、聚合说明
+  6. `signal_trends` — 真实信号趋势，窗口为 `week` / `month` / `quarter`
+  7. `adherence_analysis` — 当前依从对话结构化结果，输入形态为 `statuses[]` 和 `suggestions[]`
+  8. `location`（可选）— 只有存在真实经纬度时才使用
+  9. `patient`（可选）— 只有主服务提供时才使用称呼、性别、生日等基本信息
+- 不要生成或要求 `ehr` / `clinical_context` / `recent_memory[]` / `topic` / `conversation` 这类重复或膨胀字段。
+- 不要从 memory、EHR、病史或通用文案里推断最新体征数值。`latest_health` 没有的指标，输出也不要补。
+- `blood_glucose` 只有当 `latest_health.blood_glucose` 或 `signal_trends.*.metrics.blood_glucose` 真实存在时才允许出现；否则不要展示血糖卡片、血糖趋势或血糖结论。
+- 糖尿病可以作为长期病史用于主食管理和饮食提醒；但如果没有真实近期血糖监测，不要写“最近血糖偏高/偏低/控制良好”“平稳血糖”“影响血糖控制”等近期血糖结论。
+- `adherence_analysis.statuses[]` 和 `adherence_analysis.suggestions[]` 是事实素材，不是页面文案。需要消化、拆分、合并和改写后再进入 `assistant_message_*`、`recommendations`、`nutrition_*`、`weekly_meal_plan`；不要把整段建议原封不动贴进一个卡片。
+- 对漏服药物不要直接写“立即补服”“加服”“停药”或具体调整剂量；只能写“按医嘱/药品说明确认漏服处理方式，必要时联系医生或药师”，再给药盒、手机提醒、固定放置位置等执行建议。
+- 若 payload 提到华法林/抗凝药，饮食建议必须强调“保持稳定”，不要建议突然增加或减少绿叶菜，不要写“每餐保证 X 克绿叶菜”这类会诱导摄入突变的目标。
+- 除非 payload 明确提供，不要输出精确营养数字或硬性份量目标，例如每日食盐 X 克、蔬菜 X 克、热量、宏量营养素、百分比等。
+- 不要把相关性写成确定因果；使用“可能相关”“可能增加负担”“建议观察”等措辞，避免“直接原因”“高度相关”“很快恢复”这类过度确定的话。
 - 某维度无数据时，使用空字符串或空数组，不要编造。
-- 当 `user_preference.cuisine_preferences` 存在时，`weekly_meal_plan` 必须体现这些菜系偏好。
-- 如果出现未来扩展字段（如支架史、术后并发症、医生备注、化验异常），应把这些信息视为高优先级依据，并明确说明它们如何影响营养、活动、监测或用药建议。
+- 新增上下文必须进入上述 MVP 字段之一，不要新增并行的重复字段。
 
 ## 输出格式
 
@@ -67,9 +58,10 @@ scripts:
     - `type`: `"good_news"` | `"attention"` | `"plan"` | `"encouragement"` — 决定 icon 和颜色
     - `title`: 简短标签（如「好消息」「需要留意」「我们准备了什么」「您已经做得很好」）
     - `content`: 该部分 1–2 句话
-  - `personalized_evidence`（推荐）：
+  - `personalized_evidence`（必填）：
     - 3–5 项数组，每项为 `{ "title": "...", "evidence": "...", "why_it_matters": "...", "category": "history|surgery|medication|lab|symptom|monitoring" }`
     - 用来明确告诉患者：当前建议分别是根据哪些病史、药物反应、手术恢复阶段、检查异常或近期监测变化得出的
+    - 必须由 `memory.archive` / `memory.recent.*` / `adherence_analysis` / `latest_health` 消化改写而来，不要直接复制长段原文
     - 若存在用药反应、术后恢复、检查异常，至少各覆盖 1 项
   - `adherence_analysis`：对象，包含：
     - `period`：字符串，如 `"过去 14 天"`
@@ -80,12 +72,13 @@ scripts:
   - `health_guidance`：有说服力、结合患者疾病和近期事件的健康指导对象：
     - `summary`：2–3 句，直接对患者说明当前情况和为什么这些建议重要
     - `tips`：数组，每项为 `{ "text": "...", "why": "...", "category": "protein|low_salt|low_oil|hydration|fiber|exercise|rest|monitoring" }`
-  - `recommendations`：约 5–6 条具体可操作项。优先使用对象形式 `{ "text": "...", "reason": "...", "category": "medication|diet|exercise|monitoring|lifestyle" }`，`reason` 说明为什么适合该患者；也兼容纯字符串。
-  - `nutrition_advice`：一段文字（**中文**，约 50–100 字）
-  - `latest_health_summary`：对象，含 `blood_pressure`, `heart_rate`, `blood_oxygen`, `blood_glucose`, `steps_today`，值为带单位的字符串
+  - `recommendations`：约 5–6 条具体可操作项。优先使用对象形式 `{ "text": "...", "reason": "...", "category": "medication|diet|exercise|monitoring|lifestyle" }`，`reason` 说明为什么适合该患者；也兼容纯字符串。前 3 条会展示为“今天最值得先做的三件事”，必须由 AI 按优先级重新组织，不能只是复制 `suggestions[]`。
+  - `nutrition_advice`：一段文字（**中文**，约 50–100 字），结合真实饮食/食欲/疾病事实，不要写成泛泛“清淡饮食”。
+  - `nutrition_priorities`：3–4 项数组，每项为 `{ "title": "...", "action": "...", "reason": "...", "category": "low_salt|low_oil|protein|hydration|fiber|meal_rhythm" }`。这是 AI 生成的定性营养重点；不要输出百分比、热量、宏量营养素或“AI 估算”数值，除非 payload 明确提供。
+  - `latest_health_summary`：对象，只包含 payload 中真实存在的最新指标。可用键包括 `blood_pressure`, `heart_rate`, `blood_oxygen`, `blood_glucose`, `steps_today`；缺失的键不要输出。renderer 最终会以 `payload.latest_health` 重建这一块
   - `conditions`：字符串数组，如 `["高血压", "2型糖尿病", "高脂血症"]`
   - `diet_table`：`{"condition", "principle", "recommend", "avoid"}` 数组，全部**中文**
-  - `weekly_meal_plan`：**仅 3 天**（前端循环至 7 天）。每天：`day`（`"第一天"` / `"第二天"` / `"第三天"`），`breakfast`, `lunch`, `dinner`；每餐为 `{"name", "icon", "condition", "benefit"}` 数组，`benefit` ≤ 约 10 个汉字
+  - `weekly_meal_plan`：**仅 3 天**（前端循环至 7 天）。每天：`day`（`"第一天"` / `"第二天"` / `"第三天"`），`breakfast`, `lunch`, `dinner`；每餐为 `{"name", "icon", "condition", "benefit"}` 数组，`benefit` ≤ 约 10 个汉字。食谱应由 AI 根据 payload 中的疾病、饮食问题、食欲/活动状态生成；没有足够依据时返回空数组，不要硬凑。
   - `diet_tips`：`{"icon", "title", "detail"}` 数组，**中文**
   - `reasoning`：2–3 句话（**中文**）
   - `guardrail`：免责声明（**中文**）
@@ -93,21 +86,18 @@ scripts:
 ## 表达约束
 
 - **语言**：默认中文；若 `meta.lang` 明确设为其他语言则跟随。
-- **语气自适应（基于 `memory.tone_profile`）：**
-  - `warm_encouraging`: 像关心患者的家人，肯定小进步，温和提醒。适合担心给家人添麻烦的老人。
-  - `direct_practical`: 直接、务实，少情绪化表达，强调「要做什么、为什么」。
-  - `authority_based`: 以照护团队/医生建议的方式表达，如「您的医生建议……」「根据照护团队评估……」。
-  - `gentle_patient`: 更轻柔、更有耐心，重复关键点，如「慢慢来」「不用着急，但……」。
-  - `tone_profile` 缺失时默认 `warm_encouraging`。
-  - `health_guidance.summary` 和 `health_guidance.tips[].why` 必须体现所选语气。
+- **语气**：默认温暖、务实，像关心患者的家人；当前 MVP payload 不读取 `tone_profile`。
 - 引用 payload 中的具体近期事件（如「过去两周，您的食欲比平时低一些……」）。
 - 若 payload 中存在具体药名、手术名、时间点、异常指标或医生备注，尽量在文案中保留这些具体锚点，而不是泛化成“您最近情况不太稳定”。
 - `recommendations[].reason` 不能只写“适合高血压患者”“适合糖尿病患者”，应尽可能写成“因为您最近……所以这条建议更适合您”。
+- `recommendations[]` 可以给行为建议，但不要替代医生下医嘱。尤其是药物漏服，只能建议确认漏服处理方式和建立提醒机制。
 - 称呼用「您」。
 - 不添加 payload 未支持的诊断。
 - 数据源矛盾时在 `reasoning` 中说明。
-- 食谱：恰好 **3 天**；每条 `benefit` 保持简短。
-- 页面附近服务使用百度地图 API（`BAIDU_MAP_AK`）；除此之外，renderer 行为应与英文版保持一致。
+- 食谱：有足够依据时恰好 **3 天**，依据不足时返回空数组；每条 `benefit` 保持简短。
+- 食谱和饮食表遇到华法林时，应优先写“摄入稳定”“不要突然大幅变化”，避免把菠菜、深色绿叶菜等写成突然加量的核心建议。
+- 需要 AI 生成的内容包括：首屏总结、三件优先事项、AI 特别提醒、营养重点、营养建议和三天食谱。renderer 只负责隐藏缺失数据和展示结构，不负责创造这些内容。
+- 页面附近服务只在 `location.current.lat` 和 `location.current.lon` 存在时展示；除此之外，renderer 行为应与英文版保持一致。
 
 ## 参考资料
 

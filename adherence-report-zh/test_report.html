@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>依从性报告</title>
+<title>照护旅程</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<script type="text/javascript" src="https://api.map.baidu.com/api?v=3.0&ak=6zXfgKZZiCdrL3MZBH7DGpjemq5IRxRC"></script>
+
 <style>
   :root {
     --app-bg-top: #f7fbff;
@@ -288,73 +288,6 @@
   }
   .dashboard-progress-title { font-size:.82rem; font-weight:850; color:#6d28d9; }
   .dashboard-progress-copy { margin-top:6px; font-size:.84rem; line-height:1.65; color:#475569; }
-  .nutrition-spotlight-card {
-    border-radius:28px;
-    border:1px solid rgba(255,255,255,.94);
-    background:
-      radial-gradient(circle at top right, rgba(16,185,129,.12), transparent 28%),
-      linear-gradient(180deg, rgba(255,255,255,.98), rgba(244,253,250,.96));
-    box-shadow:var(--app-card-shadow);
-    padding:18px;
-  }
-  .nutrition-spotlight-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:12px; }
-  .nutrition-spotlight-title { font-size:1.04rem; font-weight:850; color:#0f172a; }
-  .nutrition-spotlight-copy { margin-top:4px; font-size:.82rem; line-height:1.55; color:#64748b; }
-  .nutrition-spotlight-badge {
-    padding:8px 10px;
-    border-radius:16px;
-    background:linear-gradient(180deg, #ffffff 0%, #dcfce7 100%);
-    border:1px solid rgba(187,247,208,.95);
-    font-size:.74rem;
-    font-weight:800;
-    color:#047857;
-    box-shadow:0 8px 18px rgba(16,185,129,.12);
-    white-space:nowrap;
-  }
-  .nutrition-ring-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }
-  .nutrition-ring-card {
-    border-radius:20px;
-    padding:12px 10px;
-    background:linear-gradient(180deg,#ffffff 0%, #f8fffc 100%);
-    border:1px solid rgba(220,252,231,.92);
-    text-align:center;
-    box-shadow:0 10px 20px rgba(15,23,42,.04);
-  }
-  .nutrition-ring {
-    --ring-accent:#10b981;
-    --ring-track:#d1fae5;
-    width:72px;
-    height:72px;
-    margin:0 auto 8px;
-    border-radius:999px;
-    padding:7px;
-    background:conic-gradient(var(--ring-accent) 0 calc(var(--pct) * 1%), var(--ring-track) calc(var(--pct) * 1%) 100%);
-    box-shadow:0 12px 20px rgba(15,23,42,.06);
-  }
-  .nutrition-ring-inner {
-    width:100%;
-    height:100%;
-    border-radius:999px;
-    background:#fff;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:.9rem;
-    font-weight:900;
-    color:#0f172a;
-  }
-  .nutrition-ring-label { font-size:.75rem; font-weight:800; color:#0f172a; }
-  .nutrition-ring-note { margin-top:3px; font-size:.68rem; line-height:1.35; color:#64748b; }
-  .nutrition-story {
-    margin-top:14px;
-    padding:14px 15px;
-    border-radius:20px;
-    background:linear-gradient(180deg, rgba(236,253,245,.96), rgba(255,255,255,.95));
-    border:1px solid rgba(167,243,208,.76);
-    font-size:.86rem;
-    line-height:1.75;
-    color:#334155;
-  }
   .trend-card {
     border-radius:28px;
     border:1px solid rgba(255,255,255,.94);
@@ -765,12 +698,10 @@
     .hero-welcome-title { font-size:1.34rem; }
     .hero-assistant-orb { width:78px; height:78px; border-radius:24px; font-size:2rem; }
     .quick-nav-strip { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; padding:0 12px; }
-    .status-overview-card, .dashboard-panel, .priority-plan-card, .nutrition-spotlight-card, .trend-card { border-radius:24px; padding:16px; }
+    .status-overview-card, .dashboard-panel, .priority-plan-card, .trend-card { border-radius:24px; padding:16px; }
     .status-overview-score { font-size:2.5rem; }
     .dashboard-metric-grid { gap:10px; }
     .dashboard-metric-card { min-height:120px; }
-    .nutrition-ring-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
-    .nutrition-ring { width:68px; height:68px; }
     .trend-card-head { flex-direction:column; }
     .trend-range-tabs { width:100%; }
     .trend-insight-chip { width:100%; font-size:.72rem; }
@@ -964,10 +895,644 @@
     transition:background .18s ease, transform .18s ease;
   }
   .bottom-tab:hover { background:rgba(255,255,255,.6); transform:translateY(-1px); }
+  .bottom-tab:focus { outline: none; }
+  .bottom-tab:focus-visible { outline: none; box-shadow: none; }
   .bottom-tab.active { background:linear-gradient(180deg, rgba(237,233,254,.96), rgba(243,244,255,.92)); }
   .bottom-tab-icon { font-size:1.15rem; line-height:1; }
   .bottom-tab-label { margin-top:4px; font-size:.7rem; font-weight:800; color:#64748b; }
   .bottom-tab.active .bottom-tab-label { color:#7c3aed; }
+  .journey-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 45;
+    min-height: 58px;
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr) 42px;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px 8px;
+    background: rgba(248,250,252,.9);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(226,232,240,.7);
+  }
+  .topbar-icon {
+    width: 38px;
+    height: 38px;
+    border: none;
+    border-radius: 14px;
+    background: transparent;
+    color: #0f172a;
+    font-size: 1.18rem;
+    font-weight: 850;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .topbar-icon:hover { background: rgba(255,255,255,.74); }
+  .topbar-title { text-align: center; min-width: 0; }
+  .topbar-name { font-size: 1.02rem; font-weight: 900; color: #0f172a; line-height: 1.15; }
+  .topbar-subtitle { margin-top: 2px; font-size: .66rem; font-weight: 800; color: #8b5cf6; letter-spacing: .08em; text-transform: uppercase; }
+  .journey-pages { padding: 12px 12px 6px; }
+  .journey-page { display: none; animation: pageFade .18s ease; }
+  .journey-page.active { display: block; }
+  @keyframes pageFade {
+    from { opacity: .2; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .journey-screen-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 2px 0 12px;
+  }
+  .journey-screen-title { font-size: 1.05rem; font-weight: 900; color: #0f172a; line-height: 1.25; }
+  .journey-screen-copy { margin-top: 4px; font-size: .78rem; line-height: 1.55; color: #64748b; }
+  .journey-card {
+    border-radius: 18px;
+    border: 1px solid rgba(226,232,240,.92);
+    background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+    box-shadow: 0 12px 24px rgba(15,23,42,.055);
+    padding: 15px;
+    margin-bottom: 12px;
+  }
+  .journey-hero {
+    min-height: 154px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 104px;
+    gap: 12px;
+    align-items: center;
+    border: 1px solid rgba(221,214,254,.85);
+    background:
+      radial-gradient(circle at right 30%, rgba(124,58,237,.16), transparent 36%),
+      linear-gradient(135deg, #ffffff 0%, #f7f5ff 54%, #efeaff 100%);
+    box-shadow: 0 18px 34px rgba(124,58,237,.11);
+  }
+  .journey-hero-main { min-width: 0; }
+  .journey-hero-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .journey-avatar {
+    width: 54px;
+    height: 54px;
+    border-radius: 20px;
+    background: linear-gradient(180deg, #fff 0%, #e0f2fe 100%);
+    border: 1px solid rgba(255,255,255,.92);
+    box-shadow: var(--app-icon-shadow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.18rem;
+    font-weight: 900;
+    color: #334155;
+    flex-shrink: 0;
+  }
+  .journey-hello { font-size: 1.08rem; line-height: 1.35; font-weight: 900; color: #111827; }
+  .journey-hero-text { font-size: .82rem; line-height: 1.65; color: #475569; }
+  .journey-robot {
+    width: 94px;
+    height: 94px;
+    border-radius: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    justify-self: end;
+    font-size: 2.3rem;
+    background: linear-gradient(180deg, #ffffff 0%, #ddd6fe 100%);
+    border: 1px solid rgba(255,255,255,.95);
+    box-shadow: 0 18px 30px rgba(124,58,237,.18), inset 0 1px 0 rgba(255,255,255,.94);
+  }
+  .status-alert-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .status-alert-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px;
+    border-radius: 999px;
+    font-size: .76rem;
+    font-weight: 850;
+    background: #fff7ed;
+    color: #c2410c;
+    border: 1px solid #fed7aa;
+  }
+  .status-alert-chip.good { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
+  .status-alert-chip.warn { background: #fffbeb; color: #b45309; border-color: #fde68a; }
+  .status-alert-chip.alert { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+  .journey-section-kicker { font-size: .75rem; font-weight: 850; color: #8b5cf6; margin-bottom: 4px; }
+  .journey-section-title { font-size: .98rem; font-weight: 900; color: #0f172a; }
+  .journey-section-copy { margin-top: 4px; font-size: .78rem; line-height: 1.55; color: #64748b; }
+  .journey-status-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; margin-top: 12px; }
+  .execution-card {
+    min-height: 128px;
+    border-radius: 17px;
+    padding: 12px;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    box-shadow: 0 8px 16px rgba(15,23,42,.04);
+  }
+  .execution-card.good { background: linear-gradient(180deg, #f0fdf4 0%, #fff 100%); border-color: #bbf7d0; }
+  .execution-card.warn { background: linear-gradient(180deg, #fffbeb 0%, #fff 100%); border-color: #fde68a; }
+  .execution-card.alert { background: linear-gradient(180deg, #fff7ed 0%, #fff 100%); border-color: #fed7aa; }
+  .execution-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .execution-icon { font-size: 1.35rem; line-height: 1; }
+  .execution-status { font-size: .7rem; font-weight: 850; color: #64748b; white-space: nowrap; }
+  .execution-title { margin-top: 10px; font-size: .8rem; font-weight: 850; color: #475569; }
+  .execution-detail { margin-top: 5px; font-size: .82rem; line-height: 1.55; color: #0f172a; font-weight: 700; }
+  .signal-mini-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; margin-top: 12px; }
+  .signal-mini-card {
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    background: linear-gradient(180deg, #fbfdff 0%, #f8fafc 100%);
+    padding: 12px 10px;
+    min-height: 92px;
+  }
+  .signal-mini-icon { font-size: 1.15rem; }
+  .signal-mini-label { margin-top: 7px; font-size: .73rem; color: #64748b; font-weight: 800; }
+  .signal-mini-value { margin-top: 4px; font-size: 1rem; color: #0f172a; font-weight: 900; line-height: 1.2; }
+  .signal-mini-unit { margin-top: 2px; font-size: .68rem; color: #94a3b8; font-weight: 750; }
+  .journey-segment {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0,1fr));
+    gap: 4px;
+    padding: 4px;
+    border-radius: 14px;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 14px;
+  }
+  .journey-segment span {
+    text-align: center;
+    border-radius: 11px;
+    padding: 7px 4px;
+    font-size: .73rem;
+    color: #64748b;
+    font-weight: 850;
+  }
+  .journey-segment .active {
+    color: #6d28d9;
+    background: linear-gradient(180deg, #fff 0%, #ede9fe 100%);
+    box-shadow: 0 7px 14px rgba(124,58,237,.1);
+  }
+  .journey-task {
+    display: grid;
+    grid-template-columns: 34px minmax(0,1fr) 58px;
+    gap: 12px;
+    align-items: center;
+    border-radius: 18px;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    padding: 13px;
+    margin-bottom: 11px;
+    box-shadow: 0 9px 18px rgba(15,23,42,.045);
+  }
+  .journey-task-index {
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: .9rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+    box-shadow: 0 10px 18px rgba(124,58,237,.2);
+  }
+  .journey-task-title { font-size: .94rem; line-height: 1.45; font-weight: 900; color: #111827; }
+  .journey-task-reason { margin-top: 5px; font-size: .75rem; line-height: 1.55; color: #f97316; font-weight: 750; }
+  .journey-task-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 12px;
+    max-width: 220px;
+  }
+  .journey-task-visual { text-align: center; font-size: 2rem; line-height: 1; }
+  .journey-record-btn {
+    border: none;
+    border-radius: 999px;
+    padding: 8px 13px;
+    color: #fff;
+    background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+    font-size: .76rem;
+    font-weight: 850;
+    box-shadow: 0 10px 18px rgba(124,58,237,.18);
+  }
+  .journey-record-btn.liked {
+    background: linear-gradient(135deg, #10b981, #059669);
+    box-shadow: 0 0 0 3px rgba(16,185,129,.15);
+  }
+  .assistant-note {
+    display: grid;
+    grid-template-columns: 48px minmax(0,1fr);
+    gap: 10px;
+    align-items: center;
+    border-radius: 18px;
+    padding: 12px;
+    background: linear-gradient(135deg, #f5f3ff 0%, #eef2ff 100%);
+    border: 1px solid #ddd6fe;
+    color: #4338ca;
+    font-size: .82rem;
+    line-height: 1.65;
+    font-weight: 750;
+  }
+  .assistant-note-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    box-shadow: var(--app-icon-shadow);
+    font-size: 1.4rem;
+  }
+  .nutrition-focus-row { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; margin-top: 12px; }
+  .nutrition-focus-pill { text-align: center; min-width: 0; }
+  .nutrition-focus-icon {
+    width: 50px;
+    height: 50px;
+    margin: 0 auto;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #ddd6fe;
+    background: linear-gradient(180deg, #fff 0%, #f5f3ff 100%);
+    box-shadow: 0 8px 16px rgba(124,58,237,.08);
+    font-size: 1.3rem;
+  }
+  .nutrition-focus-title { margin-top: 7px; font-size: .74rem; line-height: 1.3; font-weight: 850; color: #0f172a; }
+  .nutrition-focus-copy { margin-top: 2px; font-size: .65rem; line-height: 1.35; color: #64748b; }
+  .meal-suggestion {
+    display: grid;
+    grid-template-columns: 78px minmax(0,1fr);
+    gap: 12px;
+    align-items: center;
+  }
+  .meal-suggestion-art {
+    height: 78px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, #fff7ed 0%, #ecfdf5 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.2rem;
+    border: 1px solid #e2e8f0;
+  }
+  .meal-suggestion-title { font-size: .95rem; font-weight: 900; color: #0f172a; line-height: 1.45; }
+  .meal-suggestion-copy { margin-top: 5px; font-size: .78rem; line-height: 1.55; color: #64748b; }
+  .diet-table-compact table { min-width: 520px; }
+  .diet-advice-list {
+    display: grid;
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .diet-advice-card {
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    background: linear-gradient(180deg, #fff 0%, #fbfcff 100%);
+    padding: 13px;
+  }
+  .diet-advice-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 9px;
+  }
+  .diet-advice-title {
+    font-size: .88rem;
+    font-weight: 900;
+    color: #111827;
+  }
+  .diet-advice-principle {
+    font-size: .72rem;
+    font-weight: 800;
+    color: #4f46e5;
+    background: #eef2ff;
+    border: 1px solid #e0e7ff;
+    border-radius: 999px;
+    padding: 5px 8px;
+    white-space: nowrap;
+  }
+  .diet-advice-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .diet-advice-column {
+    border-radius: 13px;
+    background: #f8fafc;
+    border: 1px solid #edf0f4;
+    padding: 10px;
+  }
+  .diet-advice-label {
+    font-size: .68rem;
+    font-weight: 900;
+    color: #64748b;
+    margin-bottom: 5px;
+  }
+  .diet-advice-copy {
+    font-size: .76rem;
+    line-height: 1.55;
+    color: #334155;
+    font-weight: 700;
+  }
+  .journey-page[data-page="nutrition"] #mealContent .grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+  .journey-page[data-page="nutrition"] #mealContent .meal-card {
+    display: grid !important;
+    grid-template-columns: 34px minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 10px;
+    border-radius: 16px !important;
+    padding: 12px !important;
+  }
+  .journey-page[data-page="nutrition"] #mealContent .meal-card .feedback-actions {
+    flex-direction: column;
+    min-width: 86px;
+  }
+  .why-stack { display: grid; gap: 11px; }
+  .why-stack .sub-card {
+    margin-bottom: 0;
+    border-radius: 18px;
+    background: #fff;
+  }
+  .why-footer-note {
+    margin-top: 12px;
+    border-radius: 18px;
+    padding: 12px 14px;
+    background: linear-gradient(135deg, #f5f3ff 0%, #eef2ff 100%);
+    border: 1px solid #ddd6fe;
+    color: #4338ca;
+    font-size: .82rem;
+    line-height: 1.7;
+    font-weight: 750;
+  }
+  .app-footer {
+    position: fixed;
+    left: 50%;
+    bottom: 0;
+    transform: translateX(-50%);
+    width: min(100vw, 460px);
+    margin: 0;
+    z-index: 55;
+  }
+  .bottom-tab.center {
+    margin-top: -22px;
+  }
+  .bottom-tab.center .bottom-tab-icon {
+    width: 58px;
+    height: 58px;
+    margin: 0 auto -4px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 1.55rem;
+    background: radial-gradient(circle at 35% 25%, #c4b5fd 0%, #8b5cf6 46%, #6d28d9 100%);
+    border: 4px solid rgba(255,255,255,.96);
+    box-shadow: 0 16px 28px rgba(124,58,237,.34);
+  }
+  .bottom-tab.center.active { background: transparent; }
+  .bottom-tab.center.active .bottom-tab-label { color: #6d28d9; }
+  .trend-range-tabs { grid-template-columns: repeat(auto-fit, minmax(0,1fr)); width: 100%; }
+  .trend-chart path.trend-area { opacity: .88; }
+  .trend-point-readout {
+    display: inline-flex;
+    align-items: center;
+    width: max-content;
+    max-width: 100%;
+    font-size: .75rem;
+    line-height: 1.4;
+    color: #334155;
+    font-weight: 800;
+    margin-top: 8px;
+    padding: 5px 9px;
+    border-radius: 999px;
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+  }
+  .trend-point-dot {
+    transition: opacity .16s ease, r .16s ease;
+    cursor: pointer;
+  }
+  .trend-point-dot.active {
+    opacity: 1;
+  }
+  .trend-selected-dot {
+    transition: cx .16s ease, cy .16s ease;
+  }
+  .meal-day-tab {
+    border: none;
+    border-radius: 999px;
+    padding: 7px 12px;
+    font-size: .74rem;
+    font-weight: 800;
+    color: #64748b;
+    background: #f8fafc;
+    transition: background .16s ease, color .16s ease, box-shadow .16s ease;
+    white-space: nowrap;
+  }
+  .meal-day-tab.active {
+    color: #fff;
+    background: #4f46e5;
+    box-shadow: 0 8px 16px rgba(79,70,229,.18);
+  }
+  .meal-reason {
+    color: #64748b;
+    font-weight: 650;
+  }
+  body {
+    background: #f4f6fa;
+  }
+  body::before, .app-shell::before {
+    display: none;
+  }
+  .app-shell {
+    background: #f4f6fa;
+  }
+  .journey-topbar {
+    display: block;
+    min-height: auto;
+    padding: 16px 16px 10px;
+    background: rgba(255,255,255,.86);
+    border-bottom: 1px solid #e8ecf2;
+  }
+  .topbar-title {
+    text-align: left;
+  }
+  .topbar-name {
+    font-size: 1.08rem;
+    letter-spacing: 0;
+  }
+  .topbar-subtitle {
+    color: #64748b;
+    letter-spacing: .04em;
+  }
+  .journey-card {
+    border-radius: 16px;
+    border-color: #e6eaf0;
+    background: #fff;
+    box-shadow: 0 8px 18px rgba(15,23,42,.045);
+  }
+  .journey-hero {
+    min-height: 0;
+    grid-template-columns: 1fr;
+    border-color: #e6eaf0;
+    background: #fff;
+    box-shadow: 0 8px 18px rgba(15,23,42,.045);
+  }
+  .journey-avatar {
+    border-radius: 16px;
+    background: #f8fafc;
+    box-shadow: none;
+    color: #0f172a;
+  }
+  .journey-robot {
+    display: none;
+  }
+  .context-chip {
+    background: #f8fafc;
+    border-color: #e5e7eb;
+    box-shadow: none;
+    color: #475569;
+  }
+  .status-alert-chip {
+    background: #fff;
+    border-color: #e5e7eb;
+    color: #475569;
+  }
+  .status-alert-chip.good { background: #fff; color: #047857; border-color: #d1d5db; }
+  .status-alert-chip.warn { background: #fff; color: #92400e; border-color: #d1d5db; }
+  .status-alert-chip.alert { background: #fff; color: #9a3412; border-color: #d1d5db; }
+  .journey-section-kicker {
+    color: #4f46e5;
+  }
+  .execution-card, .execution-card.good, .execution-card.warn, .execution-card.alert {
+    background: #fff;
+    border-color: #e5e7eb;
+    box-shadow: none;
+  }
+  .execution-card.warn { border-left: 3px solid #d97706; }
+  .execution-card.alert { border-left: 3px solid #ea580c; }
+  .execution-card.good { border-left: 3px solid #059669; }
+  .signal-mini-card {
+    background: #fff;
+    box-shadow: none;
+  }
+  .journey-task {
+    border-radius: 16px;
+    box-shadow: none;
+  }
+  .journey-task-index, .journey-record-btn {
+    background: #4f46e5;
+    box-shadow: 0 8px 16px rgba(79,70,229,.16);
+  }
+  .journey-record-btn.liked {
+    background: #0f172a;
+    box-shadow: none;
+  }
+  .journey-task-actions .feedback-btn {
+    min-width: 0;
+    width: 100%;
+    min-height: 38px;
+  }
+  .journey-task-actions .feedback-btn.like {
+    color: #4f46e5;
+    border-color: #c7d2fe;
+    background: #fff;
+  }
+  .journey-task-actions .feedback-btn.like:hover {
+    background: #eef2ff;
+  }
+  .journey-task-actions .feedback-btn.liked {
+    color: #fff;
+    background: #4f46e5;
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79,70,229,.12);
+  }
+  .journey-task-reason {
+    color: #64748b;
+  }
+  .assistant-note {
+    display: block;
+    background: #f8fafc;
+    border-color: #e5e7eb;
+    color: #334155;
+  }
+  .assistant-note-icon {
+    box-shadow: none;
+  }
+  .nutrition-focus-icon {
+    border-color: #e5e7eb;
+    background: #f8fafc;
+    box-shadow: none;
+  }
+  .meal-suggestion-art {
+    background: #f8fafc;
+  }
+  .journey-page[data-page="nutrition"] #mealContent .meal-card {
+    background: #fff !important;
+    border-color: #e5e7eb !important;
+    box-shadow: none !important;
+  }
+  .journey-page[data-page="nutrition"] .feedback-btn.like {
+    background: #fff;
+    color: #4f46e5;
+    border-color: #c7d2fe;
+  }
+  .journey-page[data-page="nutrition"] .feedback-btn.like:hover {
+    background: #eef2ff;
+  }
+  .journey-page[data-page="nutrition"] .feedback-btn.liked {
+    background: #4f46e5;
+    color: #fff;
+    border-color: #4f46e5;
+  }
+  .app-footer {
+    border-top: 1px solid #e8ecf2;
+    border-left: none;
+    border-right: none;
+    border-radius: 0;
+    background: rgba(255,255,255,.92);
+    box-shadow: 0 -8px 18px rgba(15,23,42,.045);
+  }
+  .bottom-tab {
+    border-radius: 12px;
+    padding: 8px 4px;
+  }
+  .bottom-tab.active {
+    background: #eef2ff;
+  }
+  .bottom-tab-icon {
+    color: #64748b;
+    font-size: 1rem;
+  }
+  .bottom-tab.active .bottom-tab-icon,
+  .bottom-tab.active .bottom-tab-label {
+    color: #4f46e5;
+  }
+  .bottom-tab.center {
+    margin-top: 0;
+  }
+  .bottom-tab.center .bottom-tab-icon {
+    width: auto;
+    height: auto;
+    margin: 0;
+    border-radius: 0;
+    color: #64748b;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    font-size: 1rem;
+  }
+  .bottom-tab.center.active .bottom-tab-icon {
+    color: #4f46e5;
+  }
   .submit-cta-shell {
     position: sticky;
     bottom: calc(14px + env(safe-area-inset-bottom, 0px));
@@ -1017,224 +1582,25 @@
 <body class="app-body text-slate-800">
 <div class="app-shell max-w-md mx-auto px-0 py-0 " style="min-height:100vh">
 
-  <!-- App Header (compact, sticky) -->
-  <div class="app-header sticky top-0 z-50 px-4 py-3 shadow-sm">
-    <div class="flex items-center justify-between">
-      <div>
-        <p class="text-[11px] font-bold text-violet-600 tracking-[0.16em] uppercase">我的健康助手</p>
-        <h1 class="text-lg font-bold text-slate-900 mt-1">您好，Margaret</h1>
-        <p class="text-xs text-slate-500">2026年05月13日 14:00</p>
-      </div>
-      <span class="status-pill inline-flex items-center gap-1 bg-amber-100 text-amber-800 px-3 py-1.5 rounded-full text-xs font-semibold">⚠️ 需要关注</span>
-    </div>
-    <div class="flex gap-1.5 mt-2 flex-wrap"><span class="condition-chip inline-block bg-rose-500 text-white px-3 py-1 rounded-full text-xs font-semibold">高血压</span>
-<span class="condition-chip inline-block bg-amber-500 text-white px-3 py-1 rounded-full text-xs font-semibold">2型糖尿病</span>
-<span class="condition-chip inline-block bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold">高脂血症</span></div>
-  </div>
-
-  <div id="homeAnchor" class="px-3 pt-3"><section class="hero-welcome-card"><div class="hero-welcome-copy"><div class="hero-welcome-eyebrow">下午好</div><h2 class="hero-welcome-title">Margaret，今天先把最重要的几件事做好</h2><p class="hero-welcome-summary">Margaret，您正在从膝关节手术中恢复，同时还要管理高血压和糖尿病。现在的重点是减少恶心、保证一点点营养摄入，并用温和活动帮助身体恢复。</p><div class="hero-welcome-note">我更想先关注您的营养状态。最近这段时间胃口一直不太好，身体修复和恢复体力都更需要蛋白质。今天不用吃很多，如果能额外补一份高蛋白加餐，就已经是很好的开始。</div><div class="hero-welcome-meta">AI 已为您整理今天的重点，下面三件事最值得先做。</div></div><div class="hero-welcome-visual"><div class="hero-avatar-badge">M</div><div class="hero-assistant-orb">🤖</div></div></section></div>
-  <div class="pt-3"><div class="quick-nav-strip"><button class="quick-nav-btn active" onclick="jumpToSection('homeAnchor')"><div class="quick-nav-icon">🗂️</div><div class="quick-nav-title">首页</div><div class="quick-nav-copy">先看总览</div></button><button class="quick-nav-btn" onclick="jumpToSection('priorityPlanAnchor')"><div class="quick-nav-icon">✅</div><div class="quick-nav-title">计划</div><div class="quick-nav-copy">今天重点</div></button><button class="quick-nav-btn" onclick="jumpToSection('nutritionOverviewAnchor')"><div class="quick-nav-icon">🥗</div><div class="quick-nav-title">营养</div><div class="quick-nav-copy">补给节奏</div></button><button class="quick-nav-btn" onclick="jumpToSection('trendOverviewAnchor')"><div class="quick-nav-icon">📈</div><div class="quick-nav-title">趋势</div><div class="quick-nav-copy">恢复变化</div></button></div></div>
-  <div id="statusAnchor" class="px-3 pt-3"><section class="status-overview-card"><div class="status-overview-top"><div><div class="status-overview-label">今日整体状态</div><div class="status-overview-score">69<span>/100</span></div><div class="status-overview-caption" style="color:#c2410c">需关注</div></div><div class="status-overview-ring"><div class="status-overview-ring-fill" style="background:linear-gradient(135deg, #f59e0b 0%, #f97316 100%)"></div><div class="status-overview-ring-text">69</div></div></div><div class="status-overview-progress"><div class="status-overview-progress-bar" style="width:69%"></div></div><div class="status-overview-foot">今天先抓住营养、用药和活动三个核心点，比一次做很多更重要。</div></section></div><div id="priorityPlanAnchor" class="px-3 pt-3"><section class="dashboard-panel"><div class="dashboard-panel-head"><div class="dashboard-panel-title">关键指标概览</div><div class="dashboard-panel-copy">先看最能代表今天状态的四项。</div></div><div class="dashboard-metric-grid"><div class="dashboard-metric-card"><div class="dashboard-metric-icon" style="color:#7c3aed">🩺</div><div class="dashboard-metric-title">血压</div><div class="dashboard-metric-value">138/85</div><div class="dashboard-metric-note">今天的最新读数</div></div><div class="dashboard-metric-card"><div class="dashboard-metric-icon" style="color:#2563eb">👟</div><div class="dashboard-metric-title">活动步数</div><div class="dashboard-metric-value">1,500 步</div><div class="dashboard-metric-note">先把活动一点点拉回来</div></div><div class="dashboard-metric-card"><div class="dashboard-metric-icon" style="color:#10b981">💊</div><div class="dashboard-metric-title">用药执行</div><div class="dashboard-metric-value">基本稳定</div><div class="dashboard-metric-note">看今天有没有更顺手</div></div><div class="dashboard-metric-card"><div class="dashboard-metric-icon" style="color:#f59e0b">🥛</div><div class="dashboard-metric-title">营养状态</div><div class="dashboard-metric-value">下降</div><div class="dashboard-metric-note">优先照顾食欲和体力</div></div></div><div class="dashboard-progress-card"><div class="dashboard-progress-title">恢复阶段</div><div class="dashboard-progress-copy">右膝关节置换术后，当前更关注体力、营养和活动恢复。</div></div></section></div>
-  <div class="px-3 pt-3"><section class="priority-plan-card"><div class="priority-plan-head"><div class="priority-plan-title">今天最值得先做的三件事</div><div class="priority-plan-copy">基于您现在的状态和恢复阶段，先从这些开始会更容易。</div></div><div class="priority-task-card"><div class="priority-task-main"><div class="priority-task-index">1</div><div class="priority-task-copy"><div class="priority-task-title">把二甲双胍放在吃饭中途服用，不要空腹服药</div><div class="priority-task-reason">原因：您最近多次在服药后恶心，随餐中途服用通常能减少胃肠道不适。</div></div><div class="priority-task-emoji">🥛</div></div><div class="priority-task-actions"><button class="priority-task-btn" data-day-idx="-1" data-meal-type="priority" data-item-name="把二甲双胍放在吃饭中途服用，不要空腹服药" data-default-label="记为重点" data-active-label="已记重点" onclick="saveLike(-1,'priority','把二甲双胍放在吃饭中途服用，不要空腹服药', this)">记为重点</button><button class="priority-task-btn secondary" data-day-idx="-1" data-meal-type="priority" data-item-name="把二甲双胍放在吃饭中途服用，不要空腹服药" data-default-label="稍后处理" data-active-label="已标稍后" onclick="showFeedbackModal(-1,'priority','把二甲双胍放在吃饭中途服用，不要空腹服药', this)">稍后处理</button></div></div><div class="priority-task-card"><div class="priority-task-main"><div class="priority-task-index">2</div><div class="priority-task-copy"><div class="priority-task-title">把三餐拆成 5 到 6 次小餐，哪怕只吃几口也算进步</div><div class="priority-task-reason">原因：术后恢复期食欲下降时，小餐更容易入口，也有助于糖尿病血糖稳定。</div></div><div class="priority-task-emoji">🚶</div></div><div class="priority-task-actions"><button class="priority-task-btn" data-day-idx="-1" data-meal-type="priority" data-item-name="把三餐拆成 5 到 6 次小餐，哪怕只吃几口也算进步" data-default-label="记为重点" data-active-label="已记重点" onclick="saveLike(-1,'priority','把三餐拆成 5 到 6 次小餐，哪怕只吃几口也算进步', this)">记为重点</button><button class="priority-task-btn secondary" data-day-idx="-1" data-meal-type="priority" data-item-name="把三餐拆成 5 到 6 次小餐，哪怕只吃几口也算进步" data-default-label="稍后处理" data-active-label="已标稍后" onclick="showFeedbackModal(-1,'priority','把三餐拆成 5 到 6 次小餐，哪怕只吃几口也算进步', this)">稍后处理</button></div></div><div class="priority-task-card"><div class="priority-task-main"><div class="priority-task-index">3</div><div class="priority-task-copy"><div class="priority-task-title">每天做两次 10 分钟坐姿腿部练习</div><div class="priority-task-reason">原因：膝关节置换术后 6 周，温和活动可以减少僵硬并维持肌力。</div></div><div class="priority-task-emoji">🌙</div></div><div class="priority-task-actions"><button class="priority-task-btn" data-day-idx="-1" data-meal-type="priority" data-item-name="每天做两次 10 分钟坐姿腿部练习" data-default-label="记为重点" data-active-label="已记重点" onclick="saveLike(-1,'priority','每天做两次 10 分钟坐姿腿部练习', this)">记为重点</button><button class="priority-task-btn secondary" data-day-idx="-1" data-meal-type="priority" data-item-name="每天做两次 10 分钟坐姿腿部练习" data-default-label="稍后处理" data-active-label="已标稍后" onclick="showFeedbackModal(-1,'priority','每天做两次 10 分钟坐姿腿部练习', this)">稍后处理</button></div></div><div class="priority-special-note"><span class="priority-special-label">AI 特别提醒</span>我更想先关注您的营养状态。最近这段时间胃口一直不太好，身体修复和恢复体力都更需要蛋白质。今天不用吃很多，如果能额外补一份高蛋白加餐，就已经是很好的开始。</div></section></div>
-  <div id="nutritionOverviewAnchor" class="px-3 pt-3"><section class="nutrition-spotlight-card"><div class="nutrition-spotlight-head"><div><div class="nutrition-spotlight-title">今日营养总览</div><div class="nutrition-spotlight-copy">把今天最值得优先照顾的营养重点放在前面，看起来会更直观。</div></div><div class="nutrition-spotlight-badge">AI 估计</div></div><div class="nutrition-ring-grid"><div class="nutrition-ring-card"><div class="nutrition-ring" style="--pct:68;--ring-accent:#8b5cf6;--ring-track:#ede9fe"><div class="nutrition-ring-inner">68%</div></div><div class="nutrition-ring-label">蛋白质</div><div class="nutrition-ring-note">优先补强</div></div><div class="nutrition-ring-card"><div class="nutrition-ring" style="--pct:82;--ring-accent:#06b6d4;--ring-track:#cffafe"><div class="nutrition-ring-inner">82%</div></div><div class="nutrition-ring-label">补水</div><div class="nutrition-ring-note">继续稳定</div></div><div class="nutrition-ring-card"><div class="nutrition-ring" style="--pct:58;--ring-accent:#f59e0b;--ring-track:#fef3c7"><div class="nutrition-ring-inner">58%</div></div><div class="nutrition-ring-label">小餐节奏</div><div class="nutrition-ring-note">待加强</div></div><div class="nutrition-ring-card"><div class="nutrition-ring" style="--pct:64;--ring-accent:#10b981;--ring-track:#d1fae5"><div class="nutrition-ring-inner">64%</div></div><div class="nutrition-ring-label">胃部耐受</div><div class="nutrition-ring-note">轻柔安排</div></div></div><div class="nutrition-story">今天不需要一次吃很多。先把蛋白质和补水照顾好，再把正餐拆小一点，通常会比勉强吃完整一大餐更容易坚持，也更符合当前恢复节奏。</div></section></div>
-  <div class="px-3 pt-3"><section class="hero-vitals"><div class="flex items-center justify-between gap-3 mb-3"><div><div class="text-sm font-bold text-slate-900">您最新的健康情况</div><div class="text-xs text-slate-500 mt-1">先看看这里，就能快速知道今天身体的大致状态。</div></div><div class="text-xl">📊</div></div><div class="hero-vitals-grid"><div class="hero-vital-card caution"><div class="hero-vital-top"><div><div class="hero-vital-label">血压</div><div class="hero-vital-value">138/85</div></div><div class="hero-vital-icon">🩺</div></div><div class="hero-vital-range">参考范围 90-120 / 60-80 mmHg</div><div class="hero-vital-note">您的血压略高，近期注意休息、少盐饮食，并持续观察。</div></div><div class="hero-vital-card good"><div class="hero-vital-top"><div><div class="hero-vital-label">心率</div><div class="hero-vital-value">74</div></div><div class="hero-vital-icon">🫀</div></div><div class="hero-vital-range">参考范围 60-100 bpm</div><div class="hero-vital-note">您的心率处于常见健康范围，当前状态不错。</div></div><div class="hero-vital-card good"><div class="hero-vital-top"><div><div class="hero-vital-label">血氧</div><div class="hero-vital-value">97</div></div><div class="hero-vital-icon">🫁</div></div><div class="hero-vital-range">参考范围 95-100%</div><div class="hero-vital-note">您的血氧在正常范围内，呼吸状态较稳定。</div></div><div class="hero-vital-card good"><div class="hero-vital-top"><div><div class="hero-vital-label">血糖</div><div class="hero-vital-value">7.2</div></div><div class="hero-vital-icon">🧪</div></div><div class="hero-vital-range">参考范围 3.9-7.8 mmol/L</div><div class="hero-vital-note">您的血糖在参考范围内，继续保持规律饮食与监测。</div></div><div class="hero-vital-card caution"><div class="hero-vital-top"><div><div class="hero-vital-label">今日步数</div><div class="hero-vital-value">1,500</div></div><div class="hero-vital-icon">👟</div></div><div class="hero-vital-range">参考范围 建议 6000-10000 步/日</div><div class="hero-vital-note">今天活动量偏少，若身体允许，可分次增加轻度步行。</div></div></div></section></div>
-  <div class="px-3 pt-3"><div class="top-overview-panel rounded-[28px] p-3 shadow-sm"><div class="flex items-center gap-2 mb-2 px-1"><span class="top-overview-kicker text-base">🗂️</span><span class="text-xs font-bold text-slate-600 uppercase tracking-wide">长期情况</span></div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">👤</span><div class="flex-1 min-w-0"><div class="sub-card-label">长期资料</div><div class="sub-card-value">先了解您的基础情况</div></div></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">Margaret Chen，女性，71岁。 已诊断 高血压 （8年）, 2型糖尿病 （4年）, 高脂血症. 术后恢复期 (膝关节置换术, 6 周前). 用药: 氨氯地平 5mg 每日1次, 二甲双胍 500mg 每日2次, 阿托伐他汀 20mg 每晚1次. 独居，女儿每周探访一次。</div></div></div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">📈</span><div class="flex-1 min-w-0"><div class="sub-card-label">近期趋势</div><div class="sub-card-value">这段时间身体有什么变化</div></div></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">过去14天： 食欲明显下降, 可能与二甲双胍副作用及术后不适有关. 步数从日均4,000步下降到约1,500步。 血压大致稳定在138/85左右。 空腹血糖轻度偏高，约为7.0-7.4。 近期容易疲劳，营养摄入意愿下降。</div></div></div></div></div>
-  <div id="trendOverviewAnchor" class="px-3 pt-3"><section class="trend-card"><div class="trend-card-head"><div><div class="trend-card-title">恢复趋势</div><div class="trend-card-copy">把最近的变化浓缩成更像 app 的趋势视图，方便一眼判断哪里需要优先跟进。</div></div><div class="trend-insight-chip" id="trendInsightChip">过去 14 天里，活动量和食欲一起走低。</div></div><div class="trend-range-tabs"><button class="trend-range-btn" data-range="7" onclick="renderTrendRange('7')">7天</button><button class="trend-range-btn active" data-range="14" onclick="renderTrendRange('14')">14天</button><button class="trend-range-btn" data-range="30" onclick="renderTrendRange('30')">30天</button><button class="trend-range-btn" data-range="90" onclick="renderTrendRange('90')">90天</button></div><div id="trendMetricStack" class="trend-metric-stack mt-3"></div></section></div>
-
-  <!-- Escalation Banners -->
-  <div class="px-3 pt-3"><div class="rounded-xl border-2 bg-gradient-to-r from-amber-50 to-orange-50 border-amber-300 p-5 mb-3"><div class="flex items-center gap-2 mb-2"><span class="text-xl">⚠️</span><span class="text-sm font-bold text-amber-800 flex-1">反复头痛，需要进一步关注</span><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500 text-white">需关注</span></div><p class="text-sm text-slate-700 leading-relaxed mb-3">近期记录中您提到头痛 3 次。因为这个症状反复出现，系统会将它标记为需要更密切观察，并提醒照护团队关注。</p><div class="flex items-start gap-2 bg-white/70 rounded-lg p-3 border border-slate-200"><span class="text-sm mt-0.5">💡</span><div class="text-xs text-slate-600 leading-relaxed"><span class="font-semibold">建议：</span>每次出现时，请记录时间、严重程度（1-10 分）以及可能诱因。</div></div></div></div>
-
-  <!-- AI Message (modular sub-cards) -->
-  <div class="px-3 pt-3 pb-1">
-    <div class="ai-panel rounded-[28px] p-3 shadow-sm">
-      <div class="flex items-center gap-2 mb-2 px-1">
-        <span class="ai-panel-kicker text-base">🤖</span>
-        <span class="text-xs font-bold text-slate-600 uppercase tracking-wide">AI 洞察</span>
-      </div>
-      <div class="sub-card sub-card-static bg-emerald-50 border-emerald-200"><div class="sub-card-header" style="padding:12px 14px 8px"><span class="sub-card-icon" style="font-size:1.2em">🎉</span><div class="flex-1 min-w-0"><div class="sub-card-value text-emerald-800" style="font-size:0.95em">好消息</div></div></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">您的血压近期比较稳定，大多数药也按时吃了，这一点值得肯定。</div></div></div><div class="sub-card sub-card-static bg-amber-50 border-amber-200"><div class="sub-card-header" style="padding:12px 14px 8px"><span class="sub-card-icon" style="font-size:1.2em">⚠️</span><div class="flex-1 min-w-0"><div class="sub-card-value text-amber-800" style="font-size:0.95em">需要留意</div></div></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">您的食欲下降，并且多次提到服用二甲双胍后恶心；近期头痛也反复出现，需要继续记录和关注。</div></div></div><div class="sub-card sub-card-static bg-blue-50 border-blue-200"><div class="sub-card-header" style="padding:12px 14px 8px"><span class="sub-card-icon" style="font-size:1.2em">📝</span><div class="flex-1 min-w-0"><div class="sub-card-value text-blue-800" style="font-size:0.95em">我们准备了什么</div></div></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">下面的建议会尽量减轻胃部不适，兼顾术后恢复、血糖稳定和低盐低油饮食。</div></div></div><div class="sub-card sub-card-static bg-purple-50 border-purple-200"><div class="sub-card-header" style="padding:12px 14px 8px"><span class="sub-card-icon" style="font-size:1.2em">💪</span><div class="flex-1 min-w-0"><div class="sub-card-value text-purple-800" style="font-size:0.95em">慢慢来</div></div></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">每天能多吃几口、稍微活动一下，都是对恢复有帮助的小进步。</div></div></div>
+  <div class="journey-topbar">
+    <div class="topbar-title">
+      <div class="topbar-name">照护旅程</div>
+      <div class="topbar-subtitle">Care Journey</div>
     </div>
   </div>
 
-  <!-- Cards -->
-  <div class="px-3 pt-2 pb-3">
-    <div class="section-card" data-section="guidance_bundle"><div class="section-card-header"><div class="section-card-icon" style="background:#d1fae5">💚</div><div class="flex-1 min-w-0"><div class="section-card-title">现在怎么做</div><div class="section-card-summary">把重点提醒和建议放在一起，更容易看懂。</div></div><div class="section-card-arrow">&#9662;</div></div><div class="section-card-body"><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">为什么这些建议和您有关</div></div><div class="module-subsection-copy">先把您的病史、当前用药和最近指标放在前面，后面的建议会更容易看懂。</div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">🧾</span><div class="flex-1 min-w-0"><div class="sub-card-label">病史重点</div><div class="sub-card-value">这次建议会先围绕您的基础病和恢复阶段</div></div></div><div class="sub-card-body"><div class="flex flex-wrap gap-2 mb-3"><span class="context-chip">高血压</span><span class="context-chip">2型糖尿病</span><span class="context-chip">高脂血症</span><span class="context-chip">2026-03-28 右膝关节置换术</span></div><div class="text-xs text-slate-600 bg-slate-50 rounded-xl px-3 py-2 leading-relaxed border border-slate-200">所以这里会更强调：恢复期会更强调蛋白质、容易入口的食物和循序渐进活动；营养安排会特别强调少盐；也会提醒规律分餐和减少精制糖</div></div></div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">💊</span><div class="flex-1 min-w-0"><div class="sub-card-label">当前用药</div><div class="sub-card-value">用药情况和身体反应会直接影响营养建议</div></div></div><div class="sub-card-body"><div class="flex flex-wrap gap-2 mb-3"><span class="context-chip">氨氯地平 5mg 每日1次</span><span class="context-chip">二甲双胍 500mg 每日2次</span><span class="context-chip">阿托伐他汀 20mg 每晚1次</span></div><div class="text-sm text-slate-700 leading-relaxed">目前记录里提到：曾因进食后恶心，二甲双胍漏服两次</div><div class="mt-3 text-xs text-slate-600 bg-slate-50 rounded-xl px-3 py-2 leading-relaxed border border-slate-200">所以这里会更强调：可考虑改为随餐服用二甲双胍，或与医生讨论是否调整为缓释剂型</div></div></div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">📈</span><div class="flex-1 min-w-0"><div class="sub-card-label">最近指标</div><div class="sub-card-value">不是泛泛建议，而是结合您最近几天的真实记录</div></div></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed mb-2">最近记录：血压 138/85，血糖 7.2，步数 1,500</div><div class="text-sm text-slate-700 leading-relaxed mb-2">设备提示：活动量下降、连续5天未外出</div><div class="text-sm text-slate-700 leading-relaxed mb-2">监测提醒：有3天漏测血糖，血压监测相对稳定。</div><div class="text-xs text-slate-600 bg-slate-50 rounded-xl px-3 py-2 leading-relaxed border border-slate-200">所以这里会更强调：营养安排会更强调规律分餐；活动建议会更温和、循序渐进；也会提醒把监测补齐</div></div></div></div><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">健康指导</div></div><div class="module-subsection-copy">结合您最近的感受，整理出现在最值得留意的重点。</div><div class="text-xs text-slate-500 mb-2">为 <span class="font-semibold">Margaret</span> 个性化整理</div><div class="leading-relaxed mb-3 bg-emerald-50 border-l-4 border-emerald-400 rounded-lg p-4" style="font-size:0.95em">Margaret，您正在从膝关节手术中恢复，同时还要管理高血压和糖尿病。现在的重点是减少恶心、保证一点点营养摄入，并用温和活动帮助身体恢复。</div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">🥩</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.95em">每餐优先吃几口蛋白质食物</div></div></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic">→ 蛋白质能帮助术后组织修复，也能减少活动下降带来的肌肉流失。</div></div></div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">🧂</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.95em">继续保持低盐饮食</div></div></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic">→ 您的血压仍在偏高范围，少盐能帮助降压药发挥作用。</div></div></div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">🫒</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.95em">用蒸、煮、炖替代油炸</div></div></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic">→ 清淡软烂的食物更适合恶心和食欲下降时入口，也更有利于血脂控制。</div></div></div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">💧</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.95em">少量多次喝温水</div></div></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic">→ 补水有助于代谢药物，也可能缓解二甲双胍相关的不适。</div></div></div></div><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">健康建议</div></div><div class="module-subsection-copy">这些是现在更适合您去做的小步骤。</div><div class="flex flex-wrap gap-2 mb-3"><span class="inline-block px-3 py-1 rounded-full text-xs font-medium border bg-orange-50 text-orange-700 border-orange-200">食欲下降</span>
-<span class="inline-block px-3 py-1 rounded-full text-xs font-medium border bg-sky-50 text-sky-700 border-sky-200">活动量偏低</span>
-<span class="inline-block px-3 py-1 rounded-full text-xs font-medium border bg-amber-50 text-amber-700 border-amber-200">血糖监测有缺口</span></div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">💊</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">把二甲双胍放在吃饭中途服用，不要空腹服药</div></div></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic mb-2">💬 您最近多次在服药后恶心，随餐中途服用通常能减少胃肠道不适。</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="有帮助" data-day-idx="-1" data-meal-type="rec" data-item-name="把二甲双胍放在吃饭中途服用，不要空腹服药" data-default-label="适合我" data-active-label="已选择" onclick="saveLike(-1,'rec','把二甲双胍放在吃饭中途服用，不要空腹服药', this)">适合我</button><button class="feedback-btn feedback-skip" title="不适合我" data-day-idx="-1" data-meal-type="rec" data-item-name="把二甲双胍放在吃饭中途服用，不要空腹服药" data-default-label="不适合" data-active-label="已跳过" onclick="showFeedbackModal(-1,'rec','把二甲双胍放在吃饭中途服用，不要空腹服药', this)">不适合</button></div></div></div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">🥗</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">把三餐拆成 5 到 6 次小餐，哪怕只吃几口也算进步</div></div></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic mb-2">💬 术后恢复期食欲下降时，小餐更容易入口，也有助于糖尿病血糖稳定。</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="有帮助" data-day-idx="-1" data-meal-type="rec" data-item-name="把三餐拆成 5 到 6 次小餐，哪怕只吃几口也算进步" data-default-label="适合我" data-active-label="已选择" onclick="saveLike(-1,'rec','把三餐拆成 5 到 6 次小餐，哪怕只吃几口也算进步', this)">适合我</button><button class="feedback-btn feedback-skip" title="不适合我" data-day-idx="-1" data-meal-type="rec" data-item-name="把三餐拆成 5 到 6 次小餐，哪怕只吃几口也算进步" data-default-label="不适合" data-active-label="已跳过" onclick="showFeedbackModal(-1,'rec','把三餐拆成 5 到 6 次小餐，哪怕只吃几口也算进步', this)">不适合</button></div></div></div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">🏃</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">每天做两次 10 分钟坐姿腿部练习</div></div></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic mb-2">💬 膝关节置换术后 6 周，温和活动可以减少僵硬并维持肌力。</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="有帮助" data-day-idx="-1" data-meal-type="rec" data-item-name="每天做两次 10 分钟坐姿腿部练习" data-default-label="适合我" data-active-label="已选择" onclick="saveLike(-1,'rec','每天做两次 10 分钟坐姿腿部练习', this)">适合我</button><button class="feedback-btn feedback-skip" title="不适合我" data-day-idx="-1" data-meal-type="rec" data-item-name="每天做两次 10 分钟坐姿腿部练习" data-default-label="不适合" data-active-label="已跳过" onclick="showFeedbackModal(-1,'rec','每天做两次 10 分钟坐姿腿部练习', this)">不适合</button></div></div></div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">🏃</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">状态允许时，在家附近走 5 分钟短距离</div></div></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic mb-2">💬 轻度步行有助于康复、血压控制和血糖代谢。</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="有帮助" data-day-idx="-1" data-meal-type="rec" data-item-name="状态允许时，在家附近走 5 分钟短距离" data-default-label="适合我" data-active-label="已选择" onclick="saveLike(-1,'rec','状态允许时，在家附近走 5 分钟短距离', this)">适合我</button><button class="feedback-btn feedback-skip" title="不适合我" data-day-idx="-1" data-meal-type="rec" data-item-name="状态允许时，在家附近走 5 分钟短距离" data-default-label="不适合" data-active-label="已跳过" onclick="showFeedbackModal(-1,'rec','状态允许时，在家附近走 5 分钟短距离', this)">不适合</button></div></div></div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">📋</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">设置每日血糖测量提醒</div></div></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic mb-2">💬 近期漏测血糖会影响医生判断二甲双胍调整后的效果。</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="有帮助" data-day-idx="-1" data-meal-type="rec" data-item-name="设置每日血糖测量提醒" data-default-label="适合我" data-active-label="已选择" onclick="saveLike(-1,'rec','设置每日血糖测量提醒', this)">适合我</button><button class="feedback-btn feedback-skip" title="不适合我" data-day-idx="-1" data-meal-type="rec" data-item-name="设置每日血糖测量提醒" data-default-label="不适合" data-active-label="已跳过" onclick="showFeedbackModal(-1,'rec','设置每日血糖测量提醒', this)">不适合</button></div></div></div><div class="text-xs text-slate-500 mt-3 bg-slate-50 rounded-lg p-3 leading-relaxed">💭 Margaret近14天的执行数据呈现出较清晰的模式：除二甲双胍相关恶心外，用药总体较稳定；营养摄入下降可能与药物副作用和术后恢复共同相关；活动量则因膝部疼痛明显减少。当前膳食计划优先选择易消化、营养密度高、同时兼顾三项慢病管理的方案。</div></div></div></div>
-<div class="section-card" data-section="adherence"><div class="section-card-header"><div class="section-card-icon" style="background:#f3e8ff">📋</div><div class="flex-1 min-w-0"><div class="section-card-title">最近情况</div><div class="section-card-summary">把最近做得怎么样和关键事件放在一起看。</div></div><div class="section-card-arrow">&#9662;</div></div><div class="section-card-body"><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">执行情况</div></div><div class="module-subsection-copy">看看最近用药、营养、活动和监测情况。</div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">💊</span><div class="flex-1 min-w-0"><div class="sub-card-label">用药</div><div class="sub-card-value text-emerald-700">基本稳定</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 mb-1"><span class="font-medium text-slate-500">问题：</span> 曾因进食后恶心，二甲双胍漏服两次</div><div class="text-sm text-slate-600 mb-1"><span class="font-medium text-slate-500">调整建议：</span> 可考虑改为随餐服用二甲双胍，或与医生讨论是否调整为缓释剂型</div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">🍽️</span><div class="flex-1 min-w-0"><div class="sub-card-label">食欲与饮食</div><div class="sub-card-value text-amber-700">下降</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 mb-1"><span class="font-medium text-slate-500">可能原因：</span> 可能与二甲双胍引起的恶心、术后疲劳及活动减少共同相关</div><div class="text-sm text-slate-600 mb-1"><span class="font-medium text-slate-500">建议：</span> 可尝试少量多次的营养补充，温热流质或软质食物通常更容易耐受。</div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">🏃</span><div class="flex-1 min-w-0"><div class="sub-card-label">运动与活动</div><div class="sub-card-value text-amber-700">低于目标</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 mb-1"><span class="font-medium text-slate-500">障碍：</span> 近期手术后的膝部疼痛限制了步行距离和时长</div><div class="text-sm text-slate-600 mb-1"><span class="font-medium text-slate-500">计划：</span> 可先从每日两次10分钟坐姿练习开始，再根据耐受情况加入5分钟短距离步行。</div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">📋</span><div class="flex-1 min-w-0"><div class="sub-card-label">健康监测</div><div class="sub-card-value text-amber-700">需要加强</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 mb-1"><span class="font-medium text-slate-500">缺口：</span> 有3天漏测血糖，血压监测相对稳定。</div></div></div></div><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">关键事件</div></div><div class="module-subsection-copy">把最近的重要记录放在一起，前后变化会更好理解。</div><div class="space-y-2"><div class="flex items-start gap-3 rounded-lg p-2.5 border bg-purple-50 text-purple-700 border-purple-200"><span class="text-base mt-0.5">🩺</span><div class="flex-1 min-w-0"><div class="text-sm font-semibold">右膝关节置换术</div><div class="text-xs text-slate-400 mt-0.5">2026-03-28</div></div></div><div class="flex items-start gap-3 rounded-lg p-2.5 border bg-amber-50 text-amber-700 border-amber-200"><span class="text-base mt-0.5">⚠️</span><div class="flex-1 min-w-0"><div class="text-sm font-semibold">术后复诊恢复良好，可进行轻度步行</div><div class="text-xs text-slate-400 mt-0.5">2026-04-15</div></div></div><div class="flex items-start gap-3 rounded-lg p-2.5 border bg-amber-50 text-amber-700 border-amber-200"><span class="text-base mt-0.5">⚠️</span><div class="flex-1 min-w-0"><div class="text-sm font-semibold">早晨轻度头痛</div><div class="text-xs text-slate-400 mt-0.5">2026-04-22</div></div></div><div class="flex items-start gap-3 rounded-lg p-2.5 border bg-amber-50 text-amber-700 border-amber-200"><span class="text-base mt-0.5">⚠️</span><div class="flex-1 min-w-0"><div class="text-sm font-semibold">服用二甲双胍后反复恶心</div><div class="text-xs text-slate-400 mt-0.5">2026-05-01</div></div></div><div class="flex items-start gap-3 rounded-lg p-2.5 border bg-amber-50 text-amber-700 border-amber-200"><span class="text-base mt-0.5">⚠️</span><div class="flex-1 min-w-0"><div class="text-sm font-semibold">再次出现中度头痛，持续约 2 小时</div><div class="text-xs text-slate-400 mt-0.5">2026-05-03</div></div></div><div class="flex items-start gap-3 rounded-lg p-2.5 border bg-amber-50 text-amber-700 border-amber-200"><span class="text-base mt-0.5">⚠️</span><div class="flex-1 min-w-0"><div class="text-sm font-semibold">食欲明显下降，经常不吃午餐</div><div class="text-xs text-slate-400 mt-0.5">2026-05-05</div></div></div><div class="flex items-start gap-3 rounded-lg p-2.5 border bg-amber-50 text-amber-700 border-amber-200"><span class="text-base mt-0.5">⚠️</span><div class="flex-1 min-w-0"><div class="text-sm font-semibold">第三次报告头痛，服用了对乙酰氨基酚</div><div class="text-xs text-slate-400 mt-0.5">2026-05-09</div></div></div><div class="flex items-start gap-3 rounded-lg p-2.5 border bg-rose-50 text-rose-700 border-rose-200"><span class="text-base mt-0.5">🚨</span><div class="flex-1 min-w-0"><div class="text-sm font-semibold">连续 5 天步数低于 2000 步</div><div class="text-xs text-slate-400 mt-0.5">2026-05-10</div></div></div></div></div></div></div>
-<div class="section-card" data-section="nutrition_bundle"><div class="section-card-header"><div class="section-card-icon" style="background:#ecfdf5">🥗</div><div class="flex-1 min-w-0"><div class="section-card-title">营养重点</div><div class="section-card-summary">把营养建议、对照和小提醒放在一起，更好参考。</div></div><div class="section-card-arrow">&#9662;</div></div><div class="section-card-body"><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">营养建议</div></div><div class="module-subsection-copy">先看这段时间哪些营养安排更适合您。</div><div class="rounded-xl bg-emerald-50 border border-emerald-100 px-4 py-4 text-[0.95em] leading-7 text-slate-700">Margaret，您目前营养摄入意愿偏低，建议优先选择高营养密度、少量多次的饮食安排。温热燕麦粥、溏心蛋和清汤类食物对胃部更温和，两餐之间可加一小把坚果或少量水果，帮助维持体力。</div></div><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">疾病饮食对照</div></div><div class="module-subsection-copy">哪些食物更适合，哪些先少吃一点。</div><div class="overflow-x-auto rounded-xl border border-slate-200 bg-white"><table class="w-full text-sm"><thead><tr class="bg-slate-50"><th class="px-4 py-2 text-left text-xs font-semibold text-slate-500">疾病</th><th class="px-4 py-2 text-left text-xs font-semibold text-slate-500">原则</th><th class="px-4 py-2 text-left text-xs font-semibold text-slate-500">推荐</th><th class="px-4 py-2 text-left text-xs font-semibold text-slate-500">避免</th></tr></thead><tbody class="divide-y divide-slate-100"><tr><td class="px-4 py-3 font-medium text-slate-800">高血压</td><td class="px-4 py-3 text-slate-600">低钠、高钾</td><td class="px-4 py-3 text-emerald-700">绿叶蔬菜、香蕉、红薯、鱼类</td><td class="px-4 py-3 text-rose-600">罐头汤、加工肉类、酱油、腌制食品</td></tr><tr><td class="px-4 py-3 font-medium text-slate-800">2型糖尿病</td><td class="px-4 py-3 text-slate-600">低升糖指数、控制份量</td><td class="px-4 py-3 text-emerald-700">燕麦、扁豆、非淀粉类蔬菜、坚果</td><td class="px-4 py-3 text-rose-600">白面包、含糖饮料、糕点、白米饭</td></tr><tr><td class="px-4 py-3 font-medium text-slate-800">高脂血症</td><td class="px-4 py-3 text-slate-600">低饱和脂肪、高纤维</td><td class="px-4 py-3 text-emerald-700">三文鱼、橄榄油、燕麦、杏仁</td><td class="px-4 py-3 text-rose-600">油炸食品、黄油、高脂肉类、全脂乳制品</td></tr></tbody></table></div></div><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">营养小贴士</div></div><div class="module-subsection-copy">都是些更容易用得上的小提醒。</div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">🍽️</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">少量多次</div></div></div><div class="sub-card-body"><div class="text-sm text-slate-600 leading-relaxed mb-2">当营养摄入意愿下降时，可将三餐分成5到6次少量补充，即使只吃几口也有帮助。</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="有帮助" data-day-idx="-1" data-meal-type="tip" data-item-name="少量多次" data-default-label="适合我" data-active-label="已选择" onclick="saveLike(-1,'tip','少量多次', this)">适合我</button><button class="feedback-btn feedback-skip" title="不适合我" data-day-idx="-1" data-meal-type="tip" data-item-name="少量多次" data-default-label="不适合" data-active-label="已跳过" onclick="showFeedbackModal(-1,'tip','少量多次', this)">不适合</button></div></div></div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">💊</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">用药时机</div></div></div><div class="sub-card-body"><div class="text-sm text-slate-600 leading-relaxed mb-2">二甲双胍建议随餐服用，避免空腹，以减少恶心。</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="有帮助" data-day-idx="-1" data-meal-type="tip" data-item-name="用药时机" data-default-label="适合我" data-active-label="已选择" onclick="saveLike(-1,'tip','用药时机', this)">适合我</button><button class="feedback-btn feedback-skip" title="不适合我" data-day-idx="-1" data-meal-type="tip" data-item-name="用药时机" data-default-label="不适合" data-active-label="已跳过" onclick="showFeedbackModal(-1,'tip','用药时机', this)">不适合</button></div></div></div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">🥣</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">先选择温和易耐受的食物</div></div></div><div class="sub-card-body"><div class="text-sm text-slate-600 leading-relaxed mb-2">胃部较敏感时，可优先选择燕麦粥、汤类、鸡蛋等温热软质食物。</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="有帮助" data-day-idx="-1" data-meal-type="tip" data-item-name="先选择温和易耐受的食物" data-default-label="适合我" data-active-label="已选择" onclick="saveLike(-1,'tip','先选择温和易耐受的食物', this)">适合我</button><button class="feedback-btn feedback-skip" title="不适合我" data-day-idx="-1" data-meal-type="tip" data-item-name="先选择温和易耐受的食物" data-default-label="不适合" data-active-label="已跳过" onclick="showFeedbackModal(-1,'tip','先选择温和易耐受的食物', this)">不适合</button></div></div></div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">🥤</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">注意补水</div></div></div><div class="sub-card-body"><div class="text-sm text-slate-600 leading-relaxed mb-2">白天分次补水即可，温热花草茶也有助于改善食欲与消化。</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="有帮助" data-day-idx="-1" data-meal-type="tip" data-item-name="注意补水" data-default-label="适合我" data-active-label="已选择" onclick="saveLike(-1,'tip','注意补水', this)">适合我</button><button class="feedback-btn feedback-skip" title="不适合我" data-day-idx="-1" data-meal-type="tip" data-item-name="注意补水" data-default-label="不适合" data-active-label="已跳过" onclick="showFeedbackModal(-1,'tip','注意补水', this)">不适合</button></div></div></div></div></div></div>
-<div class="section-card" data-section="meal_bundle"><div class="section-card-header"><div class="section-card-icon" style="background:#eff6ff">🍽️</div><div class="flex-1 min-w-0"><div class="section-card-title">膳食计划</div><div class="section-card-summary">口味偏好和本周膳食安排都整理在这里。</div></div><div class="section-card-arrow">&#9662;</div></div><div class="section-card-body"><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">口味偏好</div></div><div class="module-subsection-copy">选一些您平时更喜欢的口味，后面的膳食建议会更贴近您。</div><p class="text-sm text-slate-500 mb-3">选择您喜欢的菜系，后续膳食建议会尽量参考您的口味。</p><div class="flex flex-wrap gap-2 mb-3" id="cuisineChips"></div><div class="flex items-center gap-2"><input id="customCuisineInput" type="text" placeholder="添加其他菜系..." class="flex-1 text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-200"><button onclick="addCustomCuisine()" class="px-3 py-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium hover:bg-emerald-100">+ 添加</button></div></div><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">一周膳食参考</div></div><div class="module-subsection-copy">给您一些这周更容易参考的早、中、晚餐搭配。</div><div class="flex gap-2 mb-4 overflow-x-auto pb-2" id="dayTabs"></div><div id="mealContent"></div></div></div></div>
-<div class="section-card" data-section="map"><div class="section-card-header"><div class="section-card-icon" style="background:#f0f9ff">🏥</div><div class="flex-1 min-w-0"><div class="section-card-title">附近地点</div><div class="section-card-summary">附近医院和公园，都可以在这里看。</div></div><div class="section-card-arrow">&#9662;</div></div><div class="section-card-body"><style>#bmap{width:100%;height:100%}#locate-btn{position:absolute;bottom:12px;right:12px;z-index:999;width:38px;height:38px;border-radius:50%;border:none;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.2);cursor:pointer;font-size:1.1em;display:flex;align-items:center;justify-content:center}#locate-btn:active{transform:scale(0.92)}.map-toggle{display:flex;margin-top:10px;background:#f1f5f9;border-radius:10px;padding:3px}.map-toggle button{flex:1;padding:8px 0;border:none;background:transparent;border-radius:8px;font-size:0.85em;font-weight:600;color:#94a3b8;cursor:pointer;transition:all 0.25s}.map-toggle button.active{background:linear-gradient(135deg,#42a5f5,#1e88e5);color:#fff;box-shadow:0 2px 8px rgba(30,136,229,0.3)}.map-toggle button.active.park-mode{background:linear-gradient(135deg,#66bb6a,#43a047);box-shadow:0 2px 8px rgba(67,160,71,0.3)}.map-place{display:flex;align-items:center;gap:10px;background:#f8fafc;border-radius:10px;padding:12px;margin-top:8px;cursor:pointer;border:2px solid transparent;transition:all 0.15s}.map-place:active{transform:scale(0.98)}.map-place.focused{border-color:#1e88e5;box-shadow:0 2px 10px rgba(30,136,229,0.15)}.map-place.focused.park-mode{border-color:#43a047;box-shadow:0 2px 10px rgba(67,160,71,0.15)}.map-place-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1em;flex-shrink:0}.map-place-icon.hospital{background:#e3f2fd}.map-place-icon.park{background:#e8f5e9}.map-place-nav{flex-shrink:0;width:30px;height:30px;border-radius:50%;border:none;background:#1e88e5;color:#fff;font-size:0.9em;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(30,136,229,0.35)}.map-place-nav.park-mode{background:#43a047;box-shadow:0 2px 6px rgba(67,160,71,0.35)}.map-place-nav:active{transform:scale(0.9)}.map-dist{font-size:0.75em;font-weight:700;padding:3px 8px;border-radius:16px;white-space:nowrap;flex-shrink:0}.map-dist.hospital{background:#e3f2fd;color:#1565c0}.map-dist.park{background:#e8f5e9;color:#2e7d32}</style>
-<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3"><div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100"><span class="text-lg">📍</span><h2 class="text-sm font-bold text-slate-800">附近推荐</h2></div><p class="text-sm text-slate-600 mb-3" id="ai-map-text">您近期活动量偏低，天气不错时可以去附近公园散散步。</p><div class="rounded-2xl overflow-hidden border border-slate-200 relative" style="height:240px"><div id="bmap"></div><button id="locate-btn" title="回到我的位置">📍</button></div><div class="map-toggle"><button class="active" id="btn-hospital" onclick="switchMapMode('hospital')">🏥 附近医院</button><button id="btn-park" onclick="switchMapMode('park')">🌳 附近公园</button></div><div id="map-cards"></div></div>
-<script>
-(function() {
-  var bmap = new BMap.Map("bmap");
-  bmap.enableScrollWheelZoom(true);
-  var userPoint = new BMap.Point(-71.8079906, 42.2766632);
-  var mapMode = 'hospital';
-  var mapMarkers = [];
-  var mapCards = [];
-  var mapRoute = null;
-  var userOverlays = [];
-  var AI_MAP_TEXT = { hospital: "您近期活动量偏低，天气不错时可以去附近公园散散步。", park: "您近期活动量偏低，天气不错时可以去附近公园散散步。" };
-
-  document.getElementById('locate-btn').addEventListener('click', function() {
-    if (userPoint) { bmap.panTo(userPoint); bmap.setZoom(15); }
-  });
-
-  var USER_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28">'
-    + '<circle cx="14" cy="14" r="13" fill="#4285f4" fill-opacity="0.2" stroke="#4285f4" stroke-width="1"/>'
-    + '<circle cx="14" cy="14" r="7" fill="#4285f4" stroke="#fff" stroke-width="2.5"/>'
-    + '</svg>';
-  var USER_ICON = new BMap.Icon(
-    'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(USER_ICON_SVG),
-    new BMap.Size(28, 28),
-    { anchor: new BMap.Size(14, 14) }
-  );
-
-  function addUserOverlays() {
-    userOverlays.forEach(function(o) { bmap.removeOverlay(o); });
-    userOverlays = [];
-    var marker = new BMap.Marker(userPoint, { icon: USER_ICON });
-    bmap.addOverlay(marker);
-    userOverlays.push(marker);
-    var label = new BMap.Label('\u60a8\u5728\u8fd9\u91cc', {
-      position: userPoint,
-      offset: new BMap.Size(16, -8)
-    });
-    label.setStyle({
-      background:'#4285f4',color:'#fff',border:'none',
-      borderRadius:'6px',padding:'2px 8px',
-      fontSize:'12px',fontWeight:'600',
-      boxShadow:'0 1px 4px rgba(0,0,0,0.25)',whiteSpace:'nowrap'
-    });
-    bmap.addOverlay(label);
-    userOverlays.push(label);
-  }
-
-  function clearRoute() {
-    if (mapRoute) { mapRoute.clearResults(); mapRoute = null; }
-  }
-  function clearResultMarkers() {
-    clearRoute();
-    mapMarkers.forEach(function(m) { bmap.removeOverlay(m); });
-    mapMarkers = [];
-    mapCards = [];
-  }
-
-  bmap.centerAndZoom(userPoint, 15);
-  addUserOverlays();
-  doMapSearch('hospital');
-
-  window.switchMapMode = function(mode) {
-    if (mode === mapMode) return;
-    mapMode = mode;
-    document.getElementById('btn-hospital').className = mode === 'hospital' ? 'active' : '';
-    document.getElementById('btn-park').className = mode === 'park' ? 'active park-mode' : '';
-    document.getElementById('ai-map-text').textContent = AI_MAP_TEXT[mode];
-    clearResultMarkers();
-    document.getElementById('map-cards').innerHTML = '<div style="text-align:center;color:#bbb;padding:16px;font-size:0.85em">\u641c\u7d22\u4e2d\u2026</div>';
-    doMapSearch(mode);
-  };
-
-  function doMapSearch(mode) {
-    if (!userPoint) return;
-    var keyword = mode === 'hospital' ? '\u533b\u9662' : '\u516c\u56ed';
-    var local = new BMap.LocalSearch(bmap, {
-      renderOptions: { autoViewport: false },
-      onSearchComplete: function(results) {
-        clearResultMarkers();
-        var container = document.getElementById('map-cards');
-        container.innerHTML = '';
-        if (!results || local.getStatus() !== BMAP_STATUS_SUCCESS || results.getCurrentNumPois() === 0) {
-          container.innerHTML = '<div style="text-align:center;color:#bbb;padding:16px;font-size:0.85em">\u9644\u8fd1\u6682\u65e0\u76f8\u5173\u5730\u70b9</div>';
-          return;
-        }
-        var count = results.getCurrentNumPois();
-        for (var i = 0; i < count; i++) {
-          (function(idx) {
-            var poi = results.getPoi(idx);
-            var dist = bmap.getDistance(userPoint, poi.point);
-            var distText = dist >= 1000 ? (dist/1000).toFixed(1)+' km' : Math.round(dist)+' m';
-            var marker = new BMap.Marker(poi.point);
-            bmap.addOverlay(marker);
-            mapMarkers.push(marker);
-            marker.addEventListener('click', function() { focusMapCard(idx, poi); });
-            var card = document.createElement('div');
-            card.className = 'map-place';
-            card.innerHTML = '<div class="map-place-icon '+mode+'">'+(mode==='hospital'?'\ud83c\udfe5':'\ud83c\udf33')+'</div>'
-              +'<div style="flex:1;min-width:0"><div style="font-size:0.9em;font-weight:600;color:#222;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+poi.title+'</div>'
-              +'<div style="font-size:0.75em;color:#999;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(poi.address||'\u6682\u65e0\u5730\u5740')+'</div></div>'
-              +'<div class="map-dist '+mode+'">'+distText+'</div>'
-              +'<button class="map-place-nav'+(mode==='park'?' park-mode':'')+'" title="\u5bfc\u822a">\u27a4</button>';
-            card.addEventListener('click', function(e) {
-              if (e.target.classList.contains('map-place-nav')) return;
-              focusMapCard(idx, poi);
-            });
-            card.querySelector('.map-place-nav').addEventListener('click', function(e) {
-              e.stopPropagation();
-              navigateMapTo(poi);
-            });
-            container.appendChild(card);
-            mapCards.push(card);
-          })(i);
-        }
-      }
-    });
-    local.searchNearby(keyword, userPoint, 4000);
-  }
-
-  function focusMapCard(idx, poi) {
-    mapCards.forEach(function(c) { c.classList.remove('focused','park-mode'); });
-    mapCards[idx].classList.add('focused');
-    if (mapMode === 'park') mapCards[idx].classList.add('park-mode');
-    mapCards[idx].scrollIntoView({ behavior:'smooth', block:'nearest' });
-    bmap.panTo(poi.point);
-    mapMarkers[idx].openInfoWindow(
-      new BMap.InfoWindow('<b>'+poi.title+'</b><br><span style="color:#888;font-size:12px">'+(poi.address||'')+'</span>')
-    );
-    clearRoute();
-    var routeColor = mapMode === 'hospital' ? '#1e88e5' : '#43a047';
-    var walking = new BMap.WalkingRoute(bmap, {
-      renderOptions: { map: bmap, autoViewport: false },
-      onSearchComplete: function(results) {
-        if (walking.getStatus() !== BMAP_STATUS_SUCCESS) return;
-        var plan = results.getPlan(0);
-        for (var s = 0; s < plan.getNumRoutes(); s++) {
-          var route = plan.getRoute(s);
-          var path = route.getPolyline();
-          if (path) { path.setStrokeColor(routeColor); path.setStrokeWeight(5); path.setStrokeOpacity(0.85); }
-        }
-        addUserOverlays();
-      }
-    });
-    walking.search(userPoint, poi.point);
-    mapRoute = walking;
-  }
-
-  function navigateMapTo(poi) {
-    var destLat = poi.point.lat;
-    var destLng = poi.point.lng;
-    var destName = encodeURIComponent(poi.title);
-    var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    var appUrl = 'baidumap://map/direction?destination=latlng:'+destLat+','+destLng+'|name:'+destName+'&mode=walking&coord_type=bd09ll&src=webapp';
-    var webUrl = 'https://api.map.baidu.com/marker?location='+destLat+','+destLng+'&title='+destName+'&output=html&coord_type=bd09ll&src=webapp';
-    if (isMobile) {
-      window.location.href = appUrl;
-      setTimeout(function() { window.location.href = webUrl; }, 2000);
-    } else {
-      window.open(webUrl, '_blank');
-    }
-  }
-})();
-</script></div></div>
+  <div class="journey-pages">
+    <main class="journey-page active" data-page="home"><div class="journey-screen-head"><div><div class="journey-screen-title">首页</div><div class="journey-screen-copy">先看今天的状态、执行情况和最新生命体征。</div></div></div><section class="journey-card journey-hero"><div class="journey-hero-main"><div class="journey-hero-row"><div class="journey-avatar">王</div><div><div class="journey-hello">早上好，王建国</div><div class="journey-hero-text">今天先看状态，再做最关键的几步。</div></div></div><div class="journey-hero-text">回访里同时出现了降压药漏服、饮食偏咸偏油、未运动和未主动测血压，这几项都和高血压管理有关。</div><div class="flex gap-1.5 mt-3 flex-wrap"><span class="context-chip">高血压</span><span class="context-chip">糖尿病</span><span class="context-chip">心房颤动</span></div></div></section><section class="journey-card"><div class="journey-section-kicker">今日提醒</div><div class="journey-section-title">当前状态：需关注</div><div class="journey-section-copy">用药漏服、饮食油盐偏高、活动未完成</div></section><section class="journey-card"><div class="journey-section-kicker">今日整体状态</div><div class="journey-section-title">需关注</div><div class="journey-section-copy">这里只放本次遵从回访已经确认的执行状态，不再额外生成健康评分。</div><div class="status-alert-row"><span class="status-alert-chip warn">● 用药漏服</span><span class="status-alert-chip alert">● 饮食油盐偏高</span><span class="status-alert-chip alert">● 活动未完成</span><span class="status-alert-chip alert">● 监测缺口</span></div></section><section class="journey-card"><div class="journey-section-title">关键执行概览</div><div class="journey-section-copy">用药、饮食、活动和监测分开看，后续建议放到计划页。</div><div class="journey-status-grid"><div class="execution-card warn"><div class="execution-card-top"><span class="execution-icon">💊</span><span class="execution-status">部分执行</span></div><div class="execution-title">用药</div><div class="execution-detail">降压药漏服，原因是忘带；华法林按时服用。</div></div><div class="execution-card alert"><div class="execution-card-top"><span class="execution-icon">🍽️</span><span class="execution-status">未执行</span></div><div class="execution-title">食欲与饮食</div><div class="execution-detail">三餐均食用火锅冒菜，饮食油腻，盐分摄入多。</div></div><div class="execution-card alert"><div class="execution-card-top"><span class="execution-icon">🏃</span><span class="execution-status">未执行</span></div><div class="execution-title">运动与活动</div><div class="execution-detail">今天没有运动心情。</div></div><div class="execution-card alert"><div class="execution-card-top"><span class="execution-icon">📋</span><span class="execution-status">未执行</span></div><div class="execution-title">健康监测</div><div class="execution-detail">未主动测量血压；设备侧已有血压 108/69、血氧 94 的最新记录。</div></div></div></section><section class="journey-card"><div class="journey-section-title">最新生命体征</div><div class="journey-section-copy">来自主服务 latest_health；没有提供的指标不会展示。</div><div class="signal-mini-grid"><div class="signal-mini-card"><div class="signal-mini-icon">💜</div><div class="signal-mini-label">血压</div><div class="signal-mini-value">108/69</div><div class="signal-mini-unit">mmHg</div></div><div class="signal-mini-card"><div class="signal-mini-icon">❤️</div><div class="signal-mini-label">心率</div><div class="signal-mini-value">78</div><div class="signal-mini-unit">次/分</div></div><div class="signal-mini-card"><div class="signal-mini-icon">💧</div><div class="signal-mini-label">血氧</div><div class="signal-mini-value">94</div><div class="signal-mini-unit">%</div></div></div></section></main>
+    <main class="journey-page" data-page="plan"><div class="journey-screen-head"><div><div class="journey-screen-title">今日计划</div><div class="journey-screen-copy">今天先集中完成这三件事。</div></div></div><section class="journey-card"><div class="journey-section-title">今天最值得做的三件事</div><div class="journey-section-copy">聚焦关键行动，改善今天的健康状态。</div><div class="mt-3"><div class="journey-task"><div class="journey-task-index">1</div><div><div class="journey-task-title">先按医嘱处理这次降压药漏服，并马上设置随身药盒或手机提醒。</div><div class="journey-task-reason">原因：这次漏服的原因是忘带，解决“带不带得上”比只说要记得吃更有效。</div><div class="journey-task-actions feedback-actions"><button class="feedback-btn like" data-day-idx="-1" data-meal-type="priority" data-item-name="先按医嘱处理这次降压药漏服，并马上设置随身药盒或手机提醒。" data-default-label="采纳" data-active-label="已采纳" onclick="saveLikeFromButton(this)">采纳</button><button class="feedback-btn feedback-skip" data-day-idx="-1" data-meal-type="priority" data-item-name="先按医嘱处理这次降压药漏服，并马上设置随身药盒或手机提醒。" data-default-label="不采纳" data-active-label="已不采纳" onclick="showFeedbackModalFromButton(this)">不采纳</button></div></div><div class="journey-task-visual">💊</div></div><div class="journey-task"><div class="journey-task-index">2</div><div><div class="journey-task-title">下一餐把火锅冒菜换成一份低盐低油的热饭或热汤。</div><div class="journey-task-reason">原因：今天三餐都偏油偏咸，先修正下一餐，能最快把饮食节奏拉回来。</div><div class="journey-task-actions feedback-actions"><button class="feedback-btn like" data-day-idx="-1" data-meal-type="priority" data-item-name="下一餐把火锅冒菜换成一份低盐低油的热饭或热汤。" data-default-label="采纳" data-active-label="已采纳" onclick="saveLikeFromButton(this)">采纳</button><button class="feedback-btn feedback-skip" data-day-idx="-1" data-meal-type="priority" data-item-name="下一餐把火锅冒菜换成一份低盐低油的热饭或热汤。" data-default-label="不采纳" data-active-label="已不采纳" onclick="showFeedbackModalFromButton(this)">不采纳</button></div></div><div class="journey-task-visual">🥣</div></div><div class="journey-task"><div class="journey-task-index">3</div><div><div class="journey-task-title">如果没有胸闷气短，饭后走 5 到 10 分钟或做轻拉伸。</div><div class="journey-task-reason">原因：今天未运动，但血氧 94% 时更适合轻量开始，不建议一下子加大强度。</div><div class="journey-task-actions feedback-actions"><button class="feedback-btn like" data-day-idx="-1" data-meal-type="priority" data-item-name="如果没有胸闷气短，饭后走 5 到 10 分钟或做轻拉伸。" data-default-label="采纳" data-active-label="已采纳" onclick="saveLikeFromButton(this)">采纳</button><button class="feedback-btn feedback-skip" data-day-idx="-1" data-meal-type="priority" data-item-name="如果没有胸闷气短，饭后走 5 到 10 分钟或做轻拉伸。" data-default-label="不采纳" data-active-label="已不采纳" onclick="showFeedbackModalFromButton(this)">不采纳</button></div></div><div class="journey-task-visual">🚶</div></div></div><div class="assistant-note">回访里同时出现了降压药漏服、饮食偏咸偏油、未运动和未主动测血压，这几项都和高血压管理有关。</div></section></main>
+    <main class="journey-page" data-page="nutrition"><div class="journey-screen-head"><div><div class="journey-screen-title">营养与饮食建议</div><div class="journey-screen-copy">营养重点、下一餐建议、膳食计划和疾病饮食对照放在同一页。</div></div></div><section class="journey-card diet-table-compact"><div class="journey-section-title">疾病饮食对照</div><div class="journey-section-copy">先看和当前慢病/用药最相关的饮食边界。</div><div class="diet-advice-list"><div class="diet-advice-card"><div class="diet-advice-head"><div class="diet-advice-title">高血压</div><div class="diet-advice-principle">低盐、少汤底、少加工调料</div></div><div class="diet-advice-grid"><div class="diet-advice-column"><div class="diet-advice-label">建议优先</div><div class="diet-advice-copy">清蒸鱼、番茄鸡蛋汤、炖豆腐、少油青菜</div></div><div class="diet-advice-column"><div class="diet-advice-label">尽量避免</div><div class="diet-advice-copy">火锅冒菜汤底、重辣蘸料、咸菜、腌制肉类</div></div></div></div><div class="diet-advice-card"><div class="diet-advice-head"><div class="diet-advice-title">主食管理</div><div class="diet-advice-principle">主食定量、搭配蛋白质和蔬菜</div></div><div class="diet-advice-grid"><div class="diet-advice-column"><div class="diet-advice-label">建议优先</div><div class="diet-advice-copy">杂粮饭、燕麦、豆腐、鸡蛋、少油蔬菜</div></div><div class="diet-advice-column"><div class="diet-advice-label">尽量避免</div><div class="diet-advice-copy">含糖饮料、甜点、大份精白主食</div></div></div></div><div class="diet-advice-card"><div class="diet-advice-head"><div class="diet-advice-title">华法林用药</div><div class="diet-advice-principle">饮食保持稳定</div></div><div class="diet-advice-grid"><div class="diet-advice-column"><div class="diet-advice-label">建议优先</div><div class="diet-advice-copy">保持平时蔬菜摄入节奏，不突然大增大减</div></div><div class="diet-advice-column"><div class="diet-advice-label">尽量避免</div><div class="diet-advice-copy">突然大量改变绿叶菜摄入或自行加保健品</div></div></div></div></div></section><section class="journey-card"><div class="journey-section-title">今日营养重点</div><div class="journey-section-copy">来自 AI 对本次饮食情况的整理，不包含主服务没有提供的热量或宏量营养数据。</div><div class="nutrition-focus-row"><div class="nutrition-focus-pill"><div class="nutrition-focus-icon">🧂</div><div class="nutrition-focus-title">先降盐</div><div class="nutrition-focus-copy">控盐更安心</div></div><div class="nutrition-focus-pill"><div class="nutrition-focus-icon">🥘</div><div class="nutrition-focus-title">把红油换成蒸煮</div><div class="nutrition-focus-copy">清淡更稳</div></div><div class="nutrition-focus-pill"><div class="nutrition-focus-icon">🥚</div><div class="nutrition-focus-title">每餐留一点蛋白质</div><div class="nutrition-focus-copy">恢复靠蛋白</div></div><div class="nutrition-focus-pill"><div class="nutrition-focus-icon">🥬</div><div class="nutrition-focus-title">饮食保持稳定</div><div class="nutrition-focus-copy">摄入要稳定</div></div></div></section><section class="journey-card meal-suggestion"><div class="meal-suggestion-art">🍲</div><div><div class="journey-section-kicker">下一餐建议</div><div class="meal-suggestion-title">晚餐：鸡丝青菜面 / 蒸南瓜小份</div><div class="meal-suggestion-copy">清淡易做；主食可控</div></div></section><section class="journey-card"><div class="journey-section-title">营养说明</div><div class="journey-section-copy">今天的营养重点不是算热量，而是先把油盐降下来。下一餐建议用热粥、米饭、清蒸或炖煮蛋白质，再配一份少油蔬菜；火锅冒菜这类红油汤底先暂停。因为您有高血压史，也在服用华法林，饮食调整要稳定、温和，不建议突然大幅改变绿叶菜摄入量。</div></section><section class="journey-card"><div class="journey-section-title">膳食计划</div><div class="journey-section-copy">先给 3 天参考，后面可再扩展到 7 天或 14 天。</div><div class="flex gap-2 mb-4 overflow-x-auto pb-2" id="dayTabs"></div><div id="mealContent"></div></section></main>
+    <main class="journey-page" data-page="trends"><div class="journey-screen-head"><div><div class="journey-screen-title">健康趋势</div><div class="journey-screen-copy">周、月、季度维度只展示真实信号点。</div></div></div><div id="trendOverviewAnchor" class="px-3 pt-3"><section class="trend-card"><div class="trend-card-head"><div><div class="trend-card-title">信号趋势</div><div class="trend-card-copy">只展示真实测量点，方便一眼判断哪里需要优先跟进。</div></div><div class="trend-insight-chip" id="trendInsightChip">最近一周展示真实信号点，未插值、未估算。</div></div><div class="trend-range-tabs"><button class="trend-range-btn active" data-range="week" onclick="renderTrendRange('week')">周</button><button class="trend-range-btn" data-range="month" onclick="renderTrendRange('month')">月</button><button class="trend-range-btn" data-range="quarter" onclick="renderTrendRange('quarter')">季度</button></div><div id="trendMetricStack" class="trend-metric-stack mt-3"></div></section></div></main>
+    <main class="journey-page" data-page="why"><div class="journey-screen-head"><div><div class="journey-screen-title">为什么这样建议</div><div class="journey-screen-copy">结合本次执行情况、长期记忆和最新信号给出依据。</div></div></div><section class="journey-card"><div class="journey-section-title">建议依据</div><div class="journey-section-copy">把用药、饮食、活动和监测的依据拆开看。</div><div class="why-stack mt-3"><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">💊</span><div class="flex-1 min-w-0"><div class="sub-card-label">当前用药</div><div class="sub-card-value">用药执行</div></div></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">本次遵从回访记录：降压药漏服，原因是忘带；华法林按时服用。</div><div class="mt-3 text-xs text-slate-600 bg-slate-50 rounded-xl px-3 py-2 leading-relaxed border border-slate-200">所以这里会更强调：降压药漏服会影响血压稳定，华法林则需要继续保持规律。</div></div></div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">⚠️</span><div class="flex-1 min-w-0"><div class="sub-card-label">近期症状</div><div class="sub-card-value">饮食情况</div></div></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">回访记录显示三餐均食用火锅冒菜，饮食油腻且盐分摄入多。</div><div class="mt-3 text-xs text-slate-600 bg-slate-50 rounded-xl px-3 py-2 leading-relaxed border border-slate-200">所以这里会更强调：偏咸偏油饮食会增加高血压管理难度，也容易让第二天更难恢复清淡节奏。</div></div></div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">📈</span><div class="flex-1 min-w-0"><div class="sub-card-label">监测变化</div><div class="sub-card-value">活动情况</div></div></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">今天未进行运动，障碍为没有运动心情。</div><div class="mt-3 text-xs text-slate-600 bg-slate-50 rounded-xl px-3 py-2 leading-relaxed border border-slate-200">所以这里会更强调：不需要大运动量，但轻活动有助于循环和情绪回到节奏里。</div></div></div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">📈</span><div class="flex-1 min-w-0"><div class="sub-card-label">监测变化</div><div class="sub-card-value">监测缺口</div></div></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">回访记录提示未主动测量血压；设备侧最新血压为 108/69。</div><div class="mt-3 text-xs text-slate-600 bg-slate-50 rounded-xl px-3 py-2 leading-relaxed border border-slate-200">所以这里会更强调：主动记录能帮助判断漏服和饮食变化是否影响后续血压。</div></div></div></div></section><section class="journey-card"><div class="journey-section-title">推理摘要</div><div class="journey-section-copy">本报告只使用 MVP payload 中存在的事实：当前依从回访、memory archive、近期 light summary、latest_health 和 signal_trends。未在真实最新信号中出现的指标，页面不会生成对应卡片、趋势或结论。</div></section><div class="why-footer-note">小步坚持，持续改善。回访里同时出现了降压药漏服、饮食偏咸偏油、未运动和未主动测血压，这几项都和高血压管理有关。</div></main>
   </div>
-
-  <div id="submitCtaShell" class="submit-cta-shell"><button id="exportFeedbackBtn" onclick="exportFeedbackJSON()" class="submit-cta-button" disabled>✓ 先选择偏好再提交</button><p class="submit-cta-hint" id="submitHint">请先在上面选择口味或标记适合/不适合</p></div>
 
   <!-- Guardrail (slim footer) -->
-  <div class="footer-disclaimer">本报告由AI健康助手生成，仅供参考，不能替代专业医疗建议。如有不适，请及时联系医生或急救服务，并始终遵循临床医生关于用药和治疗的指导。</div>
+  <div class="footer-disclaimer">本报告由 AI 健康助手生成，仅供日常健康管理参考，不能替代医生诊断或处方。用药补服、华法林相关饮食和不适症状请以医生建议为准。</div>
   <div class="app-footer">
-    <div class="bottom-tabbar"><button class="bottom-tab active" onclick="jumpToSection('homeAnchor')"><div class="bottom-tab-icon">🏠</div><div class="bottom-tab-label">首页</div></button><button class="bottom-tab" onclick="jumpToSection('priorityPlanAnchor')"><div class="bottom-tab-icon">✅</div><div class="bottom-tab-label">计划</div></button><button class="bottom-tab" onclick="jumpToSection('nutritionOverviewAnchor')"><div class="bottom-tab-icon">🥗</div><div class="bottom-tab-label">营养</div></button><button class="bottom-tab" onclick="jumpToSection('trendOverviewAnchor')"><div class="bottom-tab-icon">📈</div><div class="bottom-tab-label">趋势</div></button><button class="bottom-tab" onclick="jumpToSection('statusAnchor')"><div class="bottom-tab-icon">🗂️</div><div class="bottom-tab-label">概览</div></button></div>
+    <div class="bottom-tabbar"><button class="bottom-tab active" data-page-target="home" onclick="switchJourneyPage('home')"><div class="bottom-tab-icon">⌂</div><div class="bottom-tab-label">首页</div></button><button class="bottom-tab" data-page-target="plan" onclick="switchJourneyPage('plan')"><div class="bottom-tab-icon">▣</div><div class="bottom-tab-label">计划</div></button><button class="bottom-tab" data-page-target="why" onclick="switchJourneyPage('why')"><div class="bottom-tab-icon">◇</div><div class="bottom-tab-label">依据</div></button><button class="bottom-tab" data-page-target="nutrition" onclick="switchJourneyPage('nutrition')"><div class="bottom-tab-icon">♨</div><div class="bottom-tab-label">营养</div></button><button class="bottom-tab" data-page-target="trends" onclick="switchJourneyPage('trends')"><div class="bottom-tab-icon">⌁</div><div class="bottom-tab-label">趋势</div></button></div>
   </div>
 
 </div>
@@ -1242,10 +1608,23 @@
 <script>
 const DAYS = ["周一","周二","周三","周四","周五","周六","周日"];
 const MEAL_LABELS = {"breakfast":"早餐","lunch":"午餐","dinner":"晚餐"};
-const rawMeals = [{"day": "Day 1", "breakfast": [{"name": "香蕉燕麦粥", "icon": "🥣", "condition": "糖尿病", "benefit": "低升糖、对胃部更温和"}, {"name": "溏心蛋", "icon": "🥚", "condition": "高脂血症", "benefit": "补充优质蛋白"}], "lunch": [{"name": "蔬菜鸡汤", "icon": "🍲", "condition": "高血压", "benefit": "低钠、帮助补水"}, {"name": "全麦饼干", "icon": "🍞", "condition": "糖尿病", "benefit": "缓释碳水"}], "dinner": [{"name": "烤三文鱼", "icon": "🐟", "condition": "高脂血症", "benefit": "有益心血管的Omega-3"}, {"name": "清蒸西兰花", "icon": "🥦", "condition": "高血压", "benefit": "富含钾"}, {"name": "糙米饭（小份）", "icon": "🍚", "condition": "糖尿病", "benefit": "高纤维全谷物"}]}, {"day": "Day 2", "breakfast": [{"name": "希腊酸奶配莓果", "icon": "🫐", "condition": "糖尿病", "benefit": "蛋白质搭配低升糖水果"}, {"name": "一小把杏仁", "icon": "🥜", "condition": "高脂血症", "benefit": "健康脂肪与膳食纤维"}], "lunch": [{"name": "扁豆汤", "icon": "🍲", "condition": "糖尿病", "benefit": "低升糖、高蛋白"}, {"name": "橄榄油蔬菜沙拉", "icon": "🥗", "condition": "高脂血症", "benefit": "有益心血管的脂肪来源"}], "dinner": [{"name": "烤鸡胸肉", "icon": "🍗", "condition": "高脂血症", "benefit": "优质瘦蛋白"}, {"name": "烤红薯", "icon": "🍠", "condition": "高血压", "benefit": "富含钾"}, {"name": "清炒菠菜", "icon": "🥬", "condition": "高血压", "benefit": "补充镁和钾"}]}, {"day": "Day 3", "breakfast": [{"name": "吐司炒蛋", "icon": "🍳", "condition": "糖尿病", "benefit": "高蛋白开场"}, {"name": "牛油果切片", "icon": "🥑", "condition": "高脂血症", "benefit": "富含健康单不饱和脂肪"}], "lunch": [{"name": "金枪鱼沙拉（少酱）", "icon": "🐟", "condition": "高脂血症", "benefit": "富含Omega-3脂肪酸"}, {"name": "苹果切片", "icon": "🍎", "condition": "糖尿病", "benefit": "高纤维、低升糖加餐"}], "dinner": [{"name": "火鸡肉丸", "icon": "🍖", "condition": "高脂血症", "benefit": "Low-fat protein"}, {"name": "藜麦饭", "icon": "🍚", "condition": "糖尿病", "benefit": "兼具完整蛋白的谷物"}, {"name": "清蒸四季豆", "icon": "🥬", "condition": "高血压", "benefit": "低钠、高纤维"}]}];
-const meals = DAYS.map((d, i) => ({ ...rawMeals[i % rawMeals.length], day: d }));
-const TREND_DATA = {"7": {"axis_start": "5/7", "axis_end": "5/13", "insight": "最近 7 天里，营养和活动都需要更多支持。", "metrics": [{"icon": "👟", "label": "活动量", "value": "1500 步", "delta": "较起点 ↓ 1220 步", "delta_direction": "down", "copy": "这段时间步数持续走低，说明恢复期体力和疼痛管理都需要更多照顾。", "values": [2720, 2357, 2313, 1960, 1907, 1633, 1500], "color": "#8b5cf6"}, {"icon": "🧪", "label": "血糖", "value": "7.2 mmol/L", "delta": "近段时间 ↑ 0.1", "delta_direction": "up", "copy": "血糖整体没有明显失控，但仍然需要和进食节奏、用药耐受一起看。", "values": [7.1, 7.0, 7.1, 7.1, 7.2, 7.1, 7.2], "color": "#f59e0b"}, {"icon": "🥣", "label": "食欲 / 体力", "value": "4.2 / 10", "delta": "较起点 ↓ 1.3", "delta_direction": "down", "copy": "食欲和体力下降会直接影响恢复速度，所以今天先把营养补上更重要。", "values": [5.5, 5.0, 5.1, 4.5, 4.7, 4.3, 4.2], "color": "#10b981"}]}, "14": {"axis_start": "4/30", "axis_end": "5/13", "insight": "过去 14 天里，活动量和食欲一起走低，今天更需要先稳住营养和体力。", "metrics": [{"icon": "👟", "label": "活动量", "value": "1540 步", "delta": "较起点 ↓ 2620 步", "delta_direction": "down", "copy": "这段时间步数持续走低，说明恢复期体力和疼痛管理都需要更多照顾。", "values": [4160, 3698, 3705, 3283, 3301, 2958, 2886, 2814, 2352, 2359, 1937, 1955, 1612, 1540], "color": "#8b5cf6"}, {"icon": "🧪", "label": "血糖", "value": "7.2 mmol/L", "delta": "近段时间 ↓ 0.3", "delta_direction": "down", "copy": "血糖整体没有明显失控，但仍然需要和进食节奏、用药耐受一起看。", "values": [7.5, 7.3, 7.4, 7.4, 7.3, 7.4, 7.3, 7.4, 7.2, 7.3, 7.3, 7.2, 7.3, 7.2], "color": "#f59e0b"}, {"icon": "🥣", "label": "食欲 / 体力", "value": "4.2 / 10", "delta": "较起点 ↓ 2.5", "delta_direction": "down", "copy": "食欲和体力下降会直接影响恢复速度，所以今天先把营养补上更重要。", "values": [6.7, 6.1, 6.2, 5.7, 5.8, 5.4, 5.4, 5.5, 4.9, 5.1, 4.5, 4.6, 4.2, 4.2], "color": "#10b981"}]}, "30": {"axis_start": "4/14", "axis_end": "5/13", "insight": "从近 30 天看，恢复节奏变慢主要和食欲下降、活动减少有关。", "metrics": [{"icon": "👟", "label": "活动量", "value": "1430 步", "delta": "较起点 ↓ 3050 步", "delta_direction": "down", "copy": "这段时间步数持续走低，说明恢复期体力和疼痛管理都需要更多照顾。", "values": [4480, 4083, 4197, 3860, 3994, 3747, 3761, 3584, 3708, 3311, 3424, 3088, 3221, 2975, 2988, 2812, 2935, 2539, 2652, 2316, 2449, 2202, 2216, 2039, 2163, 1766, 1880, 1543, 1677, 1430], "color": "#8b5cf6"}, {"icon": "🧪", "label": "血糖", "value": "7.2 mmol/L", "delta": "近段时间 ↓ 0.0", "delta_direction": "down", "copy": "血糖整体没有明显失控，但仍然需要和进食节奏、用药耐受一起看。", "values": [7.2, 7.1, 7.2, 7.1, 7.2, 7.1, 7.1, 7.2, 7.1, 7.2, 7.1, 7.2, 7.1, 7.1, 7.2, 7.1, 7.2, 7.1, 7.2, 7.1, 7.2, 7.3, 7.1, 7.2, 7.1, 7.2, 7.2, 7.2, 7.3, 7.2], "color": "#f59e0b"}, {"icon": "🥣", "label": "食欲 / 体力", "value": "4.1 / 10", "delta": "较起点 ↓ 2.9", "delta_direction": "down", "copy": "食欲和体力下降会直接影响恢复速度，所以今天先把营养补上更重要。", "values": [7.0, 6.6, 6.7, 6.4, 6.5, 6.3, 6.3, 6.1, 6.3, 5.9, 6.0, 5.7, 5.8, 5.5, 5.6, 5.4, 5.6, 5.2, 5.3, 4.9, 5.1, 4.8, 4.9, 4.7, 4.8, 4.5, 4.6, 4.2, 4.4, 4.1], "color": "#10b981"}]}, "90": {"axis_start": "2/13", "axis_end": "5/13", "insight": "放到更长的恢复阶段看，近期下降更明显，因此更值得早点干预。", "metrics": [{"icon": "👟", "label": "活动量", "value": "1460 步", "delta": "较起点 ↓ 3380 步", "delta_direction": "down", "copy": "这段时间步数持续走低，说明恢复期体力和疼痛管理都需要更多照顾。", "values": [4840, 4319, 4178, 3747, 3586, 3206, 3094, 2574, 2433, 2002, 1841, 1460], "color": "#8b5cf6"}, {"icon": "🧪", "label": "血糖", "value": "7.2 mmol/L", "delta": "近段时间 ↑ 0.2", "delta_direction": "up", "copy": "血糖整体没有明显失控，但仍然需要和进食节奏、用药耐受一起看。", "values": [7.0, 6.9, 7.0, 6.9, 7.0, 7.0, 7.1, 7.1, 7.2, 7.1, 7.2, 7.2], "color": "#f59e0b"}, {"icon": "🥣", "label": "食欲 / 体力", "value": "4.2 / 10", "delta": "较起点 ↓ 3.0", "delta_direction": "down", "copy": "食欲和体力下降会直接影响恢复速度，所以今天先把营养补上更重要。", "values": [7.2, 6.8, 6.7, 6.2, 6.1, 5.7, 5.7, 5.2, 5.1, 4.6, 4.5, 4.2], "color": "#10b981"}]}};
+const rawMeals = [{"day": "第一天", "breakfast": [{"name": "燕麦鸡蛋粥", "icon": "🥣", "condition": "高血压", "benefit": "少盐温热"}, {"name": "无糖豆浆", "icon": "🥛", "condition": "主食管理", "benefit": "补充蛋白"}], "lunch": [{"name": "清蒸鱼配杂粮饭", "icon": "🐟", "condition": "高血压", "benefit": "少油少盐"}, {"name": "番茄豆腐汤", "icon": "🍲", "condition": "华法林用药", "benefit": "饮食稳定"}], "dinner": [{"name": "鸡丝青菜面", "icon": "🍜", "condition": "高血压", "benefit": "清淡易做"}, {"name": "蒸南瓜小份", "icon": "🎃", "condition": "主食管理", "benefit": "主食可控"}]}, {"day": "第二天", "breakfast": [{"name": "全麦馒头半个", "icon": "🍞", "condition": "主食管理", "benefit": "主食定量"}, {"name": "水煮蛋", "icon": "🥚", "condition": "高血压", "benefit": "少油蛋白"}], "lunch": [{"name": "冬瓜瘦肉汤", "icon": "🍲", "condition": "高血压", "benefit": "清淡补水"}, {"name": "少油炒青菜", "icon": "🥬", "condition": "华法林用药", "benefit": "摄入稳定"}], "dinner": [{"name": "豆腐蒸肉饼", "icon": "🥢", "condition": "高血压", "benefit": "少油下饭"}, {"name": "小份糙米饭", "icon": "🍚", "condition": "主食管理", "benefit": "份量清楚"}]}, {"day": "第三天", "breakfast": [{"name": "小米粥配豆腐干", "icon": "🥣", "condition": "高血压", "benefit": "温和少盐"}, {"name": "黄瓜小份", "icon": "🥒", "condition": "主食管理", "benefit": "清爽低糖"}], "lunch": [{"name": "番茄鸡胸肉饭", "icon": "🍅", "condition": "高血压", "benefit": "少油蛋白"}, {"name": "海带豆腐汤", "icon": "🍲", "condition": "高血压", "benefit": "清淡热汤"}], "dinner": [{"name": "虾仁蒸蛋", "icon": "🍤", "condition": "高血压", "benefit": "软嫩蛋白"}, {"name": "杂粮饭小份", "icon": "🍚", "condition": "主食管理", "benefit": "主食稳定"}]}];
+const mealSource = Array.isArray(rawMeals) ? rawMeals : [];
+const meals = mealSource.map((item, i) => {
+  const source = item && typeof item === "object" ? item : {};
+  return { ...source, day: source.day || DAYS[i] || `第${i + 1}天` };
+});
+const TREND_DATA = {"week": {"axis_start": "7/13", "axis_end": "7/20", "insight": "最近一周展示真实信号点，未插值、未估算。", "metrics": [{"icon": "🩺", "label": "血压", "value": "110/76 mmHg", "delta": "较起点 ↑ 3", "delta_direction": "up", "copy": "真实血压记录；曲线使用收缩压作为走势参考。", "values": [107.0, 112.0, 112.0, 110.0], "color": "#7c3aed", "points": [{"label": "7/13", "display": "107/72 mmHg", "value": "107"}, {"label": "7/14", "display": "112/74 mmHg", "value": "112"}, {"label": "7/16", "display": "112/76 mmHg", "value": "112"}, {"label": "7/20", "display": "110/76 mmHg", "value": "110"}]}, {"icon": "🫀", "label": "心率", "value": "78.8 bpm", "delta": "较起点 ↑ 10.6bpm", "delta_direction": "up", "copy": "真实心率记录，帮助观察近期波动。", "values": [68.2, 77.8, 79.6, 78.8], "color": "#ef4444", "points": [{"label": "7/13", "display": "68.2 bpm", "value": "68.2"}, {"label": "7/14", "display": "77.8 bpm", "value": "77.8"}, {"label": "7/16", "display": "79.6 bpm", "value": "79.6"}, {"label": "7/20", "display": "78.8 bpm", "value": "78.8"}]}, {"icon": "🫁", "label": "血氧", "value": "96.5 %", "delta": "较起点 ↓ 1.2%", "delta_direction": "down", "copy": "真实血氧记录，低于正常范围时更需要关注。", "values": [97.7, 98.0, 97.7, 96.5], "color": "#06b6d4", "points": [{"label": "7/13", "display": "97.7 %", "value": "97.7"}, {"label": "7/14", "display": "98 %", "value": "98"}, {"label": "7/16", "display": "97.7 %", "value": "97.7"}, {"label": "7/20", "display": "96.5 %", "value": "96.5"}]}]}, "month": {"axis_start": "6/22", "axis_end": "7/20", "insight": "最近一月展示真实信号点，未插值、未估算。", "metrics": [{"icon": "🩺", "label": "血压", "value": "110/76 mmHg", "delta": "较起点 ↓ 4", "delta_direction": "down", "copy": "真实血压记录；曲线使用收缩压作为走势参考。", "values": [114.0, 117.0, 116.0, 124.0, 110.0, 112.0, 112.0, 110.0], "color": "#7c3aed", "points": [{"label": "6/22", "display": "114/75 mmHg", "value": "114"}, {"label": "6/23", "display": "117/77 mmHg", "value": "117"}, {"label": "6/24", "display": "116/75 mmHg", "value": "116"}, {"label": "7/6", "display": "124/80 mmHg", "value": "124"}, {"label": "7/13", "display": "110/73 mmHg", "value": "110"}, {"label": "7/14", "display": "112/74 mmHg", "value": "112"}, {"label": "7/16", "display": "112/76 mmHg", "value": "112"}, {"label": "7/20", "display": "110/76 mmHg", "value": "110"}]}, {"icon": "🫀", "label": "心率", "value": "78.8 bpm", "delta": "较起点 ↓ 4.2bpm", "delta_direction": "down", "copy": "真实心率记录，帮助观察近期波动。", "values": [83.0, 92.9, 86.2, 98.2, 74.6, 77.8, 79.6, 78.8], "color": "#ef4444", "points": [{"label": "6/22", "display": "83 bpm", "value": "83"}, {"label": "6/23", "display": "92.9 bpm", "value": "92.9"}, {"label": "6/24", "display": "86.2 bpm", "value": "86.2"}, {"label": "7/6", "display": "98.2 bpm", "value": "98.2"}, {"label": "7/13", "display": "74.6 bpm", "value": "74.6"}, {"label": "7/14", "display": "77.8 bpm", "value": "77.8"}, {"label": "7/16", "display": "79.6 bpm", "value": "79.6"}, {"label": "7/20", "display": "78.8 bpm", "value": "78.8"}]}, {"icon": "🫁", "label": "血氧", "value": "96.5 %", "delta": "较起点 ↓ 1.3%", "delta_direction": "down", "copy": "真实血氧记录，低于正常范围时更需要关注。", "values": [97.8, 97.9, 97.9, 98.0, 97.9, 98.0, 97.7, 96.5], "color": "#06b6d4", "points": [{"label": "6/22", "display": "97.8 %", "value": "97.8"}, {"label": "6/23", "display": "97.9 %", "value": "97.9"}, {"label": "6/24", "display": "97.9 %", "value": "97.9"}, {"label": "7/6", "display": "98 %", "value": "98"}, {"label": "7/13", "display": "97.9 %", "value": "97.9"}, {"label": "7/14", "display": "98 %", "value": "98"}, {"label": "7/16", "display": "97.7 %", "value": "97.7"}, {"label": "7/20", "display": "96.5 %", "value": "96.5"}]}]}, "quarter": {"axis_start": "2026-W17", "axis_end": "2026-W30", "insight": "最近一季度展示真实信号点，未插值、未估算。", "metrics": [{"icon": "🩺", "label": "血压", "value": "110/76 mmHg", "delta": "较起点 ↓ 5", "delta_direction": "down", "copy": "真实血压记录；曲线使用收缩压作为走势参考。", "values": [115.0, 114.0, 119.0, 118.0, 116.0, 124.0, 111.0, 110.0], "color": "#7c3aed", "points": [{"label": "2026-W17", "display": "115/71 mmHg", "value": "115"}, {"label": "2026-W21", "display": "114/73 mmHg", "value": "114"}, {"label": "2026-W23", "display": "119/75 mmHg", "value": "119"}, {"label": "2026-W24", "display": "118/73 mmHg", "value": "118"}, {"label": "2026-W26", "display": "116/76 mmHg", "value": "116"}, {"label": "2026-W28", "display": "124/80 mmHg", "value": "124"}, {"label": "2026-W29", "display": "111/74 mmHg", "value": "111"}, {"label": "2026-W30", "display": "110/76 mmHg", "value": "110"}]}, {"icon": "🫀", "label": "心率", "value": "78.8 bpm", "delta": "较起点 ↓ 6.2bpm", "delta_direction": "down", "copy": "真实心率记录，帮助观察近期波动。", "values": [85.0, 72.3, 81.4, 78.2, 87.2, 98.2, 76.4, 78.8], "color": "#ef4444", "points": [{"label": "2026-W17", "display": "85 bpm", "value": "85"}, {"label": "2026-W21", "display": "72.3 bpm", "value": "72.3"}, {"label": "2026-W23", "display": "81.4 bpm", "value": "81.4"}, {"label": "2026-W24", "display": "78.2 bpm", "value": "78.2"}, {"label": "2026-W26", "display": "87.2 bpm", "value": "87.2"}, {"label": "2026-W28", "display": "98.2 bpm", "value": "98.2"}, {"label": "2026-W29", "display": "76.4 bpm", "value": "76.4"}, {"label": "2026-W30", "display": "78.8 bpm", "value": "78.8"}]}, {"icon": "🫁", "label": "血氧", "value": "96.5 %", "delta": "较起点 ↓ 1.6%", "delta_direction": "down", "copy": "真实血氧记录，低于正常范围时更需要关注。", "values": [98.1, 98.1, 98.0, 98.0, 97.9, 98.0, 97.8, 96.5], "color": "#06b6d4", "points": [{"label": "2026-W17", "display": "98.1 %", "value": "98.1"}, {"label": "2026-W21", "display": "98.1 %", "value": "98.1"}, {"label": "2026-W23", "display": "98 %", "value": "98"}, {"label": "2026-W24", "display": "98 %", "value": "98"}, {"label": "2026-W26", "display": "97.9 %", "value": "97.9"}, {"label": "2026-W28", "display": "98 %", "value": "98"}, {"label": "2026-W29", "display": "97.8 %", "value": "97.8"}, {"label": "2026-W30", "display": "96.5 %", "value": "96.5"}]}]}};
 let activeDay = 0;
+
+function escapeHtml(value) {
+  const chars = {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"};
+  return String(value ?? "").replace(/[&<>"']/g, ch => chars[ch]);
+}
+
+function encodeInlineValue(value) {
+  return encodeURIComponent(String(value ?? "")).replace(/'/g, "%27");
+}
 
 const MEAL_FEEDBACK_REASONS = [
   "不喜欢口味",
@@ -1261,7 +1640,7 @@ const GENERAL_FEEDBACK_REASONS = [
   "不同意这个建议",
   "其他"
 ];
-const FEEDBACK_STORAGE_KEY = "mealFeedback_zh";
+const FEEDBACK_STORAGE_KEY = "careJourneyFeedback_zh_v1";
 const CUISINE_STORAGE_KEY = "cuisinePrefs_zh";
 let feedbackStore = JSON.parse(localStorage.getItem(FEEDBACK_STORAGE_KEY) || "{}");
 const pendingFeedbackSubmits = {};
@@ -1281,7 +1660,7 @@ function clearFeedbackEntry(dayIdx, mealType, itemName) {
 
 function applyStaticButtonState(sourceEl, sentiment) {
   if (!sourceEl) return;
-  const group = sourceEl.closest(".priority-task-actions, .feedback-actions");
+  const group = sourceEl.closest(".priority-task-actions, .feedback-actions, .journey-task");
   if (!group) return;
   group.querySelectorAll("button").forEach(function(btn) {
     const isSecondary = btn.classList.contains("secondary") || btn.classList.contains("feedback-skip");
@@ -1320,6 +1699,7 @@ function hydrateStaticFeedbackStates() {
   document.querySelectorAll("[data-day-idx][data-meal-type][data-item-name]").forEach(function(btn) {
     const dayIdx = Number(btn.dataset.dayIdx);
     const mealType = btn.dataset.mealType;
+    if (dayIdx < 0 && mealType === "priority") return;
     const itemName = btn.dataset.itemName;
     const feedback = getFeedback(dayIdx, mealType, itemName);
     if (feedback) applyStaticButtonState(btn, feedback.sentiment);
@@ -1329,7 +1709,8 @@ function hydrateStaticFeedbackStates() {
 function saveLike(dayIdx, mealType, itemName, sourceEl) {
   const key = `${dayIdx}-${mealType}-${itemName}`;
   const existing = feedbackStore[key];
-  if (existing && existing.sentiment === "like") {
+  const isActive = sourceEl && (sourceEl.classList.contains("liked") || sourceEl.classList.contains("active"));
+  if (existing && existing.sentiment === "like" && isActive) {
     clearFeedbackEntry(dayIdx, mealType, itemName);
     if (dayIdx < 0) clearStaticButtonState(sourceEl);
     renderMeals();
@@ -1347,6 +1728,14 @@ function getFeedback(dayIdx, mealType, itemName) {
   return feedbackStore[`${dayIdx}-${mealType}-${itemName}`];
 }
 
+function saveLikeFromButton(button) {
+  saveLike(Number(button.dataset.dayIdx), button.dataset.mealType, button.dataset.itemName, button);
+}
+
+function showFeedbackModalFromButton(button) {
+  showFeedbackModal(Number(button.dataset.dayIdx), button.dataset.mealType, button.dataset.itemName, button);
+}
+
 function buildPreferencePayload() {
   const likes = [];
   const dislikes = [];
@@ -1359,14 +1748,14 @@ function buildPreferencePayload() {
     cuisine: name, ...meta
   }));
   return {
-    user_id: "P-20260513-002",
+    user_id: "demo-user",
     data_type: "scenario",
     language: "zh",
     timestamp: new Date().toISOString(),
     data: {
       bundle: {
         type: "user_preference",
-        report_time: "2026年05月13日 14:00",
+        report_time: "2026年07月20日 07:39",
         total_feedback: likes.length + dislikes.length,
         cuisine_preferences: selectedCuisines,
         liked: likes,
@@ -1451,8 +1840,8 @@ function showFeedbackModal(dayIdx, mealType, itemName, sourceEl) {
   modal.innerHTML = `
     <div class="feedback-modal-box">
       <div class="text-sm font-bold text-slate-800 mb-1">${title}</div>
-      <div class="text-xs text-slate-500 mb-3">${displayName}</div>
-      ${reasons.map(r => `<button class="feedback-reason" data-reason="${r}">${r}</button>`).join('')}
+      <div class="text-xs text-slate-500 mb-3">${escapeHtml(displayName)}</div>
+      ${reasons.map(r => `<button class="feedback-reason" data-reason="${escapeHtml(r)}">${escapeHtml(r)}</button>`).join('')}
       <button class="feedback-reason" style="color:#94a3b8;border-color:#e2e8f0;margin-top:8px" data-reason="__cancel__">取消</button>
     </div>`;
   modal.addEventListener('click', function(e) {
@@ -1470,9 +1859,11 @@ function showFeedbackModal(dayIdx, mealType, itemName, sourceEl) {
 
 function renderTabs() {
   const container = document.getElementById("dayTabs");
-  container.innerHTML = DAYS.map((d, i) =>
-    `<button onclick="switchDay(${i})" class="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${i === activeDay ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">${d}</button>`
-  ).join("");
+  if (!container) return;
+  container.innerHTML = meals.map((day, i) => {
+    const label = day.day || DAYS[i] || `第${i + 1}天`;
+    return `<button onclick="switchDay(${i})" class="meal-day-tab ${i === activeDay ? 'active' : ''}">${escapeHtml(label)}</button>`;
+  }).join("");
 }
 
 function switchDay(i) {
@@ -1482,8 +1873,10 @@ function switchDay(i) {
 }
 
 function renderMeals() {
+  const container = document.getElementById("mealContent");
+  if (!container) return;
   const day = meals[activeDay];
-  if (!day) { document.getElementById("mealContent").innerHTML = '<p class="text-sm text-slate-400">暂无数据</p>'; return; }
+  if (!day) { container.innerHTML = '<p class="text-sm text-slate-400">暂无数据</p>'; return; }
   let html = "";
   for (const [key, label] of Object.entries(MEAL_LABELS)) {
     const items = day[key] || [];
@@ -1493,27 +1886,28 @@ function renderMeals() {
       const fb = getFeedback(activeDay, key, it.name);
       const likeClass = fb && fb.sentiment === "like" ? "liked" : "";
       const dislikeClass = fb && fb.sentiment === "dislike" ? "disliked" : "";
-      const safeName = it.name.replace(/'/g, "&#39;");
+      const itemName = String(it.name || "");
+      const safeName = encodeInlineValue(itemName);
       const reason = it.adc_reason || (
         it.condition && it.benefit
           ? "适合" + it.condition + "：" + it.benefit
           : (it.benefit || "")
       );
       html += `<div class="meal-card flex items-start gap-3 bg-slate-50 rounded-lg p-3 border border-slate-100">
-        <span class="text-2xl mt-0.5">${it.icon || "🍽️"}</span>
+        <span class="text-2xl mt-0.5">${escapeHtml(it.icon || "🍽️")}</span>
         <div class="flex-1 min-w-0">
-          <div class="text-sm font-semibold text-slate-800">${it.name}</div>
-          <div class="text-xs text-emerald-600 mt-0.5 leading-relaxed italic">${reason}</div>
+          <div class="text-sm font-semibold text-slate-800">${escapeHtml(itemName)}</div>
+          <div class="text-xs meal-reason mt-0.5 leading-relaxed">${escapeHtml(reason)}</div>
         </div>
         <div class="feedback-actions">
-          <button class="feedback-btn like ${likeClass}" title="保留这条膳食建议" onclick="saveLike(${activeDay},'${key}','${safeName}', this)">适合我</button>
-          <button class="feedback-btn feedback-skip ${dislikeClass}" title="这个不适合我" onclick="showFeedbackModal(${activeDay},'${key}','${safeName}', this)">不适合</button>
+          <button class="feedback-btn like ${likeClass}" title="保留这条膳食建议" onclick="saveLike(${activeDay},'${key}',decodeURIComponent('${safeName}'), this)">适合我</button>
+          <button class="feedback-btn feedback-skip ${dislikeClass}" title="这个不适合我" onclick="showFeedbackModal(${activeDay},'${key}',decodeURIComponent('${safeName}'), this)">不适合</button>
         </div>
       </div>`;
     }
     html += "</div></div>";
   }
-  document.getElementById("mealContent").innerHTML = html;
+  container.innerHTML = html;
 }
 
 // ─── Cuisine Preferences ───
@@ -1521,6 +1915,27 @@ function jumpToSection(sectionId) {
   const target = document.getElementById(sectionId);
   if (!target) return;
   target.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function switchJourneyPage(pageKey, instant) {
+  const key = String(pageKey || "home");
+  document.querySelectorAll(".journey-page").forEach(function(page) {
+    page.classList.toggle("active", page.dataset.page === key);
+  });
+  document.querySelectorAll("[data-page-target]").forEach(function(btn) {
+    btn.classList.toggle("active", btn.dataset.pageTarget === key);
+  });
+  if (key === "nutrition") {
+    renderCuisineChips();
+    renderTabs();
+    renderMeals();
+  }
+  if (key === "trends") {
+    const activeRange = document.querySelector(".trend-range-btn.active");
+    const nextRange = activeRange ? activeRange.dataset.range : Object.keys(TREND_DATA || {})[0];
+    if (nextRange) renderTrendRange(nextRange);
+  }
+  if (!instant) window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function buildTrendSparkline(values, color) {
@@ -1536,9 +1951,24 @@ function buildTrendSparkline(values, color) {
     const y = height - pad - ((val - min) / span) * (height - pad * 2);
     return [x, y];
   });
-  const line = points.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
-  const area = `0,${height} ` + points.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(" ") + ` ${width},${height}`;
+  function smoothPath(items) {
+    if (items.length === 1) return `M ${items[0][0].toFixed(1)} ${items[0][1].toFixed(1)}`;
+    let d = `M ${items[0][0].toFixed(1)} ${items[0][1].toFixed(1)}`;
+    for (let i = 0; i < items.length - 1; i++) {
+      const [x0, y0] = items[i];
+      const [x1, y1] = items[i + 1];
+      const dx = (x1 - x0) * 0.45;
+      d += ` C ${(x0 + dx).toFixed(1)} ${y0.toFixed(1)}, ${(x1 - dx).toFixed(1)} ${y1.toFixed(1)}, ${x1.toFixed(1)} ${y1.toFixed(1)}`;
+    }
+    return d;
+  }
+  const line = smoothPath(points);
+  const area = `${line} L ${width} ${height} L 0 ${height} Z`;
   const last = points[points.length - 1];
+  const dots = points.map(([x, y], idx) => {
+    const isActive = idx === points.length - 1;
+    return `<circle class="trend-point-dot ${isActive ? 'active' : ''}" data-point-index="${idx}" onclick="setTrendPointFromDot(this)" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${isActive ? '3.3' : '2.4'}" fill="#fff" stroke="${color}" stroke-width="1.7" opacity="${isActive ? '1' : '.62'}"></circle>`;
+  }).join("");
   const gradId = "trendFill" + Math.abs(color.split("").reduce((sum, ch) => sum + ch.charCodeAt(0), 0));
   return `
     <svg class="trend-chart" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" aria-hidden="true">
@@ -1548,14 +1978,44 @@ function buildTrendSparkline(values, color) {
           <stop offset="100%" stop-color="${color}" stop-opacity="0"></stop>
         </linearGradient>
       </defs>
-      <polyline points="${area}" fill="url(#${gradId})" stroke="none"></polyline>
-      <polyline points="${line}" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline>
-      <circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="4.5" fill="#fff" stroke="${color}" stroke-width="2"></circle>
+      <path class="trend-area" d="${area}" fill="url(#${gradId})" stroke="none"></path>
+      <path d="${line}" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
+      ${dots}
+      <circle class="trend-selected-dot" cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="5.2" fill="#fff" stroke="${color}" stroke-width="2.3"></circle>
     </svg>`;
 }
 
+function updateTrendPoint(sourceEl, forcedIndex) {
+  const card = sourceEl.closest(".trend-metric-card");
+  if (!card) return;
+  const rangeKey = card.dataset.rangeKey;
+  const metricIndex = Number(card.dataset.metricIndex || 0);
+  const pointIndex = Number(forcedIndex ?? sourceEl.dataset.pointIndex ?? 0);
+  const metric = (TREND_DATA[rangeKey] && TREND_DATA[rangeKey].metrics || [])[metricIndex] || {};
+  const point = (metric.points || [])[pointIndex];
+  const readout = card.querySelector(".trend-point-readout");
+  if (readout && point) readout.textContent = `${point.label || ""} · ${point.display || point.value || ""}`;
+
+  card.querySelectorAll(".trend-point-dot").forEach(function(dot) {
+    const active = Number(dot.dataset.pointIndex || 0) === pointIndex;
+    dot.classList.toggle("active", active);
+    dot.setAttribute("r", active ? "3.3" : "2.4");
+    dot.setAttribute("opacity", active ? "1" : ".62");
+  });
+  const selected = card.querySelector(".trend-selected-dot");
+  const dot = card.querySelector(`.trend-point-dot[data-point-index="${pointIndex}"]`);
+  if (selected && dot) {
+    selected.setAttribute("cx", dot.getAttribute("cx"));
+    selected.setAttribute("cy", dot.getAttribute("cy"));
+  }
+}
+
+function setTrendPointFromDot(dot) {
+  updateTrendPoint(dot, Number(dot.dataset.pointIndex || 0));
+}
+
 function renderTrendRange(rangeKey) {
-  const data = TREND_DATA[String(rangeKey)] || TREND_DATA["14"];
+  const data = TREND_DATA[String(rangeKey)];
   if (!data) return;
   document.querySelectorAll(".trend-range-btn").forEach(function(btn) {
     btn.classList.toggle("active", btn.dataset.range === String(rangeKey));
@@ -1564,10 +2024,14 @@ function renderTrendRange(rangeKey) {
   const chip = document.getElementById("trendInsightChip");
   if (chip && data.insight) chip.textContent = data.insight;
   if (!shell) return;
-  shell.innerHTML = (data.metrics || []).map(function(metric) {
+  shell.innerHTML = (data.metrics || []).map(function(metric, metricIndex) {
     const deltaColor = metric.delta_direction === "down" ? "#f97316" : (metric.delta_direction === "up" ? "#10b981" : "#64748b");
+    const points = metric.points || [];
+    const lastPointIndex = Math.max(points.length - 1, 0);
+    const lastPoint = points[lastPointIndex] || null;
+    const readout = points.length ? `<div class="trend-point-readout">${lastPoint ? `${lastPoint.label || ""} · ${lastPoint.display || lastPoint.value || ""}` : ""}</div>` : "";
     return `
-      <div class="trend-metric-card">
+      <div class="trend-metric-card" data-range-key="${String(rangeKey)}" data-metric-index="${metricIndex}">
         <div class="trend-metric-top">
           <div class="trend-metric-kicker">
             <div class="trend-metric-icon">${metric.icon}</div>
@@ -1579,10 +2043,14 @@ function renderTrendRange(rangeKey) {
           <div class="trend-metric-delta" style="color:${deltaColor}">${metric.delta}</div>
         </div>
         <div class="trend-metric-copy">${metric.copy}</div>
+        ${readout}
         ${buildTrendSparkline(metric.values || [], metric.color || "#8b5cf6")}
         <div class="trend-axis"><span>${data.axis_start || ""}</span><span>${data.axis_end || ""}</span></div>
       </div>`;
   }).join("");
+  shell.querySelectorAll(".trend-point-dot.active").forEach(function(dot) {
+    updateTrendPoint(dot, Number(dot.dataset.pointIndex || 0));
+  });
 }
 
 const DEFAULT_CUISINES = [
@@ -1608,7 +2076,8 @@ function renderCuisineChips() {
   }
   container.innerHTML = allCuisines.map(c => {
     const sel = cuisinePrefs[c.name] ? "selected" : "";
-    return `<span class="cuisine-chip ${sel}" onclick="toggleCuisine('${c.name.replace(/'/g,"&#39;")}')">${c.icon} ${c.name}<span class="chip-x" onclick="event.stopPropagation();removeCuisine('${c.name.replace(/'/g,"&#39;")}')">✕</span></span>`;
+    const safeName = encodeInlineValue(c.name);
+    return `<span class="cuisine-chip ${sel}" onclick="toggleCuisine(decodeURIComponent('${safeName}'))">${escapeHtml(c.icon)} ${escapeHtml(c.name)}<span class="chip-x" onclick="event.stopPropagation();removeCuisine(decodeURIComponent('${safeName}'))">✕</span></span>`;
   }).join("");
   updateExportBadge();
 }
@@ -1656,16 +2125,21 @@ function addCustomCuisine() {
   renderCuisineChips();
 }
 
-document.getElementById("customCuisineInput").addEventListener("keydown", function(e) {
-  if (e.key === "Enter") { e.preventDefault(); addCustomCuisine(); }
-});
+const customCuisineInput = document.getElementById("customCuisineInput");
+if (customCuisineInput) {
+  customCuisineInput.addEventListener("keydown", function(e) {
+    if (e.key === "Enter") { e.preventDefault(); addCustomCuisine(); }
+  });
+}
 
 renderCuisineChips();
 renderTabs();
 renderMeals();
 updateExportBadge();
 hydrateStaticFeedbackStates();
-renderTrendRange("14");
+const defaultTrendRange = Object.keys(TREND_DATA || {})[0];
+if (defaultTrendRange) renderTrendRange(defaultTrendRange);
+switchJourneyPage("home", true);
 
 // ─── Card Accordion Toggle ───
 document.querySelectorAll(".section-card-header").forEach(function(header) {

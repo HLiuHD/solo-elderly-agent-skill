@@ -568,6 +568,15 @@ const rawMeals = {meal_data_json};
 const meals = DAYS.map((d, i) => ({{ ...rawMeals[i % rawMeals.length], day: d }}));
 let activeDay = 0;
 
+function escapeHtml(value) {{
+  const chars = {{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}};
+  return String(value ?? "").replace(/[&<>"']/g, ch => chars[ch]);
+}}
+
+function encodeInlineValue(value) {{
+  return encodeURIComponent(String(value ?? "")).replace(/'/g, "%27");
+}}
+
 const MEAL_FEEDBACK_REASONS = [
   "Don't like the taste",
   "Allergic / intolerant",
@@ -606,6 +615,14 @@ function getFeedback(dayIdx, mealType, itemName) {{
   return feedbackStore[`${{dayIdx}}-${{mealType}}-${{itemName}}`];
 }}
 
+function saveLikeFromButton(button) {{
+  saveLike(Number(button.dataset.dayIdx), button.dataset.mealType, button.dataset.itemName);
+}}
+
+function showFeedbackModalFromButton(button) {{
+  showFeedbackModal(Number(button.dataset.dayIdx), button.dataset.mealType, button.dataset.itemName);
+}}
+
 function buildPreferencePayload() {{
   const likes = [];
   const dislikes = [];
@@ -618,14 +635,14 @@ function buildPreferencePayload() {{
     cuisine: name, ...meta
   }}));
   return {{
-    user_id: "{patient_id}",
+    user_id: {patient_id_json},
     data_type: "scenario",
     language: "en",
     timestamp: new Date().toISOString(),
     data: {{
       bundle: {{
         type: "user_preference",
-        report_time: "{current_time}",
+        report_time: {current_time_json},
         total_feedback: likes.length + dislikes.length,
         cuisine_preferences: selectedCuisines,
         liked: likes,
@@ -710,8 +727,8 @@ function showFeedbackModal(dayIdx, mealType, itemName) {{
   modal.innerHTML = `
     <div class="feedback-modal-box">
       <div class="text-sm font-bold text-slate-800 mb-1">${{title}}</div>
-      <div class="text-xs text-slate-500 mb-3">${{displayName}}</div>
-      ${{reasons.map(r => `<button class="feedback-reason" data-reason="${{r}}">${{r}}</button>`).join('')}}
+      <div class="text-xs text-slate-500 mb-3">${{escapeHtml(displayName)}}</div>
+      ${{reasons.map(r => `<button class="feedback-reason" data-reason="${{escapeHtml(r)}}">${{escapeHtml(r)}}</button>`).join('')}}
       <button class="feedback-reason" style="color:#94a3b8;border-color:#e2e8f0;margin-top:8px" data-reason="__cancel__">Cancel</button>
     </div>`;
   modal.addEventListener('click', function(e) {{
@@ -751,21 +768,22 @@ function renderMeals() {{
       const fb = getFeedback(activeDay, key, it.name);
       const likeClass = fb && fb.sentiment === "like" ? "liked" : "";
       const dislikeClass = fb && fb.sentiment === "dislike" ? "disliked" : "";
-      const safeName = it.name.replace(/'/g, "&#39;");
+      const itemName = String(it.name || "");
+      const safeName = encodeInlineValue(itemName);
       const reason = it.adc_reason || (
         it.condition && it.benefit
           ? "For your " + it.condition.toLowerCase() + ": " + it.benefit.toLowerCase()
           : (it.benefit || "")
       );
       html += `<div class="meal-card flex items-start gap-3 bg-slate-50 rounded-lg p-3 border border-slate-100">
-        <span class="text-2xl mt-0.5">${{it.icon || "🍽️"}}</span>
+        <span class="text-2xl mt-0.5">${{escapeHtml(it.icon || "🍽️")}}</span>
         <div class="flex-1 min-w-0">
-          <div class="text-sm font-semibold text-slate-800">${{it.name}}</div>
-          <div class="text-xs text-emerald-600 mt-0.5 leading-relaxed italic">${{reason}}</div>
+          <div class="text-sm font-semibold text-slate-800">${{escapeHtml(itemName)}}</div>
+          <div class="text-xs text-emerald-600 mt-0.5 leading-relaxed italic">${{escapeHtml(reason)}}</div>
         </div>
         <div class="feedback-actions">
-          <button class="feedback-btn like ${{likeClass}}" title="Keep this nutrition suggestion" onclick="saveLike(${{activeDay}},'${{key}}','${{safeName}}')">Keep this</button>
-          <button class="feedback-btn feedback-skip ${{dislikeClass}}" title="This nutrition suggestion is not for me" onclick="showFeedbackModal(${{activeDay}},'${{key}}','${{safeName}}')">Not for me</button>
+          <button class="feedback-btn like ${{likeClass}}" title="Keep this nutrition suggestion" onclick="saveLike(${{activeDay}},'${{key}}',decodeURIComponent('${{safeName}}'))">Keep this</button>
+          <button class="feedback-btn feedback-skip ${{dislikeClass}}" title="This nutrition suggestion is not for me" onclick="showFeedbackModal(${{activeDay}},'${{key}}',decodeURIComponent('${{safeName}}'))">Not for me</button>
         </div>
       </div>`;
     }}
@@ -802,7 +820,8 @@ function renderCuisineChips() {{
   }}
   container.innerHTML = allCuisines.map(c => {{
     const sel = cuisinePrefs[c.name] ? "selected" : "";
-    return `<span class="cuisine-chip ${{sel}}" onclick="toggleCuisine('${{c.name.replace(/'/g,"&#39;")}}')">${{c.icon}} ${{c.name}}<span class="chip-x" onclick="event.stopPropagation();removeCuisine('${{c.name.replace(/'/g,"&#39;")}}')">✕</span></span>`;
+    const safeName = encodeInlineValue(c.name);
+    return `<span class="cuisine-chip ${{sel}}" onclick="toggleCuisine(decodeURIComponent('${{safeName}}'))">${{escapeHtml(c.icon)}} ${{escapeHtml(c.name)}}<span class="chip-x" onclick="event.stopPropagation();removeCuisine(decodeURIComponent('${{safeName}}'))">✕</span></span>`;
   }}).join("");
   updateExportBadge();
 }}

@@ -79,86 +79,6 @@ _GOOD_STATUS_KEYWORDS = (
     "well controlled", "stable", "normal", "improving",
 )
 
-# ─── Escalation Rules ───────────────────────────────────────────────
-# When a symptom keyword appears >= THRESHOLD times in key_events,
-# the report escalates from "stable"/"at_risk" display to a warning banner.
-_ESCALATION_RULES = [
-    {
-        "keywords": ["headache", "head pain", "migraine"],
-        "threshold": 3,
-        "level": "escalated",
-        "title": "Recurring headache — escalated to attention",
-        "message": (
-            "You have reported headaches {count} times in recent records. "
-            "Because this symptom keeps coming back, we are flagging this for "
-            "closer monitoring and your doctor will be notified."
-        ),
-        "recommendation": "Please note the time, severity (1-10), and any triggers each time it happens.",
-    },
-    {
-        "keywords": ["dizzy", "dizziness", "lightheaded", "vertigo"],
-        "threshold": 3,
-        "level": "escalated",
-        "title": "Recurring dizziness — escalated to attention",
-        "message": (
-            "Dizziness has been reported {count} times recently. "
-            "This pattern may indicate blood pressure fluctuation or medication side effects."
-        ),
-        "recommendation": "Sit or lie down when dizzy. Note whether it happens after standing up or taking medication.",
-    },
-    {
-        "keywords": ["chest pain", "chest tightness", "chest discomfort"],
-        "threshold": 2,
-        "level": "critical",
-        "title": "Recurring chest symptoms — urgent",
-        "message": (
-            "Chest-related symptoms reported {count} times. "
-            "This requires immediate medical attention."
-        ),
-        "recommendation": "If you experience chest pain right now, call 911 immediately.",
-    },
-    {
-        "keywords": ["fall", "fell down", "lost balance"],
-        "threshold": 2,
-        "level": "escalated",
-        "title": "Multiple falls detected",
-        "message": (
-            "You have had {count} fall-related events. "
-            "This increases injury risk and your care team will review your mobility."
-        ),
-        "recommendation": "Avoid walking without support. Remove tripping hazards at home.",
-    },
-]
-
-
-def _check_escalations(key_events: list[dict]) -> list[dict]:
-    """Scan key_events for recurring symptoms that trigger escalation rules."""
-    if not key_events:
-        return []
-
-    triggered = []
-    event_texts = [
-        ev.get("description", "").lower() for ev in key_events
-        if ev.get("type") in ("symptom", "alert", "complaint")
-    ]
-
-    for rule in _ESCALATION_RULES:
-        count = sum(
-            1 for text in event_texts
-            if any(kw in text for kw in rule["keywords"])
-        )
-        if count >= rule["threshold"]:
-            triggered.append({
-                "level": rule["level"],
-                "title": rule["title"],
-                "message": rule["message"].format(count=count),
-                "recommendation": rule["recommendation"],
-                "count": count,
-                "threshold": rule["threshold"],
-            })
-    return triggered
-
-
 _AI_MSG_STYLES = {
     "good_news": {"icon": "🎉", "color": "bg-emerald-50 border-emerald-200", "title_color": "text-emerald-800"},
     "attention": {"icon": "⚠️", "color": "bg-amber-50 border-amber-200", "title_color": "text-amber-800"},
@@ -263,6 +183,70 @@ def _extract_numbers(value: object) -> list[float]:
     if value is None:
         return []
     return [float(part) for part in re.findall(r"\d+(?:\.\d+)?", str(value))]
+
+
+def _json_for_script(value: object) -> str:
+    """Serialize JSON without allowing data to terminate an inline script."""
+    return (
+        json.dumps(value, ensure_ascii=False)
+        .replace("&", "\\u0026")
+        .replace("<", "\\u003c")
+        .replace(">", "\\u003e")
+        .replace("\u2028", "\\u2028")
+        .replace("\u2029", "\\u2029")
+    )
+
+
+def _memory_archive_text(memory: dict) -> str:
+    return str(memory.get("archive") or "").strip()
+
+
+def _memory_recent_text(memory: dict) -> str:
+    recent = memory.get("recent")
+    if isinstance(recent, dict):
+        parts = [str(recent.get(key) or "").strip() for key in ("adherence", "outlier")]
+        return "\n".join(part for part in parts if part)
+    return ""
+
+
+def _format_latest_health_value(key: str, value: object) -> str:
+    if value in (None, ""):
+        return ""
+    if key == "blood_pressure" and isinstance(value, dict):
+        sbp = value.get("sbp") or value.get("systolic")
+        dbp = value.get("dbp") or value.get("diastolic")
+        if sbp not in (None, "") and dbp not in (None, ""):
+            return f"{sbp}/{dbp}"
+    return str(value).strip()
+
+
+def _latest_health_summary_from_payload(payload: dict) -> dict:
+    latest = payload.get("latest_health") or {}
+    if not isinstance(latest, dict):
+        return {}
+
+    summary = {}
+    for key in ("blood_pressure", "heart_rate", "blood_oxygen", "blood_glucose"):
+        value = _format_latest_health_value(key, latest.get(key))
+        if value:
+            summary[key] = value
+
+    steps = latest.get("steps_today")
+    if steps in (None, ""):
+        steps = latest.get("steps")
+    value = _format_latest_health_value("steps_today", steps)
+    if value:
+        summary["steps_today"] = value
+    return summary
+
+
+def _sanitize_latest_health_summary(so: dict, payload: dict) -> None:
+    summary = _latest_health_summary_from_payload(payload)
+    if summary:
+        so["latest_health_summary"] = summary
+        return
+    if not summary:
+        so.pop("latest_health_summary", None)
 
 
 def _render_vitals(summary: dict) -> str:
@@ -444,10 +428,10 @@ def _render_recommendations(recs: list) -> str:
             f'<div class="text-sm text-slate-700 leading-relaxed font-medium">{escape(text)}</div>'
             f'{reason_html}</div>'
             f'<div class="feedback-actions flex-shrink-0">'
-            f'<button class="feedback-btn like" title="Helpful" '
-            f"onclick=\"saveLike(-1,'rec','{safe_text}')\">Useful</button>"
-            f'<button class="feedback-btn feedback-skip" title="Not for me" '
-            f"onclick=\"showFeedbackModal(-1,'rec','{safe_text}')\">Not for me</button>"
+            f'<button class="feedback-btn like" title="Helpful" data-day-idx="-1" '
+            f'data-meal-type="rec" data-item-name="{safe_text}" onclick="saveLikeFromButton(this)">Useful</button>'
+            f'<button class="feedback-btn feedback-skip" title="Not for me" data-day-idx="-1" '
+            f'data-meal-type="rec" data-item-name="{safe_text}" onclick="showFeedbackModalFromButton(this)">Not for me</button>'
             f'</div></div></div>'
         )
     return "\n".join(parts)
@@ -535,78 +519,7 @@ def _render_adherence(adh: dict) -> str:
 
 
 def _render_memory_overview(memory: dict) -> str:
-    """Render profile + recent trends as always-visible top overview cards."""
-    if not memory:
-        return ""
-
-    profile = memory.get("patient_long_term_profile") or ""
-    dynamics = memory.get("recent_health_dynamics") or ""
-
-    blocks = []
-
-    if profile:
-        blocks.append(
-            '<div class="sub-card sub-card-static">'
-            '<div class="sub-card-header">'
-            '<span class="sub-card-icon">👤</span>'
-            '<div class="flex-1 min-w-0">'
-            '<div class="sub-card-label">Long-term profile</div>'
-            '<div class="sub-card-value">Your background matters for every suggestion</div>'
-            '</div>'
-            '</div>'
-            f'<div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">{escape(profile)}</div></div>'
-            '</div>'
-        )
-
-    if dynamics:
-        blocks.append(
-            '<div class="sub-card sub-card-static">'
-            '<div class="sub-card-header">'
-            '<span class="sub-card-icon">📈</span>'
-            '<div class="flex-1 min-w-0">'
-            '<div class="sub-card-label">Recent trends</div>'
-            '<div class="sub-card-value">How things have been changing lately</div>'
-            '</div>'
-            '</div>'
-            f'<div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">{escape(dynamics)}</div></div>'
-            '</div>'
-        )
-
-    return "".join(blocks)
-
-
-def _render_key_events(memory: dict) -> str:
-    """Render key events as a compact timeline list."""
-    if not memory:
-        return ""
-
-    events = memory.get("key_events") or []
-    if not events:
-        return ""
-
-    event_icons = {"surgery": "🩺", "symptom": "⚠️", "alert": "🚨", "medication": "💊", "visit": "🏥"}
-    events_body = '<div class="space-y-2">'
-    for ev in events:
-        ev_icon = event_icons.get(ev.get("type", ""), "📌")
-        ev_date = ev.get("date", "")
-        ev_desc = ev.get("description", "")
-        ev_type = ev.get("type", "")
-        type_cls = {
-            "surgery": "bg-purple-50 text-purple-700 border-purple-200",
-            "alert": "bg-rose-50 text-rose-700 border-rose-200",
-            "symptom": "bg-amber-50 text-amber-700 border-amber-200",
-            "medication": "bg-blue-50 text-blue-700 border-blue-200",
-        }.get(ev_type, "bg-slate-50 text-slate-600 border-slate-200")
-        events_body += (
-            f'<div class="flex items-start gap-3 rounded-lg p-2.5 border {type_cls}">'
-            f'<span class="text-base mt-0.5">{ev_icon}</span>'
-            f'<div class="flex-1 min-w-0">'
-            f'<div class="text-sm font-semibold">{escape(ev_desc)}</div>'
-            f'<div class="text-xs text-slate-400 mt-0.5">{escape(ev_date)}</div>'
-            f'</div></div>'
-        )
-    events_body += '</div>'
-    return events_body
+    return ""
 
 
 def _stringify_compact(value: object) -> str:
@@ -713,40 +626,20 @@ def _render_personalized_context(so: dict, payload: dict, memory: dict) -> str:
         return "".join(cards)
 
     conditions = so.get("conditions") or []
-    key_events = memory.get("key_events") or []
-    profile = memory.get("patient_long_term_profile") or ""
-    recent_dynamics = memory.get("recent_health_dynamics") or ""
-    meds = _extract_medications(profile)
     latest_summary = so.get("latest_health_summary") or {}
-    signals = payload.get("signals") or {}
     adherence = so.get("adherence_analysis") or {}
-
-    surgery_event = next(
-        (
-            ev for ev in key_events
-            if ev.get("type") == "surgery"
-            or "surgery" in str(ev.get("description", "")).lower()
-            or "post-surgery" in str(ev.get("description", "")).lower()
-        ),
-        None,
-    )
 
     history_chips = []
     if conditions:
         history_chips.extend(conditions[:3])
-    if surgery_event:
-        history_chips.append(f'{surgery_event.get("date", "")} {surgery_event.get("description", "")}'.strip())
-    elif "post-surgery" in profile.lower() or "recovery" in profile.lower():
-        history_chips.append("Currently in a recovery phase")
 
     if history_chips:
         implication_parts = []
-        if surgery_event or "post-surgery" in profile.lower() or "recovery" in profile.lower():
-            implication_parts.append("more protein, gentler foods, and gradual activity matter more right now")
         if any(c in {"Hypertension"} for c in conditions):
             implication_parts.append("salt control stays important")
         if any(c in {"Type 2 diabetes", "Diabetes"} for c in conditions):
             implication_parts.append("steady nutrition timing and lower-sugar choices matter more")
+        history_chip_html = "".join(f'<span class="context-chip">{escape(chip)}</span>' for chip in history_chips[:4])
         cards.append(
             '<div class="sub-card sub-card-static">'
             '<div class="sub-card-header">'
@@ -757,7 +650,7 @@ def _render_personalized_context(so: dict, payload: dict, memory: dict) -> str:
             '</div>'
             '</div>'
             '<div class="sub-card-body">'
-            f'<div class="flex flex-wrap gap-2 mb-3">{"".join(f"<span class=\"context-chip\">{escape(chip)}</span>" for chip in history_chips[:4])}</div>'
+            f'<div class="flex flex-wrap gap-2 mb-3">{history_chip_html}</div>'
             + (
                 '<div class="text-xs text-slate-600 bg-slate-50 rounded-xl px-3 py-2 leading-relaxed border border-slate-200">'
                 f'Why it matters here: {escape("; ".join(implication_parts))}</div>'
@@ -768,10 +661,8 @@ def _render_personalized_context(so: dict, payload: dict, memory: dict) -> str:
 
     med_issue = _stringify_compact((adherence.get("medication") or {}).get("issues"))
     med_adjustment = _stringify_compact((adherence.get("medication") or {}).get("adjustments"))
-    if meds or med_issue:
+    if med_issue:
         med_body = ""
-        if meds:
-            med_body += f'<div class="flex flex-wrap gap-2 mb-3">{"".join(f"<span class=\"context-chip\">{escape(med)}</span>" for med in meds)}</div>'
         if med_issue:
             med_body += f'<div class="text-sm text-slate-700 leading-relaxed">What recent notes show: {escape(med_issue)}</div>'
         if med_adjustment:
@@ -811,23 +702,17 @@ def _render_personalized_context(so: dict, payload: dict, memory: dict) -> str:
             metric_bits.append(f'{metric_labels.get(key, key)} {value}')
 
     monitoring_gap = _stringify_compact((adherence.get("monitoring") or {}).get("gaps"))
-    signal_bits = [str(item).strip() for item in (signals.get("anomalies") or []) if str(item).strip()]
     recent_focus = []
     if metric_bits:
         recent_focus.append("Recent readings: " + ", ".join(metric_bits[:3]))
-    if signal_bits:
-        recent_focus.append("Device flags: " + ", ".join(signal_bits[:2]))
     if monitoring_gap:
         recent_focus.append("Monitoring gap: " + monitoring_gap)
-    elif recent_dynamics:
-        text = _stringify_compact(recent_dynamics)
-        recent_focus.append(text[:120] + ("..." if len(text) > 120 else ""))
 
     if recent_focus:
         implication = []
         if any("Glucose" in bit or "blood_glucose" in bit for bit in metric_bits):
             implication.append("nutrition timing and steadier carbohydrates matter more")
-        if any("Steps" in bit for bit in metric_bits) or any("activity" in bit.lower() for bit in signal_bits):
+        if any("Steps" in bit for bit in metric_bits):
             implication.append("activity advice should stay gentle and realistic")
         if monitoring_gap:
             implication.append("closing the monitoring gap matters too")
@@ -851,36 +736,11 @@ def _render_personalized_context(so: dict, payload: dict, memory: dict) -> str:
             + '</div></div>'
         )
 
-    extra_notes = []
-    for key, label in (
-        ("clinical_notes", "Clinical notes"),
-        ("doctor_notes", "Doctor notes"),
-        ("case_history", "Case history"),
-        ("latest_labs", "Recent labs"),
-    ):
-        text = _stringify_compact(memory.get(key) or payload.get(key))
-        if text:
-            extra_notes.append((label, text))
-    for label, text in extra_notes[:1]:
-        cards.append(
-            '<div class="sub-card sub-card-static">'
-            '<div class="sub-card-header">'
-            '<span class="sub-card-icon">🧠</span>'
-            '<div class="flex-1 min-w-0">'
-            f'<div class="sub-card-label">{escape(label)}</div>'
-            '<div class="sub-card-value">If deeper chart notes are available, this page can quote them directly</div>'
-            '</div>'
-            '</div>'
-            f'<div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">{escape(text)}</div></div>'
-            '</div>'
-        )
-
     return "".join(cards)
 
 
 def _render_memory(memory: dict) -> str:
-    """Backward-compatible combined memory rendering."""
-    return _render_memory_overview(memory) + _render_key_events(memory)
+    return _render_memory_overview(memory)
 
 
 _CONDITION_CONTEXTS = {
@@ -1100,10 +960,12 @@ def _render_diet_tips(tips: list[dict]) -> str:
             body_html = (
                 f'<div class="text-sm text-slate-600 leading-relaxed mb-2">{escape(detail)}</div>'
                 f'<div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap">'
-                f'<button class="feedback-btn like" title="Helpful" '
-                f"onclick=\"saveLike(-1,'tip','{safe_title}')\">Useful</button>"
-                f'<button class="feedback-btn feedback-skip" title="Not for me" '
-                f"onclick=\"showFeedbackModal(-1,'tip','{safe_title}')\">Not for me</button>"
+                f'<button class="feedback-btn like" title="Helpful" data-day-idx="-1" '
+                f'data-meal-type="tip" data-item-name="{safe_title}" '
+                f'onclick="saveLikeFromButton(this)">Useful</button>'
+                f'<button class="feedback-btn feedback-skip" title="Not for me" data-day-idx="-1" '
+                f'data-meal-type="tip" data-item-name="{safe_title}" '
+                f'onclick="showFeedbackModalFromButton(this)">Not for me</button>'
                 f'</div>'
             )
 
@@ -1368,6 +1230,7 @@ def main() -> None:
     payload = data.get("payload") or {}
     llm = data.get("llm_result") or {}
     so = llm.get("structured_output") or {}
+    _sanitize_latest_health_summary(so, payload)
     memory = payload.get("memory") or {}
     try:
         template = _TEMPLATE_PATH.read_text(encoding="utf-8")
@@ -1375,17 +1238,14 @@ def main() -> None:
         print(f"Template not found: {_TEMPLATE_PATH}", file=sys.stderr)
         sys.exit(1)
 
-    tone_profile = memory.get("tone_profile") or {}
-    condition_ctx_name = tone_profile.get("condition_context") or "stable_routine"
-    ctx = _CONDITION_CONTEXTS.get(condition_ctx_name, _CONDITION_CONTEXTS["stable_routine"])
+    tone_profile = {}
+    ctx = _CONDITION_CONTEXTS["stable_routine"]
     visible = ctx["show_sections"]
 
     if ctx["tone_override"]:
         tone_profile = {**tone_profile, "style": ctx["tone_override"]}
 
-    # Check for symptom escalation based on memory events
-    key_events = memory.get("key_events") or []
-    escalations = _check_escalations(key_events)
+    escalations = []
 
     status = so.get("patient_status") or "stable"
     # Override status if critical escalation is triggered
@@ -1405,8 +1265,9 @@ def main() -> None:
     conditions = so.get("conditions") or []
     location = payload.get("location") or {}
     loc = location.get("current") or {}
-    patient_lat = loc.get("lat", 0)
-    patient_lon = loc.get("lon", 0)
+    patient_lat = loc.get("lat")
+    patient_lon = loc.get("lon")
+    has_location = patient_lat not in (None, "") and patient_lon not in (None, "")
 
     if any(
         kw in t.lower()
@@ -1421,7 +1282,7 @@ def main() -> None:
 
     google_maps_api_key = os.environ.get("GOOGLE_MAPS_API_KEY", "").strip()
     maps_script = ""
-    if google_maps_api_key:
+    if google_maps_api_key and has_location:
         maps_script = (
             '<script defer '
             'src="https://maps.googleapis.com/maps/api/js'
@@ -1431,16 +1292,21 @@ def main() -> None:
             '&callback=initPatientReportMap"></script>'
         )
 
-    map_section = _render_map_section(
-        ai_map_msg, ai_map_msg_park,
-        patient_lat, patient_lon, google_maps_api_key,
+    map_section = (
+        _render_map_section(
+            ai_map_msg, ai_map_msg_park,
+            patient_lat, patient_lon, google_maps_api_key,
+        )
+        if has_location
+        else ""
     )
 
-    meal_json = json.dumps(so.get("weekly_meal_plan") or [], ensure_ascii=False)
+    meal_json = _json_for_script(so.get("weekly_meal_plan") or [])
 
     patient_id = meta.get("user_id") or "unknown"
 
-    preferred_name = (tone_profile or {}).get("preferred_name") or ""
+    patient = payload.get("patient") or {}
+    preferred_name = str(patient.get("preferred_name") or patient.get("name") or patient.get("display_name") or "").strip() if isinstance(patient, dict) else ""
     base_greeting = ctx.get("header_greeting") or "Hello!"
     if preferred_name:
         base_trimmed = base_greeting.rstrip("!?. ")
@@ -1583,10 +1449,12 @@ def main() -> None:
                 )
             body_parts.append(
                 f'<div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap">'
-                f'<button class="feedback-btn like" title="Helpful" '
-                f"onclick=\"saveLike(-1,'rec','{safe_text}')\">Useful</button>"
-                f'<button class="feedback-btn feedback-skip" title="Not for me" '
-                f"onclick=\"showFeedbackModal(-1,'rec','{safe_text}')\">Not for me</button>"
+                f'<button class="feedback-btn like" title="Helpful" data-day-idx="-1" '
+                f'data-meal-type="rec" data-item-name="{safe_text}" '
+                f'onclick="saveLikeFromButton(this)">Useful</button>'
+                f'<button class="feedback-btn feedback-skip" title="Not for me" data-day-idx="-1" '
+                f'data-meal-type="rec" data-item-name="{safe_text}" '
+                f'onclick="showFeedbackModalFromButton(this)">Not for me</button>'
                 f'</div>'
             )
             body_html = "".join(body_parts)
@@ -1609,111 +1477,6 @@ def main() -> None:
                 f'💭 {escape(reasoning)}</div>'
             )
         return html
-
-    _CARD_DEFS = [
-        ("guidance", "💚", "#d1fae5", "Health Guidance",
-         lambda: _render_health_guidance(so.get("health_guidance") or {}, conditions, tone_profile=tone_profile)),
-        ("memory", "🧠", "#e0e7ff", "Health History",
-         lambda: _render_memory(memory)),
-        ("vitals", "📊", "#fef3c7", "Latest Health Data",
-         lambda: _vitals_subcards()),
-        ("adherence", "📋", "#f3e8ff", "Adherence Overview",
-         lambda: _adherence_subcards()),
-        ("recommendations", "💡", "#dcfce7", "Suggestions",
-         lambda: _recs_subcards()),
-        ("nutrition", "🥗", "#ecfdf5", "Nutrition Advice",
-         lambda: (
-             '<p style="font-size:0.95em;line-height:1.7;color:#334155;padding:8px 0">'
-             + escape(so.get("nutrition_advice") or "Aim for balanced nutrition with plenty of vegetables and adequate hydration.")
-             + '</p>'
-         )),
-        ("diet_table", "📑", "#fff7ed", "Diet by Condition",
-         lambda: _render_diet_table(so.get("diet_table") or [])),
-        ("cuisine", "🍜", "#fdf2f8", "Cuisine Preferences",
-         lambda: (
-             '<p class="text-sm text-slate-500 mb-3">Select cuisines you enjoy — '
-             "we'll tailor future nutrition suggestions to your taste.</p>"
-             '<div class="flex flex-wrap gap-2 mb-3" id="cuisineChips"></div>'
-             '<div class="flex items-center gap-2">'
-             '<input id="customCuisineInput" type="text" placeholder="Add another cuisine..." '
-             'class="flex-1 text-sm border border-slate-200 rounded-lg px-3 py-2 '
-             'focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-200">'
-             '<button onclick="addCustomCuisine()" class="px-3 py-2 rounded-lg bg-emerald-50 '
-             'border border-emerald-200 text-emerald-700 text-sm font-medium hover:bg-emerald-100">'
-             '+ Add</button></div>'
-         )),
-        ("meal_plan", "📅", "#eff6ff", "Weekly Nutrition Plan",
-         lambda: (
-             '<div class="flex gap-2 mb-4 overflow-x-auto pb-2" id="dayTabs"></div>'
-             '<div id="mealContent"></div>'
-         )),
-        ("diet_tips", "✨", "#f0fdf4", "Nutrition Tips",
-         lambda: _render_diet_tips(so.get("diet_tips") or [])),
-        ("map", "🏥", "#f0f9ff", "Nearby Care & Parks",
-         lambda: map_section),
-        ("submit", "✓", "#ecfdf5", "Submit Preferences",
-         lambda: (
-             '<button id="exportFeedbackBtn" onclick="exportFeedbackJSON()" style="display:none" '
-             'class="w-full px-6 py-3 rounded-full text-sm font-bold bg-emerald-600 text-white shadow-md '
-             'hover:bg-emerald-700 active:scale-95 transition-all">'
-             '✓ Submit my preferences</button>'
-             '<p class="text-xs text-slate-400 mt-2 text-center" id="submitHint" style="display:none">'
-             'Your choices will be remembered for next time</p>'
-         )),
-    ]
-
-    # Dynamic summaries — pull brief data from payload for card previews
-    vitals_data = so.get("latest_health_summary") or {}
-    bp_preview = vitals_data.get("blood_pressure", "")
-    hr_preview = vitals_data.get("heart_rate", "")
-    vitals_preview = f"BP {bp_preview}, HR {hr_preview}" if bp_preview else "Blood pressure, heart rate, glucose, and more"
-
-    guidance_data = so.get("health_guidance") or {}
-    guidance_preview = (guidance_data.get("summary") or "Personalized tips based on your conditions")[:80]
-    if len(guidance_data.get("summary", "")) > 80:
-        guidance_preview += "..."
-
-    _CARD_SUMMARIES = {
-        "guidance": guidance_preview,
-        "memory": "Your health history and past events",
-        "vitals": vitals_preview,
-        "adherence": "How you've been doing with medication, nutrition, and exercise",
-        "recommendations": "Actionable suggestions for your health",
-        "nutrition": "Nutrition priorities and why they matter",
-        "diet_table": "Foods to prefer and avoid for each condition",
-        "cuisine": "Tell us what cuisines you enjoy",
-        "meal_plan": "A weekly nutrition plan for breakfast, lunch, and dinner",
-        "diet_tips": "Quick nutrition tips you can use right away",
-        "map": "Hospitals and parks near you",
-        "submit": "Save your feedback and preferences",
-    }
-
-    cards_html_parts = []
-    for section_key, icon, bg_color, title, render_fn in _CARD_DEFS:
-        if section_key not in visible:
-            continue
-        content = render_fn()
-        if not content or not content.strip():
-            continue
-
-        summary = _CARD_SUMMARIES.get(section_key, "")
-
-        card = (
-            f'<div class="section-card" data-section="{section_key}">'
-            f'<div class="section-card-header">'
-            f'<div class="section-card-icon" style="background:{bg_color}">{icon}</div>'
-            f'<div class="flex-1 min-w-0">'
-            f'<div class="section-card-title">{title}</div>'
-            f'<div class="section-card-summary">{summary}</div>'
-            f'</div>'
-            f'<div class="section-card-arrow">&#9662;</div>'
-            f'</div>'
-            f'<div class="section-card-body">{content}</div>'
-            f'</div>'
-        )
-        cards_html_parts.append(card)
-
-    cards_html = "\n".join(cards_html_parts)
 
     nutrition_text = (
         '<div class="rounded-xl bg-emerald-50 border border-emerald-100 px-4 py-4 '
@@ -1786,11 +1549,6 @@ def main() -> None:
             adherence_body_parts.append(
                 _module_subsection("How things have been going", "A quick look at medication, nutrition, activity, and monitoring.", adherence_html)
             )
-    key_events_html = _render_key_events(memory) if "memory" in visible else ""
-    if key_events_html.strip():
-        adherence_body_parts.append(
-            _module_subsection("Key events", "Important recent events are grouped here so the changes around them are easier to follow.", key_events_html)
-        )
     adherence_bundle_html = "".join(adherence_body_parts)
     if adherence_bundle_html:
         regrouped_cards.append(
@@ -1847,7 +1605,9 @@ def main() -> None:
         header_greeting=header_greeting,
         layout_class=layout_class,
         patient_id=patient_id,
+        patient_id_json=_json_for_script(str(patient_id)),
         current_time=current_time,
+        current_time_json=_json_for_script(str(current_time)),
         status_badge_class=badge_class,
         status_icon=status_icon,
         status_text=status_text,

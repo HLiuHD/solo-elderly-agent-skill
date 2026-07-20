@@ -288,73 +288,6 @@
   }}
   .dashboard-progress-title {{ font-size:.82rem; font-weight:850; color:#6d28d9; }}
   .dashboard-progress-copy {{ margin-top:6px; font-size:.84rem; line-height:1.65; color:#475569; }}
-  .nutrition-spotlight-card {{
-    border-radius:28px;
-    border:1px solid rgba(255,255,255,.94);
-    background:
-      radial-gradient(circle at top right, rgba(16,185,129,.12), transparent 28%),
-      linear-gradient(180deg, rgba(255,255,255,.98), rgba(244,253,250,.96));
-    box-shadow:var(--app-card-shadow);
-    padding:18px;
-  }}
-  .nutrition-spotlight-head {{ display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:12px; }}
-  .nutrition-spotlight-title {{ font-size:1.04rem; font-weight:850; color:#0f172a; }}
-  .nutrition-spotlight-copy {{ margin-top:4px; font-size:.82rem; line-height:1.55; color:#64748b; }}
-  .nutrition-spotlight-badge {{
-    padding:8px 10px;
-    border-radius:16px;
-    background:linear-gradient(180deg, #ffffff 0%, #dcfce7 100%);
-    border:1px solid rgba(187,247,208,.95);
-    font-size:.74rem;
-    font-weight:800;
-    color:#047857;
-    box-shadow:0 8px 18px rgba(16,185,129,.12);
-    white-space:nowrap;
-  }}
-  .nutrition-ring-grid {{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }}
-  .nutrition-ring-card {{
-    border-radius:20px;
-    padding:12px 10px;
-    background:linear-gradient(180deg,#ffffff 0%, #f8fffc 100%);
-    border:1px solid rgba(220,252,231,.92);
-    text-align:center;
-    box-shadow:0 10px 20px rgba(15,23,42,.04);
-  }}
-  .nutrition-ring {{
-    --ring-accent:#10b981;
-    --ring-track:#d1fae5;
-    width:72px;
-    height:72px;
-    margin:0 auto 8px;
-    border-radius:999px;
-    padding:7px;
-    background:conic-gradient(var(--ring-accent) 0 calc(var(--pct) * 1%), var(--ring-track) calc(var(--pct) * 1%) 100%);
-    box-shadow:0 12px 20px rgba(15,23,42,.06);
-  }}
-  .nutrition-ring-inner {{
-    width:100%;
-    height:100%;
-    border-radius:999px;
-    background:#fff;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:.9rem;
-    font-weight:900;
-    color:#0f172a;
-  }}
-  .nutrition-ring-label {{ font-size:.75rem; font-weight:800; color:#0f172a; }}
-  .nutrition-ring-note {{ margin-top:3px; font-size:.68rem; line-height:1.35; color:#64748b; }}
-  .nutrition-story {{
-    margin-top:14px;
-    padding:14px 15px;
-    border-radius:20px;
-    background:linear-gradient(180deg, rgba(236,253,245,.96), rgba(255,255,255,.95));
-    border:1px solid rgba(167,243,208,.76);
-    font-size:.86rem;
-    line-height:1.75;
-    color:#334155;
-  }}
   .trend-card {{
     border-radius:28px;
     border:1px solid rgba(255,255,255,.94);
@@ -765,12 +698,10 @@
     .hero-welcome-title {{ font-size:1.34rem; }}
     .hero-assistant-orb {{ width:78px; height:78px; border-radius:24px; font-size:2rem; }}
     .quick-nav-strip {{ grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; padding:0 12px; }}
-    .status-overview-card, .dashboard-panel, .priority-plan-card, .nutrition-spotlight-card, .trend-card {{ border-radius:24px; padding:16px; }}
+    .status-overview-card, .dashboard-panel, .priority-plan-card, .trend-card {{ border-radius:24px; padding:16px; }}
     .status-overview-score {{ font-size:2.5rem; }}
     .dashboard-metric-grid {{ gap:10px; }}
     .dashboard-metric-card {{ min-height:120px; }}
-    .nutrition-ring-grid {{ grid-template-columns:repeat(2,minmax(0,1fr)); }}
-    .nutrition-ring {{ width:68px; height:68px; }}
     .trend-card-head {{ flex-direction:column; }}
     .trend-range-tabs {{ width:100%; }}
     .trend-insight-chip {{ width:100%; font-size:.72rem; }}
@@ -964,10 +895,644 @@
     transition:background .18s ease, transform .18s ease;
   }}
   .bottom-tab:hover {{ background:rgba(255,255,255,.6); transform:translateY(-1px); }}
+  .bottom-tab:focus {{ outline: none; }}
+  .bottom-tab:focus-visible {{ outline: none; box-shadow: none; }}
   .bottom-tab.active {{ background:linear-gradient(180deg, rgba(237,233,254,.96), rgba(243,244,255,.92)); }}
   .bottom-tab-icon {{ font-size:1.15rem; line-height:1; }}
   .bottom-tab-label {{ margin-top:4px; font-size:.7rem; font-weight:800; color:#64748b; }}
   .bottom-tab.active .bottom-tab-label {{ color:#7c3aed; }}
+  .journey-topbar {{
+    position: sticky;
+    top: 0;
+    z-index: 45;
+    min-height: 58px;
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr) 42px;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px 8px;
+    background: rgba(248,250,252,.9);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(226,232,240,.7);
+  }}
+  .topbar-icon {{
+    width: 38px;
+    height: 38px;
+    border: none;
+    border-radius: 14px;
+    background: transparent;
+    color: #0f172a;
+    font-size: 1.18rem;
+    font-weight: 850;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }}
+  .topbar-icon:hover {{ background: rgba(255,255,255,.74); }}
+  .topbar-title {{ text-align: center; min-width: 0; }}
+  .topbar-name {{ font-size: 1.02rem; font-weight: 900; color: #0f172a; line-height: 1.15; }}
+  .topbar-subtitle {{ margin-top: 2px; font-size: .66rem; font-weight: 800; color: #8b5cf6; letter-spacing: .08em; text-transform: uppercase; }}
+  .journey-pages {{ padding: 12px 12px 6px; }}
+  .journey-page {{ display: none; animation: pageFade .18s ease; }}
+  .journey-page.active {{ display: block; }}
+  @keyframes pageFade {{
+    from {{ opacity: .2; transform: translateY(5px); }}
+    to {{ opacity: 1; transform: translateY(0); }}
+  }}
+  .journey-screen-head {{
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 2px 0 12px;
+  }}
+  .journey-screen-title {{ font-size: 1.05rem; font-weight: 900; color: #0f172a; line-height: 1.25; }}
+  .journey-screen-copy {{ margin-top: 4px; font-size: .78rem; line-height: 1.55; color: #64748b; }}
+  .journey-card {{
+    border-radius: 18px;
+    border: 1px solid rgba(226,232,240,.92);
+    background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+    box-shadow: 0 12px 24px rgba(15,23,42,.055);
+    padding: 15px;
+    margin-bottom: 12px;
+  }}
+  .journey-hero {{
+    min-height: 154px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 104px;
+    gap: 12px;
+    align-items: center;
+    border: 1px solid rgba(221,214,254,.85);
+    background:
+      radial-gradient(circle at right 30%, rgba(124,58,237,.16), transparent 36%),
+      linear-gradient(135deg, #ffffff 0%, #f7f5ff 54%, #efeaff 100%);
+    box-shadow: 0 18px 34px rgba(124,58,237,.11);
+  }}
+  .journey-hero-main {{ min-width: 0; }}
+  .journey-hero-row {{ display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }}
+  .journey-avatar {{
+    width: 54px;
+    height: 54px;
+    border-radius: 20px;
+    background: linear-gradient(180deg, #fff 0%, #e0f2fe 100%);
+    border: 1px solid rgba(255,255,255,.92);
+    box-shadow: var(--app-icon-shadow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.18rem;
+    font-weight: 900;
+    color: #334155;
+    flex-shrink: 0;
+  }}
+  .journey-hello {{ font-size: 1.08rem; line-height: 1.35; font-weight: 900; color: #111827; }}
+  .journey-hero-text {{ font-size: .82rem; line-height: 1.65; color: #475569; }}
+  .journey-robot {{
+    width: 94px;
+    height: 94px;
+    border-radius: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    justify-self: end;
+    font-size: 2.3rem;
+    background: linear-gradient(180deg, #ffffff 0%, #ddd6fe 100%);
+    border: 1px solid rgba(255,255,255,.95);
+    box-shadow: 0 18px 30px rgba(124,58,237,.18), inset 0 1px 0 rgba(255,255,255,.94);
+  }}
+  .status-alert-row {{ display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }}
+  .status-alert-chip {{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px;
+    border-radius: 999px;
+    font-size: .76rem;
+    font-weight: 850;
+    background: #fff7ed;
+    color: #c2410c;
+    border: 1px solid #fed7aa;
+  }}
+  .status-alert-chip.good {{ background: #ecfdf5; color: #047857; border-color: #a7f3d0; }}
+  .status-alert-chip.warn {{ background: #fffbeb; color: #b45309; border-color: #fde68a; }}
+  .status-alert-chip.alert {{ background: #fff7ed; color: #c2410c; border-color: #fed7aa; }}
+  .journey-section-kicker {{ font-size: .75rem; font-weight: 850; color: #8b5cf6; margin-bottom: 4px; }}
+  .journey-section-title {{ font-size: .98rem; font-weight: 900; color: #0f172a; }}
+  .journey-section-copy {{ margin-top: 4px; font-size: .78rem; line-height: 1.55; color: #64748b; }}
+  .journey-status-grid {{ display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; margin-top: 12px; }}
+  .execution-card {{
+    min-height: 128px;
+    border-radius: 17px;
+    padding: 12px;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    box-shadow: 0 8px 16px rgba(15,23,42,.04);
+  }}
+  .execution-card.good {{ background: linear-gradient(180deg, #f0fdf4 0%, #fff 100%); border-color: #bbf7d0; }}
+  .execution-card.warn {{ background: linear-gradient(180deg, #fffbeb 0%, #fff 100%); border-color: #fde68a; }}
+  .execution-card.alert {{ background: linear-gradient(180deg, #fff7ed 0%, #fff 100%); border-color: #fed7aa; }}
+  .execution-card-top {{ display: flex; align-items: center; justify-content: space-between; gap: 8px; }}
+  .execution-icon {{ font-size: 1.35rem; line-height: 1; }}
+  .execution-status {{ font-size: .7rem; font-weight: 850; color: #64748b; white-space: nowrap; }}
+  .execution-title {{ margin-top: 10px; font-size: .8rem; font-weight: 850; color: #475569; }}
+  .execution-detail {{ margin-top: 5px; font-size: .82rem; line-height: 1.55; color: #0f172a; font-weight: 700; }}
+  .signal-mini-grid {{ display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; margin-top: 12px; }}
+  .signal-mini-card {{
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    background: linear-gradient(180deg, #fbfdff 0%, #f8fafc 100%);
+    padding: 12px 10px;
+    min-height: 92px;
+  }}
+  .signal-mini-icon {{ font-size: 1.15rem; }}
+  .signal-mini-label {{ margin-top: 7px; font-size: .73rem; color: #64748b; font-weight: 800; }}
+  .signal-mini-value {{ margin-top: 4px; font-size: 1rem; color: #0f172a; font-weight: 900; line-height: 1.2; }}
+  .signal-mini-unit {{ margin-top: 2px; font-size: .68rem; color: #94a3b8; font-weight: 750; }}
+  .journey-segment {{
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0,1fr));
+    gap: 4px;
+    padding: 4px;
+    border-radius: 14px;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 14px;
+  }}
+  .journey-segment span {{
+    text-align: center;
+    border-radius: 11px;
+    padding: 7px 4px;
+    font-size: .73rem;
+    color: #64748b;
+    font-weight: 850;
+  }}
+  .journey-segment .active {{
+    color: #6d28d9;
+    background: linear-gradient(180deg, #fff 0%, #ede9fe 100%);
+    box-shadow: 0 7px 14px rgba(124,58,237,.1);
+  }}
+  .journey-task {{
+    display: grid;
+    grid-template-columns: 34px minmax(0,1fr) 58px;
+    gap: 12px;
+    align-items: center;
+    border-radius: 18px;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    padding: 13px;
+    margin-bottom: 11px;
+    box-shadow: 0 9px 18px rgba(15,23,42,.045);
+  }}
+  .journey-task-index {{
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: .9rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+    box-shadow: 0 10px 18px rgba(124,58,237,.2);
+  }}
+  .journey-task-title {{ font-size: .94rem; line-height: 1.45; font-weight: 900; color: #111827; }}
+  .journey-task-reason {{ margin-top: 5px; font-size: .75rem; line-height: 1.55; color: #f97316; font-weight: 750; }}
+  .journey-task-actions {{
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 12px;
+    max-width: 220px;
+  }}
+  .journey-task-visual {{ text-align: center; font-size: 2rem; line-height: 1; }}
+  .journey-record-btn {{
+    border: none;
+    border-radius: 999px;
+    padding: 8px 13px;
+    color: #fff;
+    background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+    font-size: .76rem;
+    font-weight: 850;
+    box-shadow: 0 10px 18px rgba(124,58,237,.18);
+  }}
+  .journey-record-btn.liked {{
+    background: linear-gradient(135deg, #10b981, #059669);
+    box-shadow: 0 0 0 3px rgba(16,185,129,.15);
+  }}
+  .assistant-note {{
+    display: grid;
+    grid-template-columns: 48px minmax(0,1fr);
+    gap: 10px;
+    align-items: center;
+    border-radius: 18px;
+    padding: 12px;
+    background: linear-gradient(135deg, #f5f3ff 0%, #eef2ff 100%);
+    border: 1px solid #ddd6fe;
+    color: #4338ca;
+    font-size: .82rem;
+    line-height: 1.65;
+    font-weight: 750;
+  }}
+  .assistant-note-icon {{
+    width: 42px;
+    height: 42px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    box-shadow: var(--app-icon-shadow);
+    font-size: 1.4rem;
+  }}
+  .nutrition-focus-row {{ display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; margin-top: 12px; }}
+  .nutrition-focus-pill {{ text-align: center; min-width: 0; }}
+  .nutrition-focus-icon {{
+    width: 50px;
+    height: 50px;
+    margin: 0 auto;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #ddd6fe;
+    background: linear-gradient(180deg, #fff 0%, #f5f3ff 100%);
+    box-shadow: 0 8px 16px rgba(124,58,237,.08);
+    font-size: 1.3rem;
+  }}
+  .nutrition-focus-title {{ margin-top: 7px; font-size: .74rem; line-height: 1.3; font-weight: 850; color: #0f172a; }}
+  .nutrition-focus-copy {{ margin-top: 2px; font-size: .65rem; line-height: 1.35; color: #64748b; }}
+  .meal-suggestion {{
+    display: grid;
+    grid-template-columns: 78px minmax(0,1fr);
+    gap: 12px;
+    align-items: center;
+  }}
+  .meal-suggestion-art {{
+    height: 78px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, #fff7ed 0%, #ecfdf5 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.2rem;
+    border: 1px solid #e2e8f0;
+  }}
+  .meal-suggestion-title {{ font-size: .95rem; font-weight: 900; color: #0f172a; line-height: 1.45; }}
+  .meal-suggestion-copy {{ margin-top: 5px; font-size: .78rem; line-height: 1.55; color: #64748b; }}
+  .diet-table-compact table {{ min-width: 520px; }}
+  .diet-advice-list {{
+    display: grid;
+    gap: 10px;
+    margin-top: 12px;
+  }}
+  .diet-advice-card {{
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    background: linear-gradient(180deg, #fff 0%, #fbfcff 100%);
+    padding: 13px;
+  }}
+  .diet-advice-head {{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 9px;
+  }}
+  .diet-advice-title {{
+    font-size: .88rem;
+    font-weight: 900;
+    color: #111827;
+  }}
+  .diet-advice-principle {{
+    font-size: .72rem;
+    font-weight: 800;
+    color: #4f46e5;
+    background: #eef2ff;
+    border: 1px solid #e0e7ff;
+    border-radius: 999px;
+    padding: 5px 8px;
+    white-space: nowrap;
+  }}
+  .diet-advice-grid {{
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }}
+  .diet-advice-column {{
+    border-radius: 13px;
+    background: #f8fafc;
+    border: 1px solid #edf0f4;
+    padding: 10px;
+  }}
+  .diet-advice-label {{
+    font-size: .68rem;
+    font-weight: 900;
+    color: #64748b;
+    margin-bottom: 5px;
+  }}
+  .diet-advice-copy {{
+    font-size: .76rem;
+    line-height: 1.55;
+    color: #334155;
+    font-weight: 700;
+  }}
+  .journey-page[data-page="nutrition"] #mealContent .grid {{
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }}
+  .journey-page[data-page="nutrition"] #mealContent .meal-card {{
+    display: grid !important;
+    grid-template-columns: 34px minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 10px;
+    border-radius: 16px !important;
+    padding: 12px !important;
+  }}
+  .journey-page[data-page="nutrition"] #mealContent .meal-card .feedback-actions {{
+    flex-direction: column;
+    min-width: 86px;
+  }}
+  .why-stack {{ display: grid; gap: 11px; }}
+  .why-stack .sub-card {{
+    margin-bottom: 0;
+    border-radius: 18px;
+    background: #fff;
+  }}
+  .why-footer-note {{
+    margin-top: 12px;
+    border-radius: 18px;
+    padding: 12px 14px;
+    background: linear-gradient(135deg, #f5f3ff 0%, #eef2ff 100%);
+    border: 1px solid #ddd6fe;
+    color: #4338ca;
+    font-size: .82rem;
+    line-height: 1.7;
+    font-weight: 750;
+  }}
+  .app-footer {{
+    position: fixed;
+    left: 50%;
+    bottom: 0;
+    transform: translateX(-50%);
+    width: min(100vw, 460px);
+    margin: 0;
+    z-index: 55;
+  }}
+  .bottom-tab.center {{
+    margin-top: -22px;
+  }}
+  .bottom-tab.center .bottom-tab-icon {{
+    width: 58px;
+    height: 58px;
+    margin: 0 auto -4px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 1.55rem;
+    background: radial-gradient(circle at 35% 25%, #c4b5fd 0%, #8b5cf6 46%, #6d28d9 100%);
+    border: 4px solid rgba(255,255,255,.96);
+    box-shadow: 0 16px 28px rgba(124,58,237,.34);
+  }}
+  .bottom-tab.center.active {{ background: transparent; }}
+  .bottom-tab.center.active .bottom-tab-label {{ color: #6d28d9; }}
+  .trend-range-tabs {{ grid-template-columns: repeat(auto-fit, minmax(0,1fr)); width: 100%; }}
+  .trend-chart path.trend-area {{ opacity: .88; }}
+  .trend-point-readout {{
+    display: inline-flex;
+    align-items: center;
+    width: max-content;
+    max-width: 100%;
+    font-size: .75rem;
+    line-height: 1.4;
+    color: #334155;
+    font-weight: 800;
+    margin-top: 8px;
+    padding: 5px 9px;
+    border-radius: 999px;
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+  }}
+  .trend-point-dot {{
+    transition: opacity .16s ease, r .16s ease;
+    cursor: pointer;
+  }}
+  .trend-point-dot.active {{
+    opacity: 1;
+  }}
+  .trend-selected-dot {{
+    transition: cx .16s ease, cy .16s ease;
+  }}
+  .meal-day-tab {{
+    border: none;
+    border-radius: 999px;
+    padding: 7px 12px;
+    font-size: .74rem;
+    font-weight: 800;
+    color: #64748b;
+    background: #f8fafc;
+    transition: background .16s ease, color .16s ease, box-shadow .16s ease;
+    white-space: nowrap;
+  }}
+  .meal-day-tab.active {{
+    color: #fff;
+    background: #4f46e5;
+    box-shadow: 0 8px 16px rgba(79,70,229,.18);
+  }}
+  .meal-reason {{
+    color: #64748b;
+    font-weight: 650;
+  }}
+  body {{
+    background: #f4f6fa;
+  }}
+  body::before, .app-shell::before {{
+    display: none;
+  }}
+  .app-shell {{
+    background: #f4f6fa;
+  }}
+  .journey-topbar {{
+    display: block;
+    min-height: auto;
+    padding: 16px 16px 10px;
+    background: rgba(255,255,255,.86);
+    border-bottom: 1px solid #e8ecf2;
+  }}
+  .topbar-title {{
+    text-align: left;
+  }}
+  .topbar-name {{
+    font-size: 1.08rem;
+    letter-spacing: 0;
+  }}
+  .topbar-subtitle {{
+    color: #64748b;
+    letter-spacing: .04em;
+  }}
+  .journey-card {{
+    border-radius: 16px;
+    border-color: #e6eaf0;
+    background: #fff;
+    box-shadow: 0 8px 18px rgba(15,23,42,.045);
+  }}
+  .journey-hero {{
+    min-height: 0;
+    grid-template-columns: 1fr;
+    border-color: #e6eaf0;
+    background: #fff;
+    box-shadow: 0 8px 18px rgba(15,23,42,.045);
+  }}
+  .journey-avatar {{
+    border-radius: 16px;
+    background: #f8fafc;
+    box-shadow: none;
+    color: #0f172a;
+  }}
+  .journey-robot {{
+    display: none;
+  }}
+  .context-chip {{
+    background: #f8fafc;
+    border-color: #e5e7eb;
+    box-shadow: none;
+    color: #475569;
+  }}
+  .status-alert-chip {{
+    background: #fff;
+    border-color: #e5e7eb;
+    color: #475569;
+  }}
+  .status-alert-chip.good {{ background: #fff; color: #047857; border-color: #d1d5db; }}
+  .status-alert-chip.warn {{ background: #fff; color: #92400e; border-color: #d1d5db; }}
+  .status-alert-chip.alert {{ background: #fff; color: #9a3412; border-color: #d1d5db; }}
+  .journey-section-kicker {{
+    color: #4f46e5;
+  }}
+  .execution-card, .execution-card.good, .execution-card.warn, .execution-card.alert {{
+    background: #fff;
+    border-color: #e5e7eb;
+    box-shadow: none;
+  }}
+  .execution-card.warn {{ border-left: 3px solid #d97706; }}
+  .execution-card.alert {{ border-left: 3px solid #ea580c; }}
+  .execution-card.good {{ border-left: 3px solid #059669; }}
+  .signal-mini-card {{
+    background: #fff;
+    box-shadow: none;
+  }}
+  .journey-task {{
+    border-radius: 16px;
+    box-shadow: none;
+  }}
+  .journey-task-index, .journey-record-btn {{
+    background: #4f46e5;
+    box-shadow: 0 8px 16px rgba(79,70,229,.16);
+  }}
+  .journey-record-btn.liked {{
+    background: #0f172a;
+    box-shadow: none;
+  }}
+  .journey-task-actions .feedback-btn {{
+    min-width: 0;
+    width: 100%;
+    min-height: 38px;
+  }}
+  .journey-task-actions .feedback-btn.like {{
+    color: #4f46e5;
+    border-color: #c7d2fe;
+    background: #fff;
+  }}
+  .journey-task-actions .feedback-btn.like:hover {{
+    background: #eef2ff;
+  }}
+  .journey-task-actions .feedback-btn.liked {{
+    color: #fff;
+    background: #4f46e5;
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79,70,229,.12);
+  }}
+  .journey-task-reason {{
+    color: #64748b;
+  }}
+  .assistant-note {{
+    display: block;
+    background: #f8fafc;
+    border-color: #e5e7eb;
+    color: #334155;
+  }}
+  .assistant-note-icon {{
+    box-shadow: none;
+  }}
+  .nutrition-focus-icon {{
+    border-color: #e5e7eb;
+    background: #f8fafc;
+    box-shadow: none;
+  }}
+  .meal-suggestion-art {{
+    background: #f8fafc;
+  }}
+  .journey-page[data-page="nutrition"] #mealContent .meal-card {{
+    background: #fff !important;
+    border-color: #e5e7eb !important;
+    box-shadow: none !important;
+  }}
+  .journey-page[data-page="nutrition"] .feedback-btn.like {{
+    background: #fff;
+    color: #4f46e5;
+    border-color: #c7d2fe;
+  }}
+  .journey-page[data-page="nutrition"] .feedback-btn.like:hover {{
+    background: #eef2ff;
+  }}
+  .journey-page[data-page="nutrition"] .feedback-btn.liked {{
+    background: #4f46e5;
+    color: #fff;
+    border-color: #4f46e5;
+  }}
+  .app-footer {{
+    border-top: 1px solid #e8ecf2;
+    border-left: none;
+    border-right: none;
+    border-radius: 0;
+    background: rgba(255,255,255,.92);
+    box-shadow: 0 -8px 18px rgba(15,23,42,.045);
+  }}
+  .bottom-tab {{
+    border-radius: 12px;
+    padding: 8px 4px;
+  }}
+  .bottom-tab.active {{
+    background: #eef2ff;
+  }}
+  .bottom-tab-icon {{
+    color: #64748b;
+    font-size: 1rem;
+  }}
+  .bottom-tab.active .bottom-tab-icon,
+  .bottom-tab.active .bottom-tab-label {{
+    color: #4f46e5;
+  }}
+  .bottom-tab.center {{
+    margin-top: 0;
+  }}
+  .bottom-tab.center .bottom-tab-icon {{
+    width: auto;
+    height: auto;
+    margin: 0;
+    border-radius: 0;
+    color: #64748b;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    font-size: 1rem;
+  }}
+  .bottom-tab.center.active .bottom-tab-icon {{
+    color: #4f46e5;
+  }}
   .submit-cta-shell {{
     position: sticky;
     bottom: calc(14px + env(safe-area-inset-bottom, 0px));
@@ -1017,48 +1582,20 @@
 <body class="app-body text-slate-800">
 <div class="app-shell max-w-md mx-auto px-0 py-0 {layout_class}" style="min-height:100vh">
 
-  <!-- App Header (compact, sticky) -->
-  <div class="app-header sticky top-0 z-50 px-4 py-3 shadow-sm">
-    <div class="flex items-center justify-between">
-      <div>
-        <p class="text-[11px] font-bold text-violet-600 tracking-[0.16em] uppercase">我的健康助手</p>
-        <h1 class="text-lg font-bold text-slate-900 mt-1">{header_greeting}</h1>
-        <p class="text-xs text-slate-500">{current_time}</p>
-      </div>
-      <span class="status-pill inline-flex items-center gap-1 {status_badge_class} px-3 py-1.5 rounded-full text-xs font-semibold">{status_icon} {status_text}</span>
-    </div>
-    <div class="flex gap-1.5 mt-2 flex-wrap">{condition_badges}</div>
-  </div>
-
-  {hero_intro_html}
-  {quick_nav_html}
-  {status_dashboard_html}
-  {priority_plan_html}
-  {nutrition_spotlight_html}
-  {hero_vitals_html}
-  {top_overview_html}
-  {trend_story_html}
-
-  <!-- Escalation Banners -->
-  <div class="px-3 pt-3">{escalation_html}</div>
-
-  <!-- AI Message (modular sub-cards) -->
-  <div class="px-3 pt-3 pb-1">
-    <div class="ai-panel rounded-[28px] p-3 shadow-sm">
-      <div class="flex items-center gap-2 mb-2 px-1">
-        <span class="ai-panel-kicker text-base">🤖</span>
-        <span class="text-xs font-bold text-slate-600 uppercase tracking-wide">AI 洞察</span>
-      </div>
-      {ai_message_html}
+  <div class="journey-topbar">
+    <div class="topbar-title">
+      <div class="topbar-name">照护旅程</div>
+      <div class="topbar-subtitle">Care Journey</div>
     </div>
   </div>
 
-  <!-- Cards -->
-  <div class="px-3 pt-2 pb-3">
-    {cards_html}
+  <div class="journey-pages">
+    {home_page_html}
+    {plan_page_html}
+    {nutrition_page_html}
+    {trend_page_html}
+    {why_page_html}
   </div>
-
-  {submit_cta_html}
 
   <!-- Guardrail (slim footer) -->
   <div class="footer-disclaimer">{guardrail}</div>
@@ -1072,9 +1609,22 @@
 const DAYS = ["周一","周二","周三","周四","周五","周六","周日"];
 const MEAL_LABELS = {{"breakfast":"早餐","lunch":"午餐","dinner":"晚餐"}};
 const rawMeals = {meal_data_json};
-const meals = DAYS.map((d, i) => ({{ ...rawMeals[i % rawMeals.length], day: d }}));
+const mealSource = Array.isArray(rawMeals) ? rawMeals : [];
+const meals = mealSource.map((item, i) => {{
+  const source = item && typeof item === "object" ? item : {{}};
+  return {{ ...source, day: source.day || DAYS[i] || `第${{i + 1}}天` }};
+}});
 const TREND_DATA = {trend_data_json};
 let activeDay = 0;
+
+function escapeHtml(value) {{
+  const chars = {{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}};
+  return String(value ?? "").replace(/[&<>"']/g, ch => chars[ch]);
+}}
+
+function encodeInlineValue(value) {{
+  return encodeURIComponent(String(value ?? "")).replace(/'/g, "%27");
+}}
 
 const MEAL_FEEDBACK_REASONS = [
   "不喜欢口味",
@@ -1090,7 +1640,7 @@ const GENERAL_FEEDBACK_REASONS = [
   "不同意这个建议",
   "其他"
 ];
-const FEEDBACK_STORAGE_KEY = "mealFeedback_zh";
+const FEEDBACK_STORAGE_KEY = "careJourneyFeedback_zh_v1";
 const CUISINE_STORAGE_KEY = "cuisinePrefs_zh";
 let feedbackStore = JSON.parse(localStorage.getItem(FEEDBACK_STORAGE_KEY) || "{{}}");
 const pendingFeedbackSubmits = {{}};
@@ -1110,7 +1660,7 @@ function clearFeedbackEntry(dayIdx, mealType, itemName) {{
 
 function applyStaticButtonState(sourceEl, sentiment) {{
   if (!sourceEl) return;
-  const group = sourceEl.closest(".priority-task-actions, .feedback-actions");
+  const group = sourceEl.closest(".priority-task-actions, .feedback-actions, .journey-task");
   if (!group) return;
   group.querySelectorAll("button").forEach(function(btn) {{
     const isSecondary = btn.classList.contains("secondary") || btn.classList.contains("feedback-skip");
@@ -1149,6 +1699,7 @@ function hydrateStaticFeedbackStates() {{
   document.querySelectorAll("[data-day-idx][data-meal-type][data-item-name]").forEach(function(btn) {{
     const dayIdx = Number(btn.dataset.dayIdx);
     const mealType = btn.dataset.mealType;
+    if (dayIdx < 0 && mealType === "priority") return;
     const itemName = btn.dataset.itemName;
     const feedback = getFeedback(dayIdx, mealType, itemName);
     if (feedback) applyStaticButtonState(btn, feedback.sentiment);
@@ -1158,7 +1709,8 @@ function hydrateStaticFeedbackStates() {{
 function saveLike(dayIdx, mealType, itemName, sourceEl) {{
   const key = `${{dayIdx}}-${{mealType}}-${{itemName}}`;
   const existing = feedbackStore[key];
-  if (existing && existing.sentiment === "like") {{
+  const isActive = sourceEl && (sourceEl.classList.contains("liked") || sourceEl.classList.contains("active"));
+  if (existing && existing.sentiment === "like" && isActive) {{
     clearFeedbackEntry(dayIdx, mealType, itemName);
     if (dayIdx < 0) clearStaticButtonState(sourceEl);
     renderMeals();
@@ -1176,6 +1728,14 @@ function getFeedback(dayIdx, mealType, itemName) {{
   return feedbackStore[`${{dayIdx}}-${{mealType}}-${{itemName}}`];
 }}
 
+function saveLikeFromButton(button) {{
+  saveLike(Number(button.dataset.dayIdx), button.dataset.mealType, button.dataset.itemName, button);
+}}
+
+function showFeedbackModalFromButton(button) {{
+  showFeedbackModal(Number(button.dataset.dayIdx), button.dataset.mealType, button.dataset.itemName, button);
+}}
+
 function buildPreferencePayload() {{
   const likes = [];
   const dislikes = [];
@@ -1188,14 +1748,14 @@ function buildPreferencePayload() {{
     cuisine: name, ...meta
   }}));
   return {{
-    user_id: "{patient_id}",
+    user_id: {patient_id_json},
     data_type: "scenario",
     language: "zh",
     timestamp: new Date().toISOString(),
     data: {{
       bundle: {{
         type: "user_preference",
-        report_time: "{current_time}",
+        report_time: {current_time_json},
         total_feedback: likes.length + dislikes.length,
         cuisine_preferences: selectedCuisines,
         liked: likes,
@@ -1280,8 +1840,8 @@ function showFeedbackModal(dayIdx, mealType, itemName, sourceEl) {{
   modal.innerHTML = `
     <div class="feedback-modal-box">
       <div class="text-sm font-bold text-slate-800 mb-1">${{title}}</div>
-      <div class="text-xs text-slate-500 mb-3">${{displayName}}</div>
-      ${{reasons.map(r => `<button class="feedback-reason" data-reason="${{r}}">${{r}}</button>`).join('')}}
+      <div class="text-xs text-slate-500 mb-3">${{escapeHtml(displayName)}}</div>
+      ${{reasons.map(r => `<button class="feedback-reason" data-reason="${{escapeHtml(r)}}">${{escapeHtml(r)}}</button>`).join('')}}
       <button class="feedback-reason" style="color:#94a3b8;border-color:#e2e8f0;margin-top:8px" data-reason="__cancel__">取消</button>
     </div>`;
   modal.addEventListener('click', function(e) {{
@@ -1299,9 +1859,11 @@ function showFeedbackModal(dayIdx, mealType, itemName, sourceEl) {{
 
 function renderTabs() {{
   const container = document.getElementById("dayTabs");
-  container.innerHTML = DAYS.map((d, i) =>
-    `<button onclick="switchDay(${{i}})" class="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${{i === activeDay ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}}">${{d}}</button>`
-  ).join("");
+  if (!container) return;
+  container.innerHTML = meals.map((day, i) => {{
+    const label = day.day || DAYS[i] || `第${{i + 1}}天`;
+    return `<button onclick="switchDay(${{i}})" class="meal-day-tab ${{i === activeDay ? 'active' : ''}}">${{escapeHtml(label)}}</button>`;
+  }}).join("");
 }}
 
 function switchDay(i) {{
@@ -1311,8 +1873,10 @@ function switchDay(i) {{
 }}
 
 function renderMeals() {{
+  const container = document.getElementById("mealContent");
+  if (!container) return;
   const day = meals[activeDay];
-  if (!day) {{ document.getElementById("mealContent").innerHTML = '<p class="text-sm text-slate-400">暂无数据</p>'; return; }}
+  if (!day) {{ container.innerHTML = '<p class="text-sm text-slate-400">暂无数据</p>'; return; }}
   let html = "";
   for (const [key, label] of Object.entries(MEAL_LABELS)) {{
     const items = day[key] || [];
@@ -1322,27 +1886,28 @@ function renderMeals() {{
       const fb = getFeedback(activeDay, key, it.name);
       const likeClass = fb && fb.sentiment === "like" ? "liked" : "";
       const dislikeClass = fb && fb.sentiment === "dislike" ? "disliked" : "";
-      const safeName = it.name.replace(/'/g, "&#39;");
+      const itemName = String(it.name || "");
+      const safeName = encodeInlineValue(itemName);
       const reason = it.adc_reason || (
         it.condition && it.benefit
           ? "适合" + it.condition + "：" + it.benefit
           : (it.benefit || "")
       );
       html += `<div class="meal-card flex items-start gap-3 bg-slate-50 rounded-lg p-3 border border-slate-100">
-        <span class="text-2xl mt-0.5">${{it.icon || "🍽️"}}</span>
+        <span class="text-2xl mt-0.5">${{escapeHtml(it.icon || "🍽️")}}</span>
         <div class="flex-1 min-w-0">
-          <div class="text-sm font-semibold text-slate-800">${{it.name}}</div>
-          <div class="text-xs text-emerald-600 mt-0.5 leading-relaxed italic">${{reason}}</div>
+          <div class="text-sm font-semibold text-slate-800">${{escapeHtml(itemName)}}</div>
+          <div class="text-xs meal-reason mt-0.5 leading-relaxed">${{escapeHtml(reason)}}</div>
         </div>
         <div class="feedback-actions">
-          <button class="feedback-btn like ${{likeClass}}" title="保留这条膳食建议" onclick="saveLike(${{activeDay}},'${{key}}','${{safeName}}', this)">适合我</button>
-          <button class="feedback-btn feedback-skip ${{dislikeClass}}" title="这个不适合我" onclick="showFeedbackModal(${{activeDay}},'${{key}}','${{safeName}}', this)">不适合</button>
+          <button class="feedback-btn like ${{likeClass}}" title="保留这条膳食建议" onclick="saveLike(${{activeDay}},'${{key}}',decodeURIComponent('${{safeName}}'), this)">适合我</button>
+          <button class="feedback-btn feedback-skip ${{dislikeClass}}" title="这个不适合我" onclick="showFeedbackModal(${{activeDay}},'${{key}}',decodeURIComponent('${{safeName}}'), this)">不适合</button>
         </div>
       </div>`;
     }}
     html += "</div></div>";
   }}
-  document.getElementById("mealContent").innerHTML = html;
+  container.innerHTML = html;
 }}
 
 // ─── Cuisine Preferences ───
@@ -1350,6 +1915,27 @@ function jumpToSection(sectionId) {{
   const target = document.getElementById(sectionId);
   if (!target) return;
   target.scrollIntoView({{ behavior: "smooth", block: "start" }});
+}}
+
+function switchJourneyPage(pageKey, instant) {{
+  const key = String(pageKey || "home");
+  document.querySelectorAll(".journey-page").forEach(function(page) {{
+    page.classList.toggle("active", page.dataset.page === key);
+  }});
+  document.querySelectorAll("[data-page-target]").forEach(function(btn) {{
+    btn.classList.toggle("active", btn.dataset.pageTarget === key);
+  }});
+  if (key === "nutrition") {{
+    renderCuisineChips();
+    renderTabs();
+    renderMeals();
+  }}
+  if (key === "trends") {{
+    const activeRange = document.querySelector(".trend-range-btn.active");
+    const nextRange = activeRange ? activeRange.dataset.range : Object.keys(TREND_DATA || {{}})[0];
+    if (nextRange) renderTrendRange(nextRange);
+  }}
+  if (!instant) window.scrollTo({{ top: 0, behavior: "smooth" }});
 }}
 
 function buildTrendSparkline(values, color) {{
@@ -1365,9 +1951,24 @@ function buildTrendSparkline(values, color) {{
     const y = height - pad - ((val - min) / span) * (height - pad * 2);
     return [x, y];
   }});
-  const line = points.map(([x, y]) => `${{x.toFixed(1)}},${{y.toFixed(1)}}`).join(" ");
-  const area = `0,${{height}} ` + points.map(([x, y]) => `${{x.toFixed(1)}},${{y.toFixed(1)}}`).join(" ") + ` ${{width}},${{height}}`;
+  function smoothPath(items) {{
+    if (items.length === 1) return `M ${{items[0][0].toFixed(1)}} ${{items[0][1].toFixed(1)}}`;
+    let d = `M ${{items[0][0].toFixed(1)}} ${{items[0][1].toFixed(1)}}`;
+    for (let i = 0; i < items.length - 1; i++) {{
+      const [x0, y0] = items[i];
+      const [x1, y1] = items[i + 1];
+      const dx = (x1 - x0) * 0.45;
+      d += ` C ${{(x0 + dx).toFixed(1)}} ${{y0.toFixed(1)}}, ${{(x1 - dx).toFixed(1)}} ${{y1.toFixed(1)}}, ${{x1.toFixed(1)}} ${{y1.toFixed(1)}}`;
+    }}
+    return d;
+  }}
+  const line = smoothPath(points);
+  const area = `${{line}} L ${{width}} ${{height}} L 0 ${{height}} Z`;
   const last = points[points.length - 1];
+  const dots = points.map(([x, y], idx) => {{
+    const isActive = idx === points.length - 1;
+    return `<circle class="trend-point-dot ${{isActive ? 'active' : ''}}" data-point-index="${{idx}}" onclick="setTrendPointFromDot(this)" cx="${{x.toFixed(1)}}" cy="${{y.toFixed(1)}}" r="${{isActive ? '3.3' : '2.4'}}" fill="#fff" stroke="${{color}}" stroke-width="1.7" opacity="${{isActive ? '1' : '.62'}}"></circle>`;
+  }}).join("");
   const gradId = "trendFill" + Math.abs(color.split("").reduce((sum, ch) => sum + ch.charCodeAt(0), 0));
   return `
     <svg class="trend-chart" viewBox="0 0 ${{width}} ${{height}}" preserveAspectRatio="none" aria-hidden="true">
@@ -1377,14 +1978,44 @@ function buildTrendSparkline(values, color) {{
           <stop offset="100%" stop-color="${{color}}" stop-opacity="0"></stop>
         </linearGradient>
       </defs>
-      <polyline points="${{area}}" fill="url(#${{gradId}})" stroke="none"></polyline>
-      <polyline points="${{line}}" fill="none" stroke="${{color}}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></polyline>
-      <circle cx="${{last[0].toFixed(1)}}" cy="${{last[1].toFixed(1)}}" r="4.5" fill="#fff" stroke="${{color}}" stroke-width="2"></circle>
+      <path class="trend-area" d="${{area}}" fill="url(#${{gradId}})" stroke="none"></path>
+      <path d="${{line}}" fill="none" stroke="${{color}}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
+      ${{dots}}
+      <circle class="trend-selected-dot" cx="${{last[0].toFixed(1)}}" cy="${{last[1].toFixed(1)}}" r="5.2" fill="#fff" stroke="${{color}}" stroke-width="2.3"></circle>
     </svg>`;
 }}
 
+function updateTrendPoint(sourceEl, forcedIndex) {{
+  const card = sourceEl.closest(".trend-metric-card");
+  if (!card) return;
+  const rangeKey = card.dataset.rangeKey;
+  const metricIndex = Number(card.dataset.metricIndex || 0);
+  const pointIndex = Number(forcedIndex ?? sourceEl.dataset.pointIndex ?? 0);
+  const metric = (TREND_DATA[rangeKey] && TREND_DATA[rangeKey].metrics || [])[metricIndex] || {{}};
+  const point = (metric.points || [])[pointIndex];
+  const readout = card.querySelector(".trend-point-readout");
+  if (readout && point) readout.textContent = `${{point.label || ""}} · ${{point.display || point.value || ""}}`;
+
+  card.querySelectorAll(".trend-point-dot").forEach(function(dot) {{
+    const active = Number(dot.dataset.pointIndex || 0) === pointIndex;
+    dot.classList.toggle("active", active);
+    dot.setAttribute("r", active ? "3.3" : "2.4");
+    dot.setAttribute("opacity", active ? "1" : ".62");
+  }});
+  const selected = card.querySelector(".trend-selected-dot");
+  const dot = card.querySelector(`.trend-point-dot[data-point-index="${{pointIndex}}"]`);
+  if (selected && dot) {{
+    selected.setAttribute("cx", dot.getAttribute("cx"));
+    selected.setAttribute("cy", dot.getAttribute("cy"));
+  }}
+}}
+
+function setTrendPointFromDot(dot) {{
+  updateTrendPoint(dot, Number(dot.dataset.pointIndex || 0));
+}}
+
 function renderTrendRange(rangeKey) {{
-  const data = TREND_DATA[String(rangeKey)] || TREND_DATA["14"];
+  const data = TREND_DATA[String(rangeKey)];
   if (!data) return;
   document.querySelectorAll(".trend-range-btn").forEach(function(btn) {{
     btn.classList.toggle("active", btn.dataset.range === String(rangeKey));
@@ -1393,10 +2024,14 @@ function renderTrendRange(rangeKey) {{
   const chip = document.getElementById("trendInsightChip");
   if (chip && data.insight) chip.textContent = data.insight;
   if (!shell) return;
-  shell.innerHTML = (data.metrics || []).map(function(metric) {{
+  shell.innerHTML = (data.metrics || []).map(function(metric, metricIndex) {{
     const deltaColor = metric.delta_direction === "down" ? "#f97316" : (metric.delta_direction === "up" ? "#10b981" : "#64748b");
+    const points = metric.points || [];
+    const lastPointIndex = Math.max(points.length - 1, 0);
+    const lastPoint = points[lastPointIndex] || null;
+    const readout = points.length ? `<div class="trend-point-readout">${{lastPoint ? `${{lastPoint.label || ""}} · ${{lastPoint.display || lastPoint.value || ""}}` : ""}}</div>` : "";
     return `
-      <div class="trend-metric-card">
+      <div class="trend-metric-card" data-range-key="${{String(rangeKey)}}" data-metric-index="${{metricIndex}}">
         <div class="trend-metric-top">
           <div class="trend-metric-kicker">
             <div class="trend-metric-icon">${{metric.icon}}</div>
@@ -1408,10 +2043,14 @@ function renderTrendRange(rangeKey) {{
           <div class="trend-metric-delta" style="color:${{deltaColor}}">${{metric.delta}}</div>
         </div>
         <div class="trend-metric-copy">${{metric.copy}}</div>
+        ${{readout}}
         ${{buildTrendSparkline(metric.values || [], metric.color || "#8b5cf6")}}
         <div class="trend-axis"><span>${{data.axis_start || ""}}</span><span>${{data.axis_end || ""}}</span></div>
       </div>`;
   }}).join("");
+  shell.querySelectorAll(".trend-point-dot.active").forEach(function(dot) {{
+    updateTrendPoint(dot, Number(dot.dataset.pointIndex || 0));
+  }});
 }}
 
 const DEFAULT_CUISINES = [
@@ -1437,7 +2076,8 @@ function renderCuisineChips() {{
   }}
   container.innerHTML = allCuisines.map(c => {{
     const sel = cuisinePrefs[c.name] ? "selected" : "";
-    return `<span class="cuisine-chip ${{sel}}" onclick="toggleCuisine('${{c.name.replace(/'/g,"&#39;")}}')">${{c.icon}} ${{c.name}}<span class="chip-x" onclick="event.stopPropagation();removeCuisine('${{c.name.replace(/'/g,"&#39;")}}')">✕</span></span>`;
+    const safeName = encodeInlineValue(c.name);
+    return `<span class="cuisine-chip ${{sel}}" onclick="toggleCuisine(decodeURIComponent('${{safeName}}'))">${{escapeHtml(c.icon)}} ${{escapeHtml(c.name)}}<span class="chip-x" onclick="event.stopPropagation();removeCuisine(decodeURIComponent('${{safeName}}'))">✕</span></span>`;
   }}).join("");
   updateExportBadge();
 }}
@@ -1485,16 +2125,21 @@ function addCustomCuisine() {{
   renderCuisineChips();
 }}
 
-document.getElementById("customCuisineInput").addEventListener("keydown", function(e) {{
-  if (e.key === "Enter") {{ e.preventDefault(); addCustomCuisine(); }}
-}});
+const customCuisineInput = document.getElementById("customCuisineInput");
+if (customCuisineInput) {{
+  customCuisineInput.addEventListener("keydown", function(e) {{
+    if (e.key === "Enter") {{ e.preventDefault(); addCustomCuisine(); }}
+  }});
+}}
 
 renderCuisineChips();
 renderTabs();
 renderMeals();
 updateExportBadge();
 hydrateStaticFeedbackStates();
-renderTrendRange("14");
+const defaultTrendRange = Object.keys(TREND_DATA || {{}})[0];
+if (defaultTrendRange) renderTrendRange(defaultTrendRange);
+switchJourneyPage("home", true);
 
 // ─── Card Accordion Toggle ───
 document.querySelectorAll(".section-card-header").forEach(function(header) {{

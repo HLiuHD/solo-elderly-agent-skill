@@ -14,7 +14,7 @@ import os
 import re
 import sys
 from html import escape
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 
 _TEMPLATE_PATH = Path(__file__).resolve().parent.parent / "templates" / "report.html"
@@ -66,6 +66,14 @@ _VITAL_DEFS = [
 
 _REC_ICONS = ["💊", "🚶", "🫀", "🩸", "🧈", "🥗", "🧘", "💤"]
 _CATEGORY_ICONS = {"medication": "💊", "diet": "🥗", "exercise": "🏃", "monitoring": "📋", "lifestyle": "🏠"}
+_NUTRITION_CATEGORY_ICONS = {
+    "low_salt": "🧂",
+    "low_oil": "🥘",
+    "protein": "🥚",
+    "hydration": "🥤",
+    "fiber": "🥬",
+    "meal_rhythm": "🍽️",
+}
 
 _ADHERENCE_DIMENSIONS = [
     ("medication", "💊", "用药"),
@@ -88,79 +96,6 @@ _GOOD_STATUS_KEYWORDS = (
     "good", "on track", "compliant", "met", "adequate", "consistent",
     "良好", "达标", "按时", "充足", "稳定", "正常", "较好",
 )
-
-
-# ─── Escalation Rules ───────────────────────────────────────────────
-# Keep the same renderer-level escalation behavior as the English skill,
-# with Chinese keywords and patient-facing copy.
-_ESCALATION_RULES = [
-    {
-        "keywords": ["headache", "head pain", "migraine", "头痛", "偏头痛"],
-        "threshold": 3,
-        "level": "escalated",
-        "title": "反复头痛，需要进一步关注",
-        "message": (
-            "近期记录中您提到头痛 {count} 次。因为这个症状反复出现，"
-            "系统会将它标记为需要更密切观察，并提醒照护团队关注。"
-        ),
-        "recommendation": "每次出现时，请记录时间、严重程度（1-10 分）以及可能诱因。",
-    },
-    {
-        "keywords": ["dizzy", "dizziness", "lightheaded", "vertigo", "头晕", "眩晕", "发晕"],
-        "threshold": 3,
-        "level": "escalated",
-        "title": "反复头晕，需要进一步关注",
-        "message": (
-            "近期记录中头晕相关描述出现 {count} 次。"
-            "这种模式可能与血压波动或药物副作用有关。"
-        ),
-        "recommendation": "头晕时先坐下或躺下，并记录是否发生在起身后或服药后。",
-    },
-    {
-        "keywords": ["chest pain", "chest tightness", "chest discomfort", "胸痛", "胸闷", "胸部不适"],
-        "threshold": 2,
-        "level": "critical",
-        "title": "反复胸部不适，需要尽快处理",
-        "message": "胸部相关不适近期出现 {count} 次，这需要及时医学评估。",
-        "recommendation": "如果现在正在胸痛或胸闷，请立即拨打 120 或联系急救服务。",
-    },
-    {
-        "keywords": ["fall", "fell down", "lost balance", "跌倒", "摔倒", "失去平衡"],
-        "threshold": 2,
-        "level": "escalated",
-        "title": "多次跌倒风险提醒",
-        "message": "近期记录中出现 {count} 次跌倒或失衡相关事件，受伤风险会升高。",
-        "recommendation": "请尽量扶稳后再行走，清理家中容易绊倒的物品。",
-    },
-]
-
-
-def _check_escalations(key_events: list[dict]) -> list[dict]:
-    """Scan key_events for recurring symptoms that trigger escalation rules."""
-    if not key_events:
-        return []
-
-    triggered = []
-    event_texts = [
-        ev.get("description", "").lower() for ev in key_events
-        if ev.get("type") in ("symptom", "alert", "complaint")
-    ]
-
-    for rule in _ESCALATION_RULES:
-        count = sum(
-            1 for text in event_texts
-            if any(kw.lower() in text for kw in rule["keywords"])
-        )
-        if count >= rule["threshold"]:
-            triggered.append({
-                "level": rule["level"],
-                "title": rule["title"],
-                "message": rule["message"].format(count=count),
-                "recommendation": rule["recommendation"],
-                "count": count,
-                "threshold": rule["threshold"],
-            })
-    return triggered
 
 
 _AI_MSG_STYLES = {
@@ -560,11 +495,236 @@ def _localize_zh_value(value: object) -> object:
     return value
 
 
+def _memory_archive_text(memory: dict) -> str:
+    return str(memory.get("archive") or "").strip()
+
+
+def _memory_recent_text(memory: dict) -> str:
+    recent = memory.get("recent")
+    if isinstance(recent, dict):
+        parts = [str(recent.get(key) or "").strip() for key in ("adherence", "outlier")]
+        return "\n".join(part for part in parts if part)
+    return ""
+
+
 def _extract_numbers(value: object) -> list[float]:
     if value is None:
         return []
     cleaned = str(value).replace(",", "")
     return [float(part) for part in re.findall(r"\d+(?:\.\d+)?", cleaned)]
+
+
+def _json_for_script(value: object) -> str:
+    """Serialize JSON without allowing data to terminate an inline script."""
+    return (
+        json.dumps(value, ensure_ascii=False)
+        .replace("&", "\\u0026")
+        .replace("<", "\\u003c")
+        .replace(">", "\\u003e")
+        .replace("\u2028", "\\u2028")
+        .replace("\u2029", "\\u2029")
+    )
+
+
+def _format_latest_health_value(key: str, value: object) -> str:
+    if value in (None, ""):
+        return ""
+    if key == "blood_pressure" and isinstance(value, dict):
+        sbp = value.get("sbp") or value.get("systolic")
+        dbp = value.get("dbp") or value.get("diastolic")
+        if sbp not in (None, "") and dbp not in (None, ""):
+            return f"{sbp}/{dbp}"
+    return str(value).strip()
+
+
+def _latest_health_summary_from_payload(payload: dict) -> dict:
+    latest = payload.get("latest_health") or {}
+    if not isinstance(latest, dict):
+        return {}
+
+    summary = {}
+    for key in ("blood_pressure", "heart_rate", "blood_oxygen", "blood_glucose"):
+        value = _format_latest_health_value(key, latest.get(key))
+        if value:
+            summary[key] = value
+
+    steps = latest.get("steps_today")
+    if steps in (None, ""):
+        steps = latest.get("steps")
+    value = _format_latest_health_value("steps_today", steps)
+    if value:
+        summary["steps_today"] = value
+    return summary
+
+
+def _sanitize_latest_health_summary(so: dict, payload: dict) -> None:
+    summary = _latest_health_summary_from_payload(payload)
+    if summary:
+        so["latest_health_summary"] = summary
+        return
+    if not summary:
+        so.pop("latest_health_summary", None)
+
+
+def _payload_has_blood_glucose(payload: dict) -> bool:
+    latest = payload.get("latest_health") or {}
+    if isinstance(latest, dict) and latest.get("blood_glucose") not in (None, ""):
+        return True
+
+    trends = payload.get("signal_trends") or {}
+    if not isinstance(trends, dict):
+        return False
+    for window in trends.values():
+        if not isinstance(window, dict):
+            continue
+        metrics = window.get("metrics") or {}
+        if isinstance(metrics, dict) and metrics.get("blood_glucose"):
+            return True
+    return False
+
+
+def _rewrite_guarded_text(text: str, *, has_blood_glucose: bool) -> str:
+    replacements = [
+        ("请补服漏服的降压药", "请按医嘱确认漏服降压药的处理方式"),
+        ("补服漏服的降压药", "按医嘱确认漏服降压药的处理方式"),
+        ("立即补服", "按医嘱确认漏服处理方式"),
+        ("极可能是", "可能是"),
+        ("高度相关", "可能相关"),
+        ("直接诱因", "可能诱因"),
+        ("直接原因", "可能原因"),
+        ("可能直接导致", "可能导致"),
+        ("直接导致", "可能导致"),
+        ("很快会恢复", "逐步恢复"),
+        ("立即停止食用", "先暂停"),
+        ("立即转为", "下一餐先转为"),
+        ("立即恢复", "下一餐先恢复"),
+    ]
+    if not has_blood_glucose:
+        replacements.extend(
+            [
+                ("血糖和血压", "血压和主食节奏"),
+                ("血压和血糖", "血压和主食节奏"),
+                ("血糖控制", "主食管理"),
+                ("平稳血糖", "让主食节奏更稳定"),
+                ("稳定血糖", "保持主食节奏稳定"),
+                ("血糖稳定", "主食节奏稳定"),
+                ("影响血糖", "影响主食管理"),
+                ("辅助控制血糖", "帮助规律活动"),
+                ("低升糖", "主食较稳"),
+                ("血糖", "主食管理"),
+            ]
+        )
+
+    cleaned = text
+    for source, target in replacements:
+        cleaned = cleaned.replace(source, target)
+    return cleaned
+
+
+def _apply_output_guards(value: object, *, has_blood_glucose: bool) -> object:
+    if isinstance(value, str):
+        return _rewrite_guarded_text(value, has_blood_glucose=has_blood_glucose)
+    if isinstance(value, list):
+        return [_apply_output_guards(item, has_blood_glucose=has_blood_glucose) for item in value]
+    if isinstance(value, dict):
+        for key, item in list(value.items()):
+            value[key] = _apply_output_guards(item, has_blood_glucose=has_blood_glucose)
+        return value
+    return value
+
+
+def _adherence_status_label(value: object) -> str:
+    raw = str(value or "").strip().lower()
+    return {
+        "adherent": "已执行",
+        "compliant": "已执行",
+        "good": "已执行",
+        "partial": "部分执行",
+        "partially_adherent": "部分执行",
+        "non_adherent": "未执行",
+        "missed": "未执行",
+    }.get(raw, str(value or "待观察"))
+
+
+def _merge_adherence_payload(so: dict, payload: dict) -> None:
+    adherence_payload = payload.get("adherence_analysis") or {}
+    if not isinstance(adherence_payload, dict):
+        return
+
+    category_map = {
+        "medication": "medication",
+        "diet": "appetite",
+        "appetite": "appetite",
+        "exercise": "exercise",
+        "activity": "exercise",
+        "monitoring": "monitoring",
+    }
+    field_map = {
+        "medication": "issues",
+        "appetite": "issues",
+        "exercise": "barriers",
+        "monitoring": "gaps",
+    }
+
+    target = so.get("adherence_analysis")
+    if not isinstance(target, dict):
+        target = {}
+
+    statuses = adherence_payload.get("statuses") or []
+    if isinstance(statuses, list):
+        for item in statuses:
+            if not isinstance(item, dict):
+                continue
+            context = item.get("context") or {}
+            category = category_map.get(str(context.get("category") or "").strip().lower())
+            if not category:
+                continue
+            output = item.get("output_json")
+            if isinstance(output, dict):
+                text = str(output.get("text") or "").strip()
+            else:
+                text = str(output or "").strip()
+            if not text:
+                continue
+            dim = target.get(category)
+            if not isinstance(dim, dict):
+                dim = {}
+            dim.setdefault("status", _adherence_status_label(context.get("overall_status")))
+            dim.setdefault(field_map[category], text)
+            target[category] = dim
+
+    if target:
+        target.setdefault("period", "本次遵从回访")
+        so["adherence_analysis"] = target
+
+    suggestions = adherence_payload.get("suggestions") or []
+    if not isinstance(suggestions, list):
+        return
+    recs = so.get("recommendations")
+    if isinstance(recs, list) and recs:
+        return
+    if not isinstance(recs, list):
+        recs = []
+    existing = {
+        str(item.get("text") if isinstance(item, dict) else item).strip()
+        for item in recs
+    }
+    for item in suggestions:
+        if isinstance(item, dict):
+            output = item.get("output_json")
+        else:
+            output = item
+        text = str(output.get("text") if isinstance(output, dict) else output or "").strip()
+        if not text or text in existing:
+            continue
+        recs.insert(0, {
+            "text": text,
+            "reason": "来自本次遵从回访的结构化建议。",
+            "category": "medication" if "药" in text else "lifestyle",
+        })
+        existing.add(text)
+    if recs:
+        so["recommendations"] = recs
 
 
 def _render_vitals(summary: dict) -> str:
@@ -832,83 +992,11 @@ def _render_adherence(adh: dict) -> str:
 
 
 def _render_memory_overview(memory: dict) -> str:
-    """Render profile + recent trends as always-visible top overview cards."""
-    if not memory:
-        return ""
-
-    profile = _localize_zh_text(memory.get("patient_long_term_profile") or "")
-    dynamics = _localize_zh_text(memory.get("recent_health_dynamics") or "")
-
-    blocks = []
-
-    if profile:
-        blocks.append(
-            '<div class="sub-card sub-card-static">'
-            '<div class="sub-card-header">'
-            '<span class="sub-card-icon">👤</span>'
-            '<div class="flex-1 min-w-0">'
-            '<div class="sub-card-label">长期资料</div>'
-            '<div class="sub-card-value">先了解您的基础情况</div>'
-            '</div>'
-            '</div>'
-            f'<div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">{escape(profile)}</div></div>'
-            '</div>'
-        )
-
-    if dynamics:
-        blocks.append(
-            '<div class="sub-card sub-card-static">'
-            '<div class="sub-card-header">'
-            '<span class="sub-card-icon">📈</span>'
-            '<div class="flex-1 min-w-0">'
-            '<div class="sub-card-label">近期趋势</div>'
-            '<div class="sub-card-value">这段时间身体有什么变化</div>'
-            '</div>'
-            '</div>'
-            f'<div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">{escape(dynamics)}</div></div>'
-            '</div>'
-        )
-
-    return "".join(blocks)
-
-
-def _render_key_events(memory: dict) -> str:
-    """Render key events as a compact timeline list."""
-    if not memory:
-        return ""
-
-    events = memory.get("key_events") or []
-    if not events:
-        return ""
-
-    event_icons = {"surgery": "🩺", "symptom": "⚠️", "alert": "🚨", "medication": "💊", "visit": "🏥"}
-    events_body = '<div class="space-y-2">'
-    for ev in events:
-        ev_icon = event_icons.get(ev.get("type", ""), "📌")
-        ev_date = ev.get("date", "")
-        ev_desc = _localize_zh_text(ev.get("description", ""))
-        ev_type = ev.get("type", "")
-        type_cls = {
-            "surgery": "bg-purple-50 text-purple-700 border-purple-200",
-            "alert": "bg-rose-50 text-rose-700 border-rose-200",
-            "symptom": "bg-amber-50 text-amber-700 border-amber-200",
-            "medication": "bg-blue-50 text-blue-700 border-blue-200",
-        }.get(ev_type, "bg-slate-50 text-slate-600 border-slate-200")
-        events_body += (
-            f'<div class="flex items-start gap-3 rounded-lg p-2.5 border {type_cls}">'
-            f'<span class="text-base mt-0.5">{ev_icon}</span>'
-            f'<div class="flex-1 min-w-0">'
-            f'<div class="text-sm font-semibold">{escape(ev_desc)}</div>'
-            f'<div class="text-xs text-slate-400 mt-0.5">{escape(ev_date)}</div>'
-            f'</div></div>'
-        )
-    events_body += '</div>'
-    return events_body
+    return ""
 
 
 def _render_memory(memory: dict) -> str:
-    """Backward-compatible combined memory rendering."""
-    return _render_memory_overview(memory) + _render_key_events(memory)
+    return _render_memory_overview(memory)
 
 
 def _stringify_compact(value: object) -> str:
@@ -1012,40 +1100,23 @@ def _render_personalized_context(so: dict, payload: dict, memory: dict) -> str:
         return "".join(cards)
 
     conditions = so.get("conditions") or []
-    key_events = memory.get("key_events") or []
-    profile = memory.get("patient_long_term_profile") or ""
-    recent_dynamics = memory.get("recent_health_dynamics") or ""
-    meds = _extract_medications(profile)
     latest_summary = so.get("latest_health_summary") or {}
-    signals = payload.get("signals") or {}
     adherence = so.get("adherence_analysis") or {}
-
-    surgery_event = next(
-        (
-            ev for ev in key_events
-            if ev.get("type") == "surgery"
-            or "手术" in str(ev.get("description", ""))
-            or "surgery" in str(ev.get("description", "")).lower()
-        ),
-        None,
-    )
 
     history_chips = []
     if conditions:
         history_chips.extend(conditions[:3])
-    if surgery_event:
-        history_chips.append(f'{surgery_event.get("date", "")} {surgery_event.get("description", "")}'.strip())
-    elif "术后" in profile or "post-surgery" in profile.lower():
-        history_chips.append("当前处于术后恢复阶段")
 
     if history_chips:
         implication_parts = []
-        if surgery_event or "术后" in profile or "post-surgery" in profile.lower():
-            implication_parts.append("恢复期会更强调蛋白质、容易入口的食物和循序渐进活动")
         if any(c in {"高血压", "Hypertension"} for c in conditions):
             implication_parts.append("营养安排会特别强调少盐")
         if any(c in {"2型糖尿病", "糖尿病", "Type 2 diabetes", "Diabetes"} for c in conditions):
             implication_parts.append("也会提醒规律分餐和减少精制糖")
+        history_chip_html = "".join(
+            f'<span class="context-chip">{escape(_localize_zh_text(chip))}</span>'
+            for chip in history_chips[:4]
+        )
 
         cards.append(
             '<div class="sub-card sub-card-static">'
@@ -1057,7 +1128,7 @@ def _render_personalized_context(so: dict, payload: dict, memory: dict) -> str:
             '</div>'
             '</div>'
             '<div class="sub-card-body">'
-            f'<div class="flex flex-wrap gap-2 mb-3">{"".join(f"<span class=\"context-chip\">{escape(_localize_zh_text(chip))}</span>" for chip in history_chips[:4])}</div>'
+            f'<div class="flex flex-wrap gap-2 mb-3">{history_chip_html}</div>'
             + (
                 '<div class="text-xs text-slate-600 bg-slate-50 rounded-xl px-3 py-2 leading-relaxed border border-slate-200">'
                 f'所以这里会更强调：{escape("；".join(implication_parts))}</div>'
@@ -1068,16 +1139,9 @@ def _render_personalized_context(so: dict, payload: dict, memory: dict) -> str:
 
     med_issue = _stringify_compact((adherence.get("medication") or {}).get("issues"))
     med_adjustment = _stringify_compact((adherence.get("medication") or {}).get("adjustments"))
-    if not med_issue:
-        med_issue = next(
-            (str(ev.get("description", "")).strip() for ev in key_events if "服用" in str(ev.get("description", "")) or "药" in str(ev.get("description", ""))),
-            ""
-        )
 
-    if meds or med_issue:
+    if med_issue:
         med_body = ""
-        if meds:
-            med_body += f'<div class="flex flex-wrap gap-2 mb-3">{"".join(f"<span class=\"context-chip\">{escape(med)}</span>" for med in meds)}</div>'
         if med_issue:
             med_body += f'<div class="text-sm text-slate-700 leading-relaxed">目前记录里提到：{escape(med_issue)}</div>'
         if med_adjustment:
@@ -1118,23 +1182,17 @@ def _render_personalized_context(so: dict, payload: dict, memory: dict) -> str:
             metric_bits.append(f'{metric_labels.get(key, key)} {value}')
 
     monitoring_gap = _stringify_compact((adherence.get("monitoring") or {}).get("gaps"))
-    signal_bits = [_localize_zh_text(str(item).strip()) for item in (signals.get("anomalies") or []) if str(item).strip()]
     recent_focus = []
     if metric_bits:
         recent_focus.append("最近记录：" + "，".join(metric_bits[:3]))
-    if signal_bits:
-        recent_focus.append("设备提示：" + "、".join(signal_bits[:2]))
     if monitoring_gap:
         recent_focus.append("监测提醒：" + monitoring_gap)
-    elif recent_dynamics:
-        recent_text = _stringify_compact(recent_dynamics)
-        recent_focus.append(recent_text[:120] + ("..." if len(recent_text) > 120 else ""))
 
     if recent_focus:
         implication = []
         if any("血糖" in bit for bit in metric_bits):
             implication.append("营养安排会更强调规律分餐")
-        if any("步数" in bit for bit in metric_bits) or any("Activity" in bit or "活动" in bit for bit in signal_bits):
+        if any("步数" in bit for bit in metric_bits):
             implication.append("活动建议会更温和、循序渐进")
         if monitoring_gap:
             implication.append("也会提醒把监测补齐")
@@ -1156,30 +1214,6 @@ def _render_personalized_context(so: dict, payload: dict, memory: dict) -> str:
                 if implication else ""
             )
             + '</div></div>'
-        )
-
-    extra_notes = []
-    for key, label in (
-        ("clinical_notes", "临床备注"),
-        ("doctor_notes", "医生备注"),
-        ("case_history", "病例重点"),
-        ("latest_labs", "最近检查"),
-    ):
-        text = _stringify_compact(memory.get(key) or payload.get(key))
-        if text:
-            extra_notes.append((label, text))
-    for label, text in extra_notes[:1]:
-        cards.append(
-            '<div class="sub-card sub-card-static">'
-            '<div class="sub-card-header">'
-            '<span class="sub-card-icon">🧠</span>'
-            '<div class="flex-1 min-w-0">'
-            f'<div class="sub-card-label">{escape(_localize_zh_text(label))}</div>'
-            '<div class="sub-card-value">如果后面接入更深的病例，这里会直接引用</div>'
-            '</div>'
-            '</div>'
-            f'<div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">{escape(_localize_zh_text(text))}</div></div>'
-            '</div>'
         )
 
     return "".join(cards)
@@ -1403,10 +1437,10 @@ def _render_diet_tips(tips: list[dict]) -> str:
                 f'<div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap">'
                 f'<button class="feedback-btn like" title="有帮助" data-day-idx="-1" data-meal-type="tip" '
                 f'data-item-name="{safe_title}" data-default-label="适合我" data-active-label="已选择" '
-                f"onclick=\"saveLike(-1,'tip','{safe_title}', this)\">适合我</button>"
+                f'onclick="saveLikeFromButton(this)">适合我</button>'
                 f'<button class="feedback-btn feedback-skip" title="不适合我" data-day-idx="-1" data-meal-type="tip" '
                 f'data-item-name="{safe_title}" data-default-label="不适合" data-active-label="已跳过" '
-                f"onclick=\"showFeedbackModal(-1,'tip','{safe_title}', this)\">不适合</button>"
+                f'onclick="showFeedbackModalFromButton(this)">不适合</button>'
                 f'</div>'
             )
 
@@ -1676,23 +1710,13 @@ def _format_time(raw: str) -> str:
     return str(raw)
 
 
-def _extract_patient_name(memory: dict, tone_profile: dict) -> str:
-    preferred = (tone_profile or {}).get("preferred_name") or ""
-    if preferred:
-        return preferred.strip()
-
-    profile = str((memory or {}).get("patient_long_term_profile") or "").strip()
-    if not profile:
-        return "您"
-
-    match = re.match(r"\s*([A-Z][A-Za-z]+)", profile)
-    if match:
-        return match.group(1)
-
-    cn_match = re.match(r"\s*([\u4e00-\u9fff]{2,4})", profile)
-    if cn_match:
-        return cn_match.group(1)
-
+def _extract_patient_name(payload: dict) -> str:
+    patient = payload.get("patient") or {}
+    if isinstance(patient, dict):
+        for key in ("preferred_name", "name", "display_name"):
+            value = str(patient.get(key) or "").strip()
+            if value:
+                return value
     return "您"
 
 
@@ -1755,7 +1779,7 @@ def _render_quick_nav() -> str:
     items = [
         ("🗂️", "首页", "先看总览", "homeAnchor", True),
         ("✅", "计划", "今天重点", "priorityPlanAnchor", False),
-        ("🥗", "营养", "补给节奏", "nutritionOverviewAnchor", False),
+        ("📊", "数据", "最新信号", "statusAnchor", False),
         ("📈", "趋势", "恢复变化", "trendOverviewAnchor", False),
     ]
     buttons = []
@@ -1770,197 +1794,160 @@ def _render_quick_nav() -> str:
     return f'<div class="pt-3"><div class="quick-nav-strip">{"".join(buttons)}</div></div>'
 
 
-def _infer_nutrition_snapshot(so: dict) -> tuple[list[dict], str]:
-    appetite = _localize_zh_text(str(((so.get("adherence_analysis") or {}).get("appetite") or {}).get("status") or ""))
-    glucose_nums = _extract_numbers((so.get("latest_health_summary") or {}).get("blood_glucose"))
-    steps_nums = _extract_numbers((so.get("latest_health_summary") or {}).get("steps_today"))
-
-    protein = 82
-    hydration = 78
-    meal_freq = 80
-    tolerance = 84
-
-    if "下降" in appetite or "decreased" in appetite.lower():
-        protein = 62
-        meal_freq = 58
-        tolerance = 64
-    if glucose_nums and glucose_nums[0] > 7.0:
-        meal_freq = min(meal_freq, 66)
-    if steps_nums and steps_nums[0] < 3000:
-        protein = min(protein + 6, 92)
-        hydration = min(hydration + 4, 92)
-
-    items = [
-        {"label": "蛋白质", "value": protein, "note": "优先补强", "accent": "#8b5cf6", "track": "#ede9fe"},
-        {"label": "补水", "value": hydration, "note": "继续稳定", "accent": "#06b6d4", "track": "#cffafe"},
-        {"label": "小餐节奏", "value": meal_freq, "note": "待加强", "accent": "#f59e0b", "track": "#fef3c7"},
-        {"label": "胃部耐受", "value": tolerance, "note": "轻柔安排", "accent": "#10b981", "track": "#d1fae5"},
-    ]
-
-    story = (
-        "今天不需要一次吃很多。先把蛋白质和补水照顾好，再把正餐拆小一点，"
-        "通常会比勉强吃完整一大餐更容易坚持，也更符合当前恢复节奏。"
-    )
-    if protein <= 65:
-        story = (
-            "今天我更建议先把营养补给放在第一位。哪怕只是额外补一份高蛋白奶、酸奶或鸡蛋，"
-            "也会比空着肚子更有助于恢复体力。"
-        )
-    return items, story
+def _format_number(value: float) -> str:
+    return str(int(value)) if float(value).is_integer() else f"{value:.1f}"
 
 
-def _render_nutrition_spotlight(so: dict) -> str:
-    items, story = _infer_nutrition_snapshot(so)
-    rings = []
-    for item in items:
-        rings.append(
-            '<div class="nutrition-ring-card">'
-            f'<div class="nutrition-ring" style="--pct:{item["value"]};--ring-accent:{item["accent"]};--ring-track:{item["track"]}">'
-            f'<div class="nutrition-ring-inner">{item["value"]}%</div>'
-            '</div>'
-            f'<div class="nutrition-ring-label">{item["label"]}</div>'
-            f'<div class="nutrition-ring-note">{item["note"]}</div>'
-            '</div>'
-        )
-
-    return (
-        '<div id="nutritionOverviewAnchor" class="px-3 pt-3">'
-        '<section class="nutrition-spotlight-card">'
-        '<div class="nutrition-spotlight-head">'
-        '<div>'
-        '<div class="nutrition-spotlight-title">今日营养总览</div>'
-        '<div class="nutrition-spotlight-copy">把今天最值得优先照顾的营养重点放在前面，看起来会更直观。</div>'
-        '</div>'
-        '<div class="nutrition-spotlight-badge">AI 估计</div>'
-        '</div>'
-        f'<div class="nutrition-ring-grid">{"".join(rings)}</div>'
-        f'<div class="nutrition-story">{escape(story)}</div>'
-        '</section>'
-        '</div>'
-    )
-
-
-def _interpolate_series(start: float, end: float, count: int, pattern: list[float]) -> list[float]:
-    if count <= 1:
-        return [round(end, 1)]
-    values = []
-    for idx in range(count):
-        ratio = idx / (count - 1)
-        base = start + (end - start) * ratio
-        drift = pattern[idx % len(pattern)]
-        values.append(round(base + drift, 1))
-    return values
-
-
-def _build_trend_data(so: dict, payload: dict, memory: dict, current_time_raw: str) -> dict:
+def _format_axis_label(raw: object) -> str:
+    if not raw:
+        return ""
+    text = str(raw)
     try:
-        current_dt = datetime.fromisoformat(str(current_time_raw).replace("Z", "+00:00"))
+        return datetime.fromisoformat(text.replace("Z", "+00:00")).strftime("%-m/%-d")
     except (TypeError, ValueError):
-        current_dt = datetime.now()
+        pass
+    if len(text) >= 10 and text[4] == "-":
+        try:
+            dt = datetime.strptime(text[:10], "%Y-%m-%d")
+            return f"{dt.month}/{dt.day}"
+        except ValueError:
+            pass
+    return text[:10]
 
-    latest = so.get("latest_health_summary") or {}
-    steps_value = _extract_numbers(latest.get("steps_today"))
-    steps_now = steps_value[0] if steps_value else 1500
-    glucose_value = _extract_numbers(latest.get("blood_glucose"))
-    glucose_now = glucose_value[0] if glucose_value else 7.2
 
-    ranges = {
-        "7": {
-            "days": 7,
-            "steps": _interpolate_series(2600, steps_now, 7, [120, -60, 80, -90, 40, -50, 0]),
-            "glucose": _interpolate_series(max(glucose_now - 0.2, 6.8), glucose_now, 7, [0.08, -0.04, 0.06, -0.02, 0.03, -0.05, 0]),
-            "appetite": _interpolate_series(5.3, 4.2, 7, [0.2, -0.1, 0.15, -0.2, 0.1, -0.1, 0]),
-            "insight": "最近 7 天里，营养和活动都需要更多支持。",
-        },
-        "14": {
-            "days": 14,
-            "steps": _interpolate_series(4000, steps_now, 14, [160, -110, 90, -140, 70, -80, 40]),
-            "glucose": _interpolate_series(7.4, glucose_now, 14, [0.1, -0.06, 0.04, 0.02, -0.08, 0.06, -0.02]),
-            "appetite": _interpolate_series(6.4, 4.2, 14, [0.25, -0.14, 0.18, -0.22, 0.1, -0.16, 0.05]),
-            "insight": "过去 14 天里，活动量和食欲一起走低，今天更需要先稳住营养和体力。",
-        },
-        "30": {
-            "days": 30,
-            "steps": _interpolate_series(4300, steps_now, 30, [180, -120, 90, -150, 80, -70, 40, -40]),
-            "glucose": _interpolate_series(7.1, glucose_now, 30, [0.08, -0.03, 0.05, -0.05, 0.04, -0.02, 0]),
-            "appetite": _interpolate_series(6.8, 4.2, 30, [0.2, -0.08, 0.12, -0.16, 0.08, -0.1, 0.03, -0.05]),
-            "insight": "从近 30 天看，恢复节奏变慢主要和食欲下降、活动减少有关。",
-        },
-        "90": {
-            "days": 90,
-            "steps": _interpolate_series(4700, steps_now, 12, [140, -90, 60, -80, 50, -40]),
-            "glucose": _interpolate_series(6.9, glucose_now, 12, [0.05, -0.02, 0.04, -0.04, 0.03, -0.02]),
-            "appetite": _interpolate_series(7.1, 4.2, 12, [0.15, -0.06, 0.08, -0.12, 0.06, -0.05]),
-            "insight": "放到更长的恢复阶段看，近期下降更明显，因此更值得早点干预。",
-        },
+def _metric_delta(first: float, last: float, unit: str = "") -> tuple[str, str]:
+    diff = last - first
+    if abs(diff) < 0.05:
+        return "较起点持平", "flat"
+    direction = "up" if diff > 0 else "down"
+    arrow = "↑" if diff > 0 else "↓"
+    return f"较起点 {arrow} {_format_number(abs(diff))}{unit}", direction
+
+
+def _build_trend_data(payload: dict) -> dict:
+    signal_trends = payload.get("signal_trends") or {}
+    if not isinstance(signal_trends, dict):
+        return {}
+
+    window_labels = {
+        "week": "最近一周",
+        "month": "最近一月",
+        "quarter": "最近一季度",
+    }
+    metric_meta = {
+        "blood_pressure": ("🩺", "血压", "mmHg", "#7c3aed", "真实血压记录；曲线使用收缩压作为走势参考。"),
+        "heart_rate": ("🫀", "心率", "bpm", "#ef4444", "真实心率记录，帮助观察近期波动。"),
+        "blood_oxygen": ("🫁", "血氧", "%", "#06b6d4", "真实血氧记录，低于正常范围时更需要关注。"),
+        "steps_today": ("👟", "步数", "步", "#2563eb", "真实步数聚合，反映近期活动量。"),
+        "steps": ("👟", "步数", "步", "#2563eb", "真实步数聚合，反映近期活动量。"),
+        "blood_glucose": ("🧪", "血糖", "mmol/L", "#f59e0b", "真实血糖记录；没有监测数据时不会展示。"),
     }
 
     trend_data: dict[str, dict] = {}
-    for key, spec in ranges.items():
-        day_count = spec["days"]
-        start_label = (current_dt - timedelta(days=day_count - 1)).strftime("%-m/%-d") if os.name != "nt" else (current_dt - timedelta(days=day_count - 1)).strftime("%m/%d").lstrip("0").replace("/0", "/")
-        end_label = current_dt.strftime("%-m/%-d") if os.name != "nt" else current_dt.strftime("%m/%d").lstrip("0").replace("/0", "/")
+    for window_key in ("week", "month", "quarter"):
+        window = signal_trends.get(window_key) or {}
+        metrics = window.get("metrics") or {}
+        if not isinstance(metrics, dict):
+            continue
 
-        step_series = spec["steps"]
-        glucose_series = spec["glucose"]
-        appetite_series = spec["appetite"]
+        metric_cards = []
+        for metric_key in ("blood_pressure", "heart_rate", "blood_oxygen", "steps_today", "steps", "blood_glucose"):
+            points = metrics.get(metric_key) or []
+            if not isinstance(points, list):
+                continue
+            clean_points = [point for point in points if isinstance(point, dict)]
+            if not clean_points:
+                continue
 
-        trend_data[key] = {
-            "axis_start": start_label,
-            "axis_end": end_label,
-            "insight": spec["insight"],
-            "metrics": [
-                {
-                    "icon": "👟",
-                    "label": "活动量",
-                    "value": f'{int(round(step_series[-1]))} 步',
-                    "delta": f'较起点 ↓ {int(round(step_series[0] - step_series[-1]))} 步',
-                    "delta_direction": "down",
-                    "copy": "这段时间步数持续走低，说明恢复期体力和疼痛管理都需要更多照顾。",
-                    "values": [int(round(v)) for v in step_series],
-                    "color": "#8b5cf6",
-                },
-                {
-                    "icon": "🧪",
-                    "label": "血糖",
-                    "value": f'{glucose_series[-1]:.1f} mmol/L',
-                    "delta": f'近段时间 {"↓" if glucose_series[-1] <= glucose_series[0] else "↑"} {abs(glucose_series[-1] - glucose_series[0]):.1f}',
-                    "delta_direction": "down" if glucose_series[-1] <= glucose_series[0] else "up",
-                    "copy": "血糖整体没有明显失控，但仍然需要和进食节奏、用药耐受一起看。",
-                    "values": glucose_series,
-                    "color": "#f59e0b",
-                },
-                {
-                    "icon": "🥣",
-                    "label": "食欲 / 体力",
-                    "value": f'{appetite_series[-1]:.1f} / 10',
-                    "delta": f'较起点 ↓ {(appetite_series[0] - appetite_series[-1]):.1f}',
-                    "delta_direction": "down",
-                    "copy": "食欲和体力下降会直接影响恢复速度，所以今天先把营养补上更重要。",
-                    "values": appetite_series,
-                    "color": "#10b981",
-                },
-            ],
-        }
+            icon, label, unit, color, copy = metric_meta[metric_key]
+            if metric_key == "blood_pressure":
+                usable = [
+                    point for point in clean_points
+                    if point.get("sbp") not in (None, "") and point.get("dbp") not in (None, "")
+                ]
+                if not usable:
+                    continue
+                first, last = usable[0], usable[-1]
+                values = [float(point["sbp"]) for point in usable]
+                value_text = f'{_format_number(float(last["sbp"]))}/{_format_number(float(last["dbp"]))} {unit}'
+                delta, delta_direction = _metric_delta(float(first["sbp"]), float(last["sbp"]), "")
+                point_cards = [
+                    {
+                        "label": _format_axis_label(point.get("t")),
+                        "display": f'{_format_number(float(point["sbp"]))}/{_format_number(float(point["dbp"]))} {unit}',
+                        "value": _format_number(float(point["sbp"])),
+                    }
+                    for point in usable
+                ]
+            else:
+                usable = [point for point in clean_points if point.get("value") not in (None, "")]
+                if not usable:
+                    continue
+                first, last = usable[0], usable[-1]
+                values = [float(point["value"]) for point in usable]
+                value_text = f'{_format_number(values[-1])} {unit}'
+                delta, delta_direction = _metric_delta(values[0], values[-1], unit)
+                point_cards = [
+                    {
+                        "label": _format_axis_label(point.get("t")),
+                        "display": f'{_format_number(float(point["value"]))} {unit}',
+                        "value": _format_number(float(point["value"])),
+                    }
+                    for point in usable
+                ]
+
+            metric_cards.append({
+                "icon": icon,
+                "label": label,
+                "value": value_text,
+                "delta": delta,
+                "delta_direction": delta_direction,
+                "copy": copy,
+                "values": values,
+                "color": color,
+                "points": point_cards,
+            })
+
+        if metric_cards:
+            all_points = [
+                point
+                for points in metrics.values()
+                if isinstance(points, list)
+                for point in points
+                if isinstance(point, dict)
+            ]
+            labels = [_format_axis_label(point.get("t")) for point in all_points if point.get("t")]
+            trend_data[window_key] = {
+                "axis_start": labels[0] if labels else "",
+                "axis_end": labels[-1] if labels else "",
+                "insight": f"{window_labels[window_key]}展示真实信号点，未插值、未估算。",
+                "metrics": metric_cards,
+            }
     return trend_data
 
 
-def _render_trend_story() -> str:
+def _render_trend_story(trend_data: dict) -> str:
+    if not trend_data:
+        return ""
+    label_map = {"week": "周", "month": "月", "quarter": "季度"}
+    default_key = next(iter(trend_data))
+    buttons = "".join(
+        f'<button class="trend-range-btn{" active" if key == default_key else ""}" data-range="{key}" onclick="renderTrendRange(\'{key}\')">{label_map.get(key, key)}</button>'
+        for key in ("week", "month", "quarter")
+        if key in trend_data
+    )
     return (
         '<div id="trendOverviewAnchor" class="px-3 pt-3">'
         '<section class="trend-card">'
         '<div class="trend-card-head">'
         '<div>'
-        '<div class="trend-card-title">恢复趋势</div>'
-        '<div class="trend-card-copy">把最近的变化浓缩成更像 app 的趋势视图，方便一眼判断哪里需要优先跟进。</div>'
+        '<div class="trend-card-title">信号趋势</div>'
+        '<div class="trend-card-copy">只展示真实测量点，方便一眼判断哪里需要优先跟进。</div>'
         '</div>'
-        '<div class="trend-insight-chip" id="trendInsightChip">过去 14 天里，活动量和食欲一起走低。</div>'
+        f'<div class="trend-insight-chip" id="trendInsightChip">{escape(trend_data[default_key].get("insight") or "")}</div>'
         '</div>'
         '<div class="trend-range-tabs">'
-        '<button class="trend-range-btn" data-range="7" onclick="renderTrendRange(\'7\')">7天</button>'
-        '<button class="trend-range-btn active" data-range="14" onclick="renderTrendRange(\'14\')">14天</button>'
-        '<button class="trend-range-btn" data-range="30" onclick="renderTrendRange(\'30\')">30天</button>'
-        '<button class="trend-range-btn" data-range="90" onclick="renderTrendRange(\'90\')">90天</button>'
+        f'{buttons}'
         '</div>'
         '<div id="trendMetricStack" class="trend-metric-stack mt-3"></div>'
         '</section>'
@@ -1968,18 +1955,446 @@ def _render_trend_story() -> str:
     )
 
 
+def _journey_page(page_key: str, title: str, subtitle: str, body: str, active: bool = False) -> str:
+    if not body or not body.strip():
+        body = (
+            '<section class="journey-card">'
+            '<div class="journey-section-title">暂无可展示内容</div>'
+            '<div class="journey-section-copy">主服务这次没有提供对应字段，所以这里不生成补充内容。</div>'
+            '</section>'
+        )
+    active_class = " active" if active else ""
+    return (
+        f'<main class="journey-page{active_class}" data-page="{escape(page_key, quote=True)}">'
+        '<div class="journey-screen-head">'
+        '<div>'
+        f'<div class="journey-screen-title">{escape(title)}</div>'
+        f'<div class="journey-screen-copy">{escape(subtitle)}</div>'
+        '</div>'
+        '</div>'
+        f'{body}'
+        '</main>'
+    )
+
+
+def _adherence_tone(status: str) -> str:
+    value = _localize_zh_text(status or "").lower()
+    if any(kw in value for kw in ("良好", "稳定", "按时", "已完成", "完成", "good", "consistent", "on track")):
+        return "good"
+    if any(kw in value for kw in ("部分", "partial", "偶尔", "待观察")):
+        return "warn"
+    return "alert" if value else "warn"
+
+
+def _adherence_brief(key: str, dim: dict) -> str:
+    preferred_keys = {
+        "medication": ("issues", "adjustments", "barriers", "note"),
+        "appetite": ("issues", "recommendations", "barriers", "note"),
+        "exercise": ("barriers", "plan", "issues", "note"),
+        "monitoring": ("gaps", "issues", "plan", "note"),
+    }
+    for detail_key in preferred_keys.get(key, ()):
+        text = _stringify_compact(dim.get(detail_key))
+        if text:
+            return text
+    status = _localize_zh_text(str(dim.get("status") or "")).strip()
+    return status or "本次没有更多说明"
+
+
+def _adherence_chip_label(key: str, dim: dict) -> str:
+    text = _adherence_brief(key, dim)
+    status = _localize_zh_text(str(dim.get("status") or ""))
+    if key == "medication":
+        if "漏服" in text:
+            return "用药漏服"
+        return "用药" + (status or "待观察")
+    if key == "appetite":
+        if any(word in text for word in ("盐", "油", "火锅", "冒菜")):
+            return "饮食油盐偏高"
+        return "饮食" + (status or "待观察")
+    if key == "exercise":
+        return "活动未完成" if _adherence_tone(status) != "good" else "活动已完成"
+    if key == "monitoring":
+        return "监测缺口" if _adherence_tone(status) != "good" else "监测已完成"
+    return status or "待观察"
+
+
+def _render_journey_status(so: dict) -> tuple[str, str, str]:
+    adh = so.get("adherence_analysis") or {}
+    dims = []
+    for key, icon, title in _ADHERENCE_DIMENSIONS:
+        dim = adh.get(key)
+        if isinstance(dim, dict) and (dim.get("status") or _adherence_brief(key, dim)):
+            status = _localize_zh_text(str(dim.get("status") or "待观察"))
+            tone = _adherence_tone(status)
+            dims.append((key, icon, title, dim, status, tone))
+
+    if not dims:
+        return "", "待观察", "这次遵从回访没有提供结构化状态。"
+
+    tones = [item[-1] for item in dims]
+    if "alert" in tones:
+        overall = "需关注"
+    elif "warn" in tones:
+        overall = "部分完成"
+    else:
+        overall = "整体稳定"
+
+    chips = []
+    for key, _icon, _title, dim, _status, tone in dims:
+        chips.append(
+            f'<span class="status-alert-chip {tone}">● {escape(_adherence_chip_label(key, dim))}</span>'
+        )
+
+    cards = []
+    for key, icon, title, dim, status, tone in dims:
+        cards.append(
+            f'<div class="execution-card {tone}">'
+            '<div class="execution-card-top">'
+            f'<span class="execution-icon">{icon}</span>'
+            f'<span class="execution-status">{escape(status)}</span>'
+            '</div>'
+            f'<div class="execution-title">{escape(title)}</div>'
+            f'<div class="execution-detail">{escape(_adherence_brief(key, dim))}</div>'
+            '</div>'
+        )
+
+    body = (
+        '<section class="journey-card">'
+        '<div class="journey-section-kicker">今日整体状态</div>'
+        f'<div class="journey-section-title">{escape(overall)}</div>'
+        '<div class="journey-section-copy">这里只放本次遵从回访已经确认的执行状态，不再额外生成健康评分。</div>'
+        f'<div class="status-alert-row">{"".join(chips)}</div>'
+        '</section>'
+        '<section class="journey-card">'
+        '<div class="journey-section-title">关键执行概览</div>'
+        '<div class="journey-section-copy">用药、饮食、活动和监测分开看，后续建议放到计划页。</div>'
+        f'<div class="journey-status-grid">{"".join(cards)}</div>'
+        '</section>'
+    )
+    return body, overall, "、".join(_adherence_chip_label(key, dim) for key, _i, _t, dim, _s, _tone in dims[:3])
+
+
+def _render_journey_vitals(summary: dict) -> str:
+    if not summary:
+        return ""
+    metric_defs = [
+        ("blood_pressure", "血压", "mmHg", "💜"),
+        ("heart_rate", "心率", "次/分", "❤️"),
+        ("blood_oxygen", "血氧", "%", "💧"),
+        ("steps_today", "步数", "步", "👟"),
+        ("blood_glucose", "血糖", "mmol/L", "🧪"),
+    ]
+    cards = []
+    for key, label, unit, icon in metric_defs:
+        value = summary.get(key)
+        if value in (None, ""):
+            continue
+        cards.append(
+            '<div class="signal-mini-card">'
+            f'<div class="signal-mini-icon">{icon}</div>'
+            f'<div class="signal-mini-label">{escape(label)}</div>'
+            f'<div class="signal-mini-value">{escape(str(value))}</div>'
+            f'<div class="signal-mini-unit">{escape(unit)}</div>'
+            '</div>'
+        )
+    if not cards:
+        return ""
+    return (
+        '<section class="journey-card">'
+        '<div class="journey-section-title">最新生命体征</div>'
+        '<div class="journey-section-copy">来自主服务 latest_health；没有提供的指标不会展示。</div>'
+        f'<div class="signal-mini-grid">{"".join(cards)}</div>'
+        '</section>'
+    )
+
+
+def _render_journey_home(so: dict, payload: dict, memory: dict, current_time_raw: str) -> str:
+    name = _extract_patient_name(payload)
+    greeting = _time_greeting(current_time_raw)
+    avatar = escape(name[:1] if name and name != "您" else "您")
+    status_html, overall, status_copy = _render_journey_status(so)
+    latest = so.get("latest_health_summary") or {}
+    vitals_html = _render_journey_vitals(latest)
+    summary = _build_supportive_note(so, payload)
+    conditions = so.get("conditions") or []
+    condition_html = ""
+    if conditions:
+        condition_html = (
+            '<div class="flex gap-1.5 mt-3 flex-wrap">'
+            + "".join(
+                f'<span class="context-chip">{escape(_localize_zh_text(str(item)))}</span>'
+                for item in conditions[:4]
+            )
+            + '</div>'
+        )
+    hero = (
+        '<section class="journey-card journey-hero">'
+        '<div class="journey-hero-main">'
+        '<div class="journey-hero-row">'
+        f'<div class="journey-avatar">{avatar}</div>'
+        '<div>'
+        f'<div class="journey-hello">{escape(greeting)}，{escape(name)}</div>'
+        f'<div class="journey-hero-text">今天先看状态，再做最关键的几步。</div>'
+        '</div>'
+        '</div>'
+        f'<div class="journey-hero-text">{escape(summary)}</div>'
+        f'{condition_html}'
+        '</div>'
+        '</section>'
+    )
+    status_line = (
+        '<section class="journey-card">'
+        '<div class="journey-section-kicker">今日提醒</div>'
+        f'<div class="journey-section-title">当前状态：{escape(overall)}</div>'
+        f'<div class="journey-section-copy">{escape(status_copy or "先完成今天最关键的照护事项。")}</div>'
+        '</section>'
+    )
+    return hero + status_line + status_html + vitals_html
+
+
+def _render_journey_tasks(so: dict, payload: dict) -> str:
+    recs = so.get("recommendations") or []
+    if not isinstance(recs, list) or not recs:
+        return ""
+    visual_cycle = ["💊", "🥣", "🚶", "📋", "🌙", "🥗"]
+    cards = []
+    for idx, rec in enumerate(recs[:3], start=1):
+        if isinstance(rec, dict):
+            text = _localize_zh_text(str(rec.get("text") or "")).strip()
+            reason = _localize_zh_text(str(rec.get("reason") or "")).strip()
+        else:
+            text = _localize_zh_text(str(rec)).strip()
+            reason = ""
+        if not text:
+            continue
+        safe_text = escape(text, quote=True).replace("'", "&#39;")
+        cards.append(
+            '<div class="journey-task">'
+            f'<div class="journey-task-index">{idx}</div>'
+            '<div>'
+            f'<div class="journey-task-title">{escape(text)}</div>'
+            + (f'<div class="journey-task-reason">原因：{escape(reason)}</div>' if reason else "")
+            + '<div class="journey-task-actions feedback-actions">'
+            + f'<button class="feedback-btn like" data-day-idx="-1" data-meal-type="priority" '
+            f'data-item-name="{safe_text}" data-default-label="采纳" data-active-label="已采纳" '
+            f'onclick="saveLikeFromButton(this)">采纳</button>'
+            + f'<button class="feedback-btn feedback-skip" data-day-idx="-1" data-meal-type="priority" '
+            f'data-item-name="{safe_text}" data-default-label="不采纳" data-active-label="已不采纳" '
+            f'onclick="showFeedbackModalFromButton(this)">不采纳</button>'
+            + '</div>'
+            '</div>'
+            f'<div class="journey-task-visual">{visual_cycle[(idx - 1) % len(visual_cycle)]}</div>'
+            '</div>'
+        )
+    if not cards:
+        return ""
+    note = _build_supportive_note(so, payload)
+    return (
+        '<section class="journey-card">'
+        '<div class="journey-section-title">今天最值得做的三件事</div>'
+        '<div class="journey-section-copy">聚焦关键行动，改善今天的健康状态。</div>'
+        f'<div class="mt-3">{"".join(cards)}</div>'
+        f'<div class="assistant-note">{escape(note)}</div>'
+        '</section>'
+    )
+
+
+def _render_journey_plan(so: dict, payload: dict) -> str:
+    return _render_journey_tasks(so, payload)
+
+
+def _render_nutrition_focus_pills(so: dict) -> str:
+    priorities = so.get("nutrition_priorities") or []
+    if not isinstance(priorities, list):
+        return ""
+    micro_copy = {
+        "low_salt": "控盐更安心",
+        "low_oil": "清淡更稳",
+        "protein": "恢复靠蛋白",
+        "hydration": "补水别太急",
+        "fiber": "摄入要稳定",
+        "meal_rhythm": "节奏别乱",
+    }
+    parts = []
+    for item in priorities[:4]:
+        if not isinstance(item, dict):
+            continue
+        title = _localize_zh_text(str(item.get("title") or item.get("action") or "")).strip()
+        if not title:
+            continue
+        category = str(item.get("category") or "")
+        icon = str(item.get("icon") or _NUTRITION_CATEGORY_ICONS.get(category) or "🥗")
+        copy = micro_copy.get(category) or "今天先做到"
+        parts.append(
+            '<div class="nutrition-focus-pill">'
+            f'<div class="nutrition-focus-icon">{escape(icon)}</div>'
+            f'<div class="nutrition-focus-title">{escape(title)}</div>'
+            f'<div class="nutrition-focus-copy">{escape(copy)}</div>'
+            '</div>'
+        )
+    if not parts:
+        return ""
+    return (
+        '<section class="journey-card">'
+        '<div class="journey-section-title">今日营养重点</div>'
+        '<div class="journey-section-copy">来自 AI 对本次饮食情况的整理，不包含主服务没有提供的热量或宏量营养数据。</div>'
+        f'<div class="nutrition-focus-row">{"".join(parts)}</div>'
+        '</section>'
+    )
+
+
+def _first_meal_items(meal_items: list) -> tuple[str, str]:
+    if not meal_items:
+        return "", ""
+    first_day = meal_items[0] if isinstance(meal_items[0], dict) else {}
+    for meal_key, meal_label in (("dinner", "晚餐"), ("lunch", "午餐"), ("breakfast", "早餐")):
+        items = first_day.get(meal_key) or []
+        if not isinstance(items, list) or not items:
+            continue
+        names = []
+        reasons = []
+        for item in items[:3]:
+            if not isinstance(item, dict):
+                continue
+            name = _localize_zh_text(str(item.get("name") or "")).strip()
+            reason = _localize_zh_text(str(item.get("adc_reason") or item.get("benefit") or "")).strip()
+            if name:
+                names.append(name)
+            if reason:
+                reasons.append(reason)
+        if names:
+            return f'{meal_label}：{" / ".join(names)}', "；".join(reasons[:2])
+    return "", ""
+
+
+def _render_next_meal_card(meal_items: list, nutrition_advice: str) -> str:
+    title, copy = _first_meal_items(meal_items)
+    if not title and not nutrition_advice:
+        return ""
+    title = title or "下一餐先清淡一点"
+    copy = copy or nutrition_advice
+    return (
+        '<section class="journey-card meal-suggestion">'
+        '<div class="meal-suggestion-art">🍲</div>'
+        '<div>'
+        '<div class="journey-section-kicker">下一餐建议</div>'
+        f'<div class="meal-suggestion-title">{escape(title)}</div>'
+        f'<div class="meal-suggestion-copy">{escape(copy)}</div>'
+        '</div>'
+        '</section>'
+    )
+
+
+def _render_diet_advice_cards(diet_table: list[dict]) -> str:
+    if not diet_table:
+        return ""
+    cards = []
+    for item in diet_table[:4]:
+        if not isinstance(item, dict):
+            continue
+        condition = _localize_zh_text(str(item.get("condition") or "")).strip()
+        principle = _localize_zh_text(str(item.get("principle") or "")).strip()
+        recommend = _localize_zh_text(str(item.get("recommend") or "")).strip()
+        avoid = _localize_zh_text(str(item.get("avoid") or "")).strip()
+        if not (condition or principle or recommend or avoid):
+            continue
+        cards.append(
+            '<div class="diet-advice-card">'
+            '<div class="diet-advice-head">'
+            f'<div class="diet-advice-title">{escape(condition or "饮食原则")}</div>'
+            + (f'<div class="diet-advice-principle">{escape(principle)}</div>' if principle else "")
+            + '</div>'
+            '<div class="diet-advice-grid">'
+            '<div class="diet-advice-column">'
+            '<div class="diet-advice-label">建议优先</div>'
+            f'<div class="diet-advice-copy">{escape(recommend or "按医生建议保持稳定饮食")}</div>'
+            '</div>'
+            '<div class="diet-advice-column">'
+            '<div class="diet-advice-label">尽量避免</div>'
+            f'<div class="diet-advice-copy">{escape(avoid or "避免突然大幅改变饮食")}</div>'
+            '</div>'
+            '</div>'
+            '</div>'
+        )
+    if not cards:
+        return ""
+    return '<div class="diet-advice-list">' + "".join(cards) + '</div>'
+
+
+def _render_journey_nutrition(
+    so: dict,
+    meal_items: list,
+    meal_plan_html: str,
+    current_time_raw: object,
+) -> str:
+    nutrition_advice = _localize_zh_text(str(so.get("nutrition_advice") or "")).strip()
+    focus_html = _render_nutrition_focus_pills(so)
+    next_meal_html = _render_next_meal_card(meal_items, nutrition_advice)
+    plan_html = ""
+    if meal_plan_html:
+        plan_html = (
+            '<section class="journey-card">'
+            '<div class="journey-section-title">膳食计划</div>'
+            '<div class="journey-section-copy">先给 3 天参考，后面可再扩展到 7 天或 14 天。</div>'
+            f'{meal_plan_html}'
+            '</section>'
+        )
+    diet_table = _render_diet_table(so.get("disease_diet_table") or so.get("diet_table") or [])
+    diet_cards = _render_diet_advice_cards(so.get("disease_diet_table") or so.get("diet_table") or [])
+    diet_html = (
+        '<section class="journey-card diet-table-compact">'
+        '<div class="journey-section-title">疾病饮食对照</div>'
+        '<div class="journey-section-copy">先看和当前慢病/用药最相关的饮食边界。</div>'
+        f'{diet_cards or diet_table}'
+        '</section>'
+    ) if (diet_cards or diet_table) else ""
+    advice_html = (
+        '<section class="journey-card">'
+        '<div class="journey-section-title">营养说明</div>'
+        f'<div class="journey-section-copy">{escape(nutrition_advice)}</div>'
+        '</section>'
+    ) if nutrition_advice else ""
+    return diet_html + focus_html + next_meal_html + advice_html + plan_html
+
+
+def _render_journey_why(so: dict, payload: dict, memory: dict) -> str:
+    context_html = _render_personalized_context(so, payload, memory)
+    reasoning = _localize_zh_text(str(so.get("reasoning") or "")).strip()
+    sections = []
+    if context_html:
+        sections.append(
+            '<section class="journey-card">'
+            '<div class="journey-section-title">建议依据</div>'
+            '<div class="journey-section-copy">把用药、饮食、活动和监测的依据拆开看。</div>'
+            f'<div class="why-stack mt-3">{context_html}</div>'
+            '</section>'
+        )
+    if reasoning:
+        sections.append(
+            '<section class="journey-card">'
+            '<div class="journey-section-title">推理摘要</div>'
+            f'<div class="journey-section-copy">{escape(reasoning)}</div>'
+            '</section>'
+        )
+    note = _build_supportive_note(so, payload)
+    sections.append(f'<div class="why-footer-note">小步坚持，持续改善。{escape(note)}</div>')
+    return "".join(sections)
+
+
 def _render_bottom_nav() -> str:
     items = [
-        ("🏠", "首页", "homeAnchor", True),
-        ("✅", "计划", "priorityPlanAnchor", False),
-        ("🥗", "营养", "nutritionOverviewAnchor", False),
-        ("📈", "趋势", "trendOverviewAnchor", False),
-        ("🗂️", "概览", "statusAnchor", False),
+        ("⌂", "首页", "home", True, ""),
+        ("▣", "计划", "plan", False, ""),
+        ("◇", "依据", "why", False, ""),
+        ("♨", "营养", "nutrition", False, ""),
+        ("⌁", "趋势", "trends", False, ""),
     ]
     parts = []
-    for icon, label, target_id, active in items:
+    for icon, label, page_key, active, extra_class in items:
         parts.append(
-            f'<button class="bottom-tab{" active" if active else ""}" onclick="jumpToSection(\'{target_id}\')">'
+            f'<button class="bottom-tab{extra_class}{" active" if active else ""}" '
+            f'data-page-target="{page_key}" onclick="switchJourneyPage(\'{page_key}\')">'
             f'<div class="bottom-tab-icon">{icon}</div>'
             f'<div class="bottom-tab-label">{label}</div>'
             '</button>'
@@ -2008,7 +2423,7 @@ def _build_supportive_note(so: dict, payload: dict) -> str:
 
 
 def _render_hero_intro(so: dict, payload: dict, memory: dict, tone_profile: dict, current_time_raw: str) -> str:
-    name = _extract_patient_name(memory, tone_profile)
+    name = _extract_patient_name(payload)
     greeting = _time_greeting(current_time_raw)
     guidance = so.get("health_guidance") or {}
     summary = _localize_zh_text((guidance.get("summary") if isinstance(guidance, dict) else "") or "")
@@ -2029,7 +2444,7 @@ def _render_hero_intro(so: dict, payload: dict, memory: dict, tone_profile: dict
         '</div>'
         '<div class="hero-welcome-visual">'
         f'<div class="hero-avatar-badge">{avatar_text}</div>'
-        '<div class="hero-assistant-orb">🤖</div>'
+        '<div class="hero-assistant-orb">AI</div>'
         '</div>'
         '</section>'
         '</div>'
@@ -2072,13 +2487,8 @@ def _render_status_dashboard(so: dict, memory: dict) -> str:
         ),
     ]
 
-    key_events = memory.get("key_events") or []
-    surgery_event = next((ev for ev in key_events if ev.get("type") == "surgery"), None)
     progress_title = "本轮观察重点"
-    progress_text = "当前以最近14天的恢复、营养和活动变化作为主要观察窗口。"
-    if surgery_event:
-        progress_title = "恢复阶段"
-        progress_text = f'{_localize_zh_text(str(surgery_event.get("description") or ""))}后，当前更关注体力、营养和活动恢复。'
+    progress_text = "当前以结构化依从情况和真实信号作为主要观察依据。"
 
     return (
         '<div id="statusAnchor" class="px-3 pt-3">'
@@ -2142,10 +2552,10 @@ def _render_priority_plan(so: dict, payload: dict) -> str:
             '<div class="priority-task-actions">'
             f'<button class="priority-task-btn" data-day-idx="-1" data-meal-type="priority" '
             f'data-item-name="{safe_text}" data-default-label="记为重点" data-active-label="已记重点" '
-            f'onclick="saveLike(-1,\'priority\',\'{safe_text}\', this)">记为重点</button>'
+            f'onclick="saveLikeFromButton(this)">记为重点</button>'
             f'<button class="priority-task-btn secondary" data-day-idx="-1" data-meal-type="priority" '
             f'data-item-name="{safe_text}" data-default-label="稍后处理" data-active-label="已标稍后" '
-            f'onclick="showFeedbackModal(-1,\'priority\',\'{safe_text}\', this)">稍后处理</button>'
+            f'onclick="showFeedbackModalFromButton(this)">稍后处理</button>'
             '</div>'
             '</div>'
         )
@@ -2165,6 +2575,51 @@ def _render_priority_plan(so: dict, payload: dict) -> str:
     )
 
 
+def _render_nutrition_priorities(so: dict) -> str:
+    priorities = so.get("nutrition_priorities") or []
+    if not isinstance(priorities, list):
+        return ""
+
+    cards = []
+    for item in priorities[:4]:
+        if not isinstance(item, dict):
+            continue
+        title = _localize_zh_text(str(item.get("title") or "")).strip()
+        action = _localize_zh_text(str(item.get("action") or "")).strip()
+        reason = _localize_zh_text(str(item.get("reason") or "")).strip()
+        if not (title or action or reason):
+            continue
+        category = str(item.get("category") or "").strip()
+        icon = str(item.get("icon") or _NUTRITION_CATEGORY_ICONS.get(category) or "🥗")
+
+        body_parts = []
+        if action:
+            body_parts.append(
+                f'<div class="text-sm text-slate-700 leading-relaxed mb-2">'
+                f'{escape(action)}</div>'
+            )
+        if reason:
+            body_parts.append(
+                f'<div class="text-xs text-emerald-700 leading-relaxed bg-emerald-50 '
+                f'border border-emerald-100 rounded-lg px-3 py-2">'
+                f'为什么：{escape(reason)}</div>'
+            )
+
+        cards.append(
+            '<div class="sub-card sub-card-static">'
+            '<div class="sub-card-header">'
+            f'<span class="sub-card-icon">{escape(icon)}</span>'
+            '<div class="flex-1 min-w-0">'
+            f'<div class="sub-card-value" style="font-size:0.92em">{escape(title or action)}</div>'
+            '</div>'
+            '</div>'
+            f'<div class="sub-card-body">{"".join(body_parts)}</div>'
+            '</div>'
+        )
+
+    return "".join(cards)
+
+
 def main() -> None:
     _load_env()
 
@@ -2177,6 +2632,9 @@ def main() -> None:
     payload = data.get("payload") or {}
     llm = data.get("llm_result") or {}
     so = llm.get("structured_output") or {}
+    _sanitize_latest_health_summary(so, payload)
+    _merge_adherence_payload(so, payload)
+    _apply_output_guards(so, has_blood_glucose=_payload_has_blood_glucose(payload))
     memory = payload.get("memory") or {}
     try:
         template = _TEMPLATE_PATH.read_text(encoding="utf-8")
@@ -2184,16 +2642,14 @@ def main() -> None:
         print(f"Template not found: {_TEMPLATE_PATH}", file=sys.stderr)
         sys.exit(1)
 
-    tone_profile = memory.get("tone_profile") or {}
-    condition_ctx_name = tone_profile.get("condition_context") or "stable_routine"
-    ctx = _CONDITION_CONTEXTS.get(condition_ctx_name, _CONDITION_CONTEXTS["stable_routine"])
+    tone_profile = {}
+    ctx = _CONDITION_CONTEXTS["stable_routine"]
     visible = ctx["show_sections"]
 
     if ctx["tone_override"]:
         tone_profile = {**tone_profile, "style": ctx["tone_override"]}
 
-    key_events = memory.get("key_events") or []
-    escalations = _check_escalations(key_events)
+    escalations = []
 
     status = so.get("patient_status") or "stable"
     if any(e["level"] == "critical" for e in escalations):
@@ -2212,8 +2668,9 @@ def main() -> None:
     conditions = so.get("conditions") or []
     location = payload.get("location") or {}
     loc = location.get("current") or {}
-    patient_lat = loc.get("lat", 0)
-    patient_lon = loc.get("lon", 0)
+    patient_lat = loc.get("lat")
+    patient_lon = loc.get("lon")
+    has_location = patient_lat not in (None, "") and patient_lon not in (None, "")
 
     if any(
         kw.lower() in t.lower() or kw in t
@@ -2228,18 +2685,23 @@ def main() -> None:
 
     baidu_map_ak = os.environ.get("BAIDU_MAP_AK", "").strip() or "6zXfgKZZiCdrL3MZBH7DGpjemq5IRxRC"
     maps_script = ""
-    if "map" in visible:
+    if "map" in visible and has_location:
         maps_script = (
             '<script type="text/javascript" '
             f'src="https://api.map.baidu.com/api?v=3.0&ak={escape(baidu_map_ak, quote=True)}"></script>'
         )
-    map_section = _render_map_section(ai_map_msg, ai_map_msg_park, patient_lat, patient_lon)
+    map_section = _render_map_section(ai_map_msg, ai_map_msg_park, patient_lat, patient_lon) if has_location else ""
 
-    meal_json = json.dumps(_localize_zh_value(so.get("weekly_meal_plan") or []), ensure_ascii=False)
+    meal_items = _localize_zh_value(so.get("weekly_meal_plan") or [])
+    if not isinstance(meal_items, list):
+        meal_items = []
+    has_meal_plan = bool(meal_items)
+    meal_json = _json_for_script(meal_items)
 
-    patient_id = meta.get("user_id") or payload.get("user_id") or payload.get("patient_id") or "unknown"
+    patient_id = meta.get("user_id") or "unknown"
 
-    preferred_name = (tone_profile or {}).get("preferred_name") or ""
+    patient = payload.get("patient") or {}
+    preferred_name = str(patient.get("preferred_name") or patient.get("name") or patient.get("display_name") or "").strip() if isinstance(patient, dict) else ""
     base_greeting = ctx.get("header_greeting") or "您好！"
     if preferred_name:
         base_trimmed = base_greeting.rstrip("！!。,.， ")
@@ -2377,10 +2839,10 @@ def main() -> None:
                 f'<div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap">'
                 f'<button class="feedback-btn like" title="有帮助" data-day-idx="-1" data-meal-type="rec" '
                 f'data-item-name="{safe_text}" data-default-label="适合我" data-active-label="已选择" '
-                f"onclick=\"saveLike(-1,'rec','{safe_text}', this)\">适合我</button>"
+                f'onclick="saveLikeFromButton(this)">适合我</button>'
                 f'<button class="feedback-btn feedback-skip" title="不适合我" data-day-idx="-1" data-meal-type="rec" '
                 f'data-item-name="{safe_text}" data-default-label="不适合" data-active-label="已跳过" '
-                f"onclick=\"showFeedbackModal(-1,'rec','{safe_text}', this)\">不适合</button>"
+                f'onclick="showFeedbackModalFromButton(this)">不适合</button>'
                 f'</div>'
             )
             body_html = "".join(body_parts)
@@ -2404,115 +2866,13 @@ def main() -> None:
             )
         return html
 
-    card_defs = [
-        ("guidance", "💚", "#d1fae5", "健康指导",
-         lambda: _render_health_guidance(so.get("health_guidance") or {}, conditions, tone_profile=tone_profile)),
-        ("memory", "🧠", "#e0e7ff", "健康记录",
-         lambda: _render_memory(memory)),
-        ("vitals", "📊", "#fef3c7", "最新健康数据",
-         lambda: _vitals_subcards()),
-        ("adherence", "📋", "#f3e8ff", "依从性概览",
-         lambda: _adherence_subcards()),
-        ("recommendations", "💡", "#dcfce7", "健康建议",
-         lambda: _recs_subcards()),
-        ("nutrition", "🥗", "#ecfdf5", "营养建议",
-         lambda: (
-             '<p style="font-size:0.95em;line-height:1.7;color:#334155;padding:8px 0">'
-             + escape(_localize_zh_text(so.get("nutrition_advice") or "保持均衡营养，多摄入新鲜蔬菜，注意适量补水。"))
-             + '</p>'
-         )),
-        ("diet_table", "📑", "#fff7ed", "疾病饮食对照",
-         lambda: _render_diet_table(so.get("diet_table") or [])),
-        ("cuisine", "🍜", "#fdf2f8", "口味偏好",
-         lambda: (
-             '<p class="text-sm text-slate-500 mb-3">选择您喜欢的菜系，'
-             "后续膳食建议会尽量参考您的口味。</p>"
-             '<div class="flex flex-wrap gap-2 mb-3" id="cuisineChips"></div>'
-             '<div class="flex items-center gap-2">'
-             '<input id="customCuisineInput" type="text" placeholder="添加其他菜系..." '
-             'class="flex-1 text-sm border border-slate-200 rounded-lg px-3 py-2 '
-             'focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-200">'
-             '<button onclick="addCustomCuisine()" class="px-3 py-2 rounded-lg bg-emerald-50 '
-             'border border-emerald-200 text-emerald-700 text-sm font-medium hover:bg-emerald-100">'
-             '+ 添加</button></div>'
-         )),
-        ("meal_plan", "📅", "#eff6ff", "一周膳食参考",
-         lambda: (
-             '<div class="flex gap-2 mb-4 overflow-x-auto pb-2" id="dayTabs"></div>'
-             '<div id="mealContent"></div>'
-         )),
-        ("diet_tips", "✨", "#f0fdf4", "营养小贴士",
-         lambda: _render_diet_tips(so.get("diet_tips") or [])),
-        ("map", "🏥", "#f0f9ff", "附近医疗与公园",
-         lambda: map_section),
-        ("submit", "✓", "#ecfdf5", "提交偏好",
-         lambda: (
-             '<button id="exportFeedbackBtn" onclick="exportFeedbackJSON()" style="display:none" '
-             'class="w-full px-6 py-3 rounded-full text-sm font-bold bg-emerald-600 text-white shadow-md '
-             'hover:bg-emerald-700 active:scale-95 transition-all">'
-             '✓ 提交我的偏好</button>'
-             '<p class="text-xs text-slate-400 mt-2 text-center" id="submitHint" style="display:none">'
-             '您的选择会用于下次生成更合适的建议</p>'
-         )),
-    ]
-
-    vitals_data = so.get("latest_health_summary") or {}
-    bp_preview = vitals_data.get("blood_pressure", "")
-    hr_preview = vitals_data.get("heart_rate", "")
-    vitals_preview = f"血压 {bp_preview}，心率 {hr_preview}" if bp_preview else "血压、心率、血糖等最新数据"
-
-    guidance_data = so.get("health_guidance") or {}
-    guidance_summary = _localize_zh_text(guidance_data.get("summary", "")) if isinstance(guidance_data, dict) else ""
-    guidance_preview = (guidance_summary or "结合您的疾病和近期情况生成的个性化建议")[:80]
-    if len(guidance_summary) > 80:
-        guidance_preview += "..."
-
-    card_summaries = {
-        "guidance": guidance_preview,
-        "memory": "您的长期资料、近期趋势和关键事件",
-        "vitals": vitals_preview,
-        "adherence": "近期用药、营养、运动和监测情况",
-        "recommendations": "适合当前情况的可执行建议",
-        "nutrition": "营养重点，以及为什么这样安排",
-        "diet_table": "不同疾病对应的饮食原则",
-        "cuisine": "告诉我们您喜欢的口味",
-        "meal_plan": "一周早、中、晚膳食参考",
-        "diet_tips": "更容易坚持的小型营养提醒",
-        "map": "附近医院和公园",
-        "submit": "保存您的反馈和偏好",
-    }
-
-    cards_html_parts = []
-    for section_key, icon, bg_color, title, render_fn in card_defs:
-        if section_key not in visible:
-            continue
-        content = render_fn()
-        if not content or not content.strip():
-            continue
-
-        summary = card_summaries.get(section_key, "")
-        cards_html_parts.append(
-            f'<div class="section-card" data-section="{section_key}">'
-            f'<div class="section-card-header">'
-            f'<div class="section-card-icon" style="background:{bg_color}">{icon}</div>'
-            f'<div class="flex-1 min-w-0">'
-            f'<div class="section-card-title">{title}</div>'
-            f'<div class="section-card-summary">{summary}</div>'
-            f'</div>'
-            f'<div class="section-card-arrow">&#9662;</div>'
-            f'</div>'
-            f'<div class="section-card-body">{content}</div>'
-            f'</div>'
-        )
-
-    cards_html = "\n".join(cards_html_parts)
-
+    nutrition_advice = _localize_zh_text(str(so.get("nutrition_advice") or "")).strip()
     nutrition_text = (
         '<div class="rounded-xl bg-emerald-50 border border-emerald-100 px-4 py-4 '
         'text-[0.95em] leading-7 text-slate-700">'
-        + escape(_localize_zh_text(so.get("nutrition_advice") or "保持均衡营养，多摄入新鲜蔬菜，注意适量补水。"))
+        + escape(nutrition_advice)
         + '</div>'
-    )
+    ) if nutrition_advice else ""
     cuisine_html = (
         '<p class="text-sm text-slate-500 mb-3">选择您喜欢的菜系，后续膳食建议会尽量参考您的口味。</p>'
         '<div class="flex flex-wrap gap-2 mb-3" id="cuisineChips"></div>'
@@ -2527,7 +2887,7 @@ def main() -> None:
     meal_plan_html = (
         '<div class="flex gap-2 mb-4 overflow-x-auto pb-2" id="dayTabs"></div>'
         '<div id="mealContent"></div>'
-    )
+    ) if has_meal_plan else ""
     submit_cta_html = (
         '<div id="submitCtaShell" class="submit-cta-shell">'
         '<button id="exportFeedbackBtn" onclick="exportFeedbackJSON()" '
@@ -2541,7 +2901,7 @@ def main() -> None:
     quick_nav_html = _render_quick_nav()
     status_dashboard_html = _render_status_dashboard(so, memory)
     priority_plan_html = _render_priority_plan(so, payload)
-    nutrition_spotlight_html = _render_nutrition_spotlight(so)
+    nutrition_spotlight_html = ""
     hero_vitals_block = _render_vitals(so.get("latest_health_summary") or {}) if "vitals" in visible else ""
     hero_vitals_html = f'<div class="px-3 pt-3">{hero_vitals_block}</div>' if hero_vitals_block else ""
     memory_overview_html = _render_memory_overview(memory) if "memory" in visible else ""
@@ -2556,9 +2916,42 @@ def main() -> None:
         '</div>'
         '</div>'
     ) if memory_overview_html else ""
-    trend_story_html = _render_trend_story()
-    trend_data_json = json.dumps(_build_trend_data(so, payload, memory, meta.get("current_time") or ""), ensure_ascii=False)
+    trend_data = _build_trend_data(payload)
+    trend_story_html = _render_trend_story(trend_data)
+    trend_data_json = _json_for_script(trend_data)
     bottom_nav_html = _render_bottom_nav()
+    current_time_raw = meta.get("current_time") or datetime.now().strftime("%Y-%m-%d %H:%M")
+    home_page_html = _journey_page(
+        "home",
+        "首页",
+        "先看今天的状态、执行情况和最新生命体征。",
+        _render_journey_home(so, payload, memory, current_time_raw),
+        active=True,
+    )
+    plan_page_html = _journey_page(
+        "plan",
+        "今日计划",
+        "今天先集中完成这三件事。",
+        _render_journey_plan(so, payload),
+    )
+    nutrition_page_html = _journey_page(
+        "nutrition",
+        "营养与饮食建议",
+        "营养重点、下一餐建议、膳食计划和疾病饮食对照放在同一页。",
+        _render_journey_nutrition(so, meal_items, meal_plan_html, current_time_raw),
+    )
+    trend_page_html = _journey_page(
+        "trends",
+        "健康趋势",
+        "周、月、季度维度只展示真实信号点。",
+        trend_story_html,
+    )
+    why_page_html = _journey_page(
+        "why",
+        "为什么这样建议",
+        "结合本次执行情况、长期记忆和最新信号给出依据。",
+        _render_journey_why(so, payload, memory),
+    )
 
     regrouped_cards = []
 
@@ -2586,11 +2979,6 @@ def main() -> None:
             adherence_body_parts.append(
                 _module_subsection("执行情况", "看看最近用药、营养、活动和监测情况。", adherence_html)
             )
-    key_events_html = _render_key_events(memory) if "memory" in visible else ""
-    if key_events_html.strip():
-        adherence_body_parts.append(
-            _module_subsection("关键事件", "把最近的重要记录放在一起，前后变化会更好理解。", key_events_html)
-        )
     adherence_bundle_html = "".join(adherence_body_parts)
     if adherence_bundle_html:
         regrouped_cards.append(
@@ -2604,9 +2992,10 @@ def main() -> None:
             )
         )
 
+    nutrition_priorities_html = _render_nutrition_priorities(so)
     nutrition_bundle_html = "".join([
-        _module_subsection("营养建议", "先看这段时间哪些营养安排更适合您。", nutrition_text) if "nutrition" in visible else "",
-        _module_subsection("疾病饮食对照", "哪些食物更适合，哪些先少吃一点。", _render_diet_table(so.get("diet_table") or [])) if "diet_table" in visible else "",
+        _module_subsection("今日营养重点", "根据今天的饮食和回访情况整理。", nutrition_priorities_html) if ("nutrition" in visible and nutrition_priorities_html) else "",
+        _module_subsection("营养建议", "先看这段时间哪些营养安排更适合您。", nutrition_text) if ("nutrition" in visible and nutrition_text) else "",
         _module_subsection("营养小贴士", "都是些更容易用得上的小提醒。", _render_diet_tips(so.get("diet_tips") or [])) if "diet_tips" in visible else "",
     ])
     if nutrition_bundle_html:
@@ -2622,8 +3011,8 @@ def main() -> None:
         )
 
     meal_bundle_html = "".join([
-        _module_subsection("口味偏好", "选一些您平时更喜欢的口味，后面的膳食建议会更贴近您。", cuisine_html) if "cuisine" in visible else "",
-        _module_subsection("一周膳食参考", "给您一些这周更容易参考的早、中、晚餐搭配。", meal_plan_html) if "meal_plan" in visible else "",
+        _module_subsection("口味偏好", "选一些您平时更喜欢的口味，后面的膳食建议会更贴近您。", cuisine_html) if ("cuisine" in visible and has_meal_plan) else "",
+        _module_subsection("一周膳食参考", "给您一些这周更容易参考的早、中、晚餐搭配。", meal_plan_html) if ("meal_plan" in visible and meal_plan_html) else "",
     ])
     if meal_bundle_html:
         regrouped_cards.append(
@@ -2642,13 +3031,15 @@ def main() -> None:
 
     cards_html = "\n".join(part for part in regrouped_cards if part)
 
-    report_title = "依从性报告"
+    report_title = "照护旅程"
     html = template.format(
         report_title=report_title,
         header_greeting=header_greeting,
         layout_class=layout_class,
         patient_id=patient_id,
+        patient_id_json=_json_for_script(str(patient_id)),
         current_time=current_time,
+        current_time_json=_json_for_script(str(current_time)),
         status_badge_class=badge_class,
         status_icon=status_icon,
         status_text=status_text,
@@ -2661,6 +3052,11 @@ def main() -> None:
         hero_vitals_html=hero_vitals_html,
         top_overview_html=top_overview_html,
         trend_story_html=trend_story_html,
+        home_page_html=home_page_html,
+        plan_page_html=plan_page_html,
+        nutrition_page_html=nutrition_page_html,
+        trend_page_html=trend_page_html,
+        why_page_html=why_page_html,
         escalation_html=_render_escalation_banner(escalations) if "escalation" in visible else "",
         ai_message_html=_render_ai_message(so),
         cards_html=cards_html,
