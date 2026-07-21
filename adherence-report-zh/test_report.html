@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>照护旅程</title>
 <script src="https://cdn.tailwindcss.com"></script>
 
@@ -16,6 +16,7 @@
     --app-card-shadow: 0 16px 36px rgba(15,23,42,.08), 0 3px 10px rgba(15,23,42,.05);
     --app-card-shadow-strong: 0 22px 46px rgba(15,23,42,.12), 0 10px 22px rgba(15,23,42,.08);
     --app-icon-shadow: 0 10px 22px rgba(148,163,184,.24), inset 0 1px 0 rgba(255,255,255,.95), inset 0 -10px 16px rgba(15,23,42,.08);
+    --bottom-nav-space: 90px;
   }
   body {
     font-family: system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
@@ -29,6 +30,7 @@
       radial-gradient(circle at top right, rgba(52,211,153,.16), transparent 24%),
       linear-gradient(180deg, var(--app-bg-top) 0%, var(--app-bg-bottom) 100%);
     min-height:100vh;
+    min-height:100dvh;
     position:relative;
     overflow-x:hidden;
   }
@@ -47,7 +49,9 @@
     position:relative;
     isolation:isolate;
     overflow-x:hidden;
-    padding-bottom:calc(128px + env(safe-area-inset-bottom, 0px));
+    min-height:100vh;
+    min-height:100dvh;
+    padding-bottom:calc(var(--bottom-nav-space) + env(safe-area-inset-bottom, 0px)) !important;
   }
   .app-shell::before {
     content:"";
@@ -690,7 +694,7 @@
   /* ─── Mobile-First App Layout ─── */
   @media (max-width: 640px) {
     body { font-size: 16px; line-height: 1.6; }
-    .max-w-md { max-width: 100% !important; padding: 0 !important; }
+    .max-w-md { max-width: 100% !important; padding-left: 0 !important; padding-right: 0 !important; }
     .app-shell::before { inset:10px 8px auto; height:110px; }
     .app-header { margin:0 8px; border-radius:0 0 22px 22px; }
     .hero-welcome-card { grid-template-columns:minmax(0,1fr); border-radius:24px; padding:16px; }
@@ -1535,7 +1539,7 @@
   }
   .submit-cta-shell {
     position: sticky;
-    bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(var(--bottom-nav-space) + env(safe-area-inset-bottom, 0px));
     z-index: 48;
     margin: 4px 12px calc(14px + env(safe-area-inset-bottom, 0px));
     padding: 10px;
@@ -1580,7 +1584,7 @@
 </style>
 </head>
 <body class="app-body text-slate-800">
-<div class="app-shell max-w-md mx-auto px-0 py-0 " style="min-height:100vh">
+<div class="app-shell max-w-md mx-auto px-0 ">
 
   <div class="journey-topbar">
     <div class="topbar-title">
@@ -1595,6 +1599,13 @@
     <main class="journey-page" data-page="nutrition"><div class="journey-screen-head"><div><div class="journey-screen-title">营养与饮食建议</div><div class="journey-screen-copy">营养重点、下一餐建议、膳食计划和疾病饮食对照放在同一页。</div></div></div><section class="journey-card diet-table-compact"><div class="journey-section-title">疾病饮食对照</div><div class="journey-section-copy">先看和当前慢病/用药最相关的饮食边界。</div><div class="diet-advice-list"><div class="diet-advice-card"><div class="diet-advice-head"><div class="diet-advice-title">高血压</div><div class="diet-advice-principle">低盐、少汤底、少加工调料</div></div><div class="diet-advice-grid"><div class="diet-advice-column"><div class="diet-advice-label">建议优先</div><div class="diet-advice-copy">清蒸鱼、番茄鸡蛋汤、炖豆腐、少油青菜</div></div><div class="diet-advice-column"><div class="diet-advice-label">尽量避免</div><div class="diet-advice-copy">火锅冒菜汤底、重辣蘸料、咸菜、腌制肉类</div></div></div></div><div class="diet-advice-card"><div class="diet-advice-head"><div class="diet-advice-title">主食管理</div><div class="diet-advice-principle">主食定量、搭配蛋白质和蔬菜</div></div><div class="diet-advice-grid"><div class="diet-advice-column"><div class="diet-advice-label">建议优先</div><div class="diet-advice-copy">杂粮饭、燕麦、豆腐、鸡蛋、少油蔬菜</div></div><div class="diet-advice-column"><div class="diet-advice-label">尽量避免</div><div class="diet-advice-copy">含糖饮料、甜点、大份精白主食</div></div></div></div><div class="diet-advice-card"><div class="diet-advice-head"><div class="diet-advice-title">华法林用药</div><div class="diet-advice-principle">饮食保持稳定</div></div><div class="diet-advice-grid"><div class="diet-advice-column"><div class="diet-advice-label">建议优先</div><div class="diet-advice-copy">保持平时蔬菜摄入节奏，不突然大增大减</div></div><div class="diet-advice-column"><div class="diet-advice-label">尽量避免</div><div class="diet-advice-copy">突然大量改变绿叶菜摄入或自行加保健品</div></div></div></div></div></section><section class="journey-card"><div class="journey-section-title">今日营养重点</div><div class="journey-section-copy">来自 AI 对本次饮食情况的整理，不包含主服务没有提供的热量或宏量营养数据。</div><div class="nutrition-focus-row"><div class="nutrition-focus-pill"><div class="nutrition-focus-icon">🧂</div><div class="nutrition-focus-title">先降盐</div><div class="nutrition-focus-copy">控盐更安心</div></div><div class="nutrition-focus-pill"><div class="nutrition-focus-icon">🥘</div><div class="nutrition-focus-title">把红油换成蒸煮</div><div class="nutrition-focus-copy">清淡更稳</div></div><div class="nutrition-focus-pill"><div class="nutrition-focus-icon">🥚</div><div class="nutrition-focus-title">每餐留一点蛋白质</div><div class="nutrition-focus-copy">恢复靠蛋白</div></div><div class="nutrition-focus-pill"><div class="nutrition-focus-icon">🥬</div><div class="nutrition-focus-title">饮食保持稳定</div><div class="nutrition-focus-copy">摄入要稳定</div></div></div></section><section class="journey-card meal-suggestion"><div class="meal-suggestion-art">🍲</div><div><div class="journey-section-kicker">下一餐建议</div><div class="meal-suggestion-title">晚餐：鸡丝青菜面 / 蒸南瓜小份</div><div class="meal-suggestion-copy">清淡易做；主食可控</div></div></section><section class="journey-card"><div class="journey-section-title">营养说明</div><div class="journey-section-copy">今天的营养重点不是算热量，而是先把油盐降下来。下一餐建议用热粥、米饭、清蒸或炖煮蛋白质，再配一份少油蔬菜；火锅冒菜这类红油汤底先暂停。因为您有高血压史，也在服用华法林，饮食调整要稳定、温和，不建议突然大幅改变绿叶菜摄入量。</div></section><section class="journey-card"><div class="journey-section-title">膳食计划</div><div class="journey-section-copy">先给 3 天参考，后面可再扩展到 7 天或 14 天。</div><div class="flex gap-2 mb-4 overflow-x-auto pb-2" id="dayTabs"></div><div id="mealContent"></div></section></main>
     <main class="journey-page" data-page="trends"><div class="journey-screen-head"><div><div class="journey-screen-title">健康趋势</div><div class="journey-screen-copy">周、月、季度维度只展示真实信号点。</div></div></div><div id="trendOverviewAnchor" class="px-3 pt-3"><section class="trend-card"><div class="trend-card-head"><div><div class="trend-card-title">信号趋势</div><div class="trend-card-copy">只展示真实测量点，方便一眼判断哪里需要优先跟进。</div></div><div class="trend-insight-chip" id="trendInsightChip">最近一周展示真实信号点，未插值、未估算。</div></div><div class="trend-range-tabs"><button class="trend-range-btn active" data-range="week" onclick="renderTrendRange('week')">周</button><button class="trend-range-btn" data-range="month" onclick="renderTrendRange('month')">月</button><button class="trend-range-btn" data-range="quarter" onclick="renderTrendRange('quarter')">季度</button></div><div id="trendMetricStack" class="trend-metric-stack mt-3"></div></section></div></main>
     <main class="journey-page" data-page="why"><div class="journey-screen-head"><div><div class="journey-screen-title">为什么这样建议</div><div class="journey-screen-copy">结合本次执行情况、长期记忆和最新信号给出依据。</div></div></div><section class="journey-card"><div class="journey-section-title">建议依据</div><div class="journey-section-copy">把用药、饮食、活动和监测的依据拆开看。</div><div class="why-stack mt-3"><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">💊</span><div class="flex-1 min-w-0"><div class="sub-card-label">当前用药</div><div class="sub-card-value">用药执行</div></div></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">本次遵从回访记录：降压药漏服，原因是忘带；华法林按时服用。</div><div class="mt-3 text-xs text-slate-600 bg-slate-50 rounded-xl px-3 py-2 leading-relaxed border border-slate-200">所以这里会更强调：降压药漏服会影响血压稳定，华法林则需要继续保持规律。</div></div></div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">⚠️</span><div class="flex-1 min-w-0"><div class="sub-card-label">近期症状</div><div class="sub-card-value">饮食情况</div></div></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">回访记录显示三餐均食用火锅冒菜，饮食油腻且盐分摄入多。</div><div class="mt-3 text-xs text-slate-600 bg-slate-50 rounded-xl px-3 py-2 leading-relaxed border border-slate-200">所以这里会更强调：偏咸偏油饮食会增加高血压管理难度，也容易让第二天更难恢复清淡节奏。</div></div></div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">📈</span><div class="flex-1 min-w-0"><div class="sub-card-label">监测变化</div><div class="sub-card-value">活动情况</div></div></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">今天未进行运动，障碍为没有运动心情。</div><div class="mt-3 text-xs text-slate-600 bg-slate-50 rounded-xl px-3 py-2 leading-relaxed border border-slate-200">所以这里会更强调：不需要大运动量，但轻活动有助于循环和情绪回到节奏里。</div></div></div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">📈</span><div class="flex-1 min-w-0"><div class="sub-card-label">监测变化</div><div class="sub-card-value">监测缺口</div></div></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">回访记录提示未主动测量血压；设备侧最新血压为 108/69。</div><div class="mt-3 text-xs text-slate-600 bg-slate-50 rounded-xl px-3 py-2 leading-relaxed border border-slate-200">所以这里会更强调：主动记录能帮助判断漏服和饮食变化是否影响后续血压。</div></div></div></div></section><section class="journey-card"><div class="journey-section-title">推理摘要</div><div class="journey-section-copy">本报告只使用 MVP payload 中存在的事实：当前依从回访、memory archive、近期 light summary、latest_health 和 signal_trends。未在真实最新信号中出现的指标，页面不会生成对应卡片、趋势或结论。</div></section><div class="why-footer-note">小步坚持，持续改善。回访里同时出现了降压药漏服、饮食偏咸偏油、未运动和未主动测血压，这几项都和高血压管理有关。</div></main>
+  </div>
+
+  <div class="submit-cta-shell" id="submitCtaShell" style="display:none">
+    <button class="submit-cta-button" id="exportFeedbackBtn" type="button" onclick="exportFeedbackJSON()">
+      先选择偏好再提交
+    </button>
+    <div class="submit-cta-hint" id="submitHint" aria-live="polite"></div>
   </div>
 
   <!-- Guardrail (slim footer) -->
