@@ -1466,8 +1466,8 @@ def _render_map_section(
     patient_lat: float,
     patient_lon: float,
 ) -> str:
-    lat = patient_lat if patient_lat else 39.9042
-    lon = patient_lon if patient_lon else 116.4074
+    lat = patient_lat if patient_lat is not None else 39.9042
+    lon = patient_lon if patient_lon is not None else 116.4074
 
     hosp_js = json.dumps(ai_msg_hospital, ensure_ascii=False)
     park_js = json.dumps(ai_msg_park, ensure_ascii=False)
@@ -1508,11 +1508,9 @@ def _render_map_section(
     )
 
     html = (
-        '<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3">'
-        '<div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">'
-        '<span class="text-lg">📍</span>'
-        '<h2 class="text-sm font-bold text-slate-800">附近推荐</h2>'
-        "</div>"
+        '<section class="journey-card nearby-support-card">'
+        '<div class="journey-section-title">附近支持</div>'
+        '<div class="journey-section-copy">查看当前位置附近的医院和公园。</div>'
         '<p class="text-sm text-slate-600 mb-3" id="ai-map-text">' + ai_msg_hospital + "</p>"
         '<div class="rounded-2xl overflow-hidden border border-slate-200 relative" style="height:240px">'
         '<div id="bmap"></div>'
@@ -1523,7 +1521,7 @@ def _render_map_section(
         '<button id="btn-park" onclick="switchMapMode(\'park\')">🌳 附近公园</button>'
         "</div>"
         '<div id="map-cards"></div>'
-        "</div>"
+        "</section>"
     )
 
     js_template = r"""<script>
@@ -1835,12 +1833,12 @@ def _build_trend_data(payload: dict) -> dict:
         "quarter": "最近一季度",
     }
     metric_meta = {
-        "blood_pressure": ("🩺", "血压", "mmHg", "#7c3aed", "真实血压记录；曲线使用收缩压作为走势参考。"),
-        "heart_rate": ("🫀", "心率", "bpm", "#ef4444", "真实心率记录，帮助观察近期波动。"),
-        "blood_oxygen": ("🫁", "血氧", "%", "#06b6d4", "真实血氧记录，低于正常范围时更需要关注。"),
-        "steps_today": ("👟", "步数", "步", "#2563eb", "真实步数聚合，反映近期活动量。"),
-        "steps": ("👟", "步数", "步", "#2563eb", "真实步数聚合，反映近期活动量。"),
-        "blood_glucose": ("🧪", "血糖", "mmol/L", "#f59e0b", "真实血糖记录；没有监测数据时不会展示。"),
+        "blood_pressure": ("🩺", "血压", "mmHg", "#7c3aed", "曲线显示收缩压，点按可查看完整血压。"),
+        "heart_rate": ("🫀", "心率", "bpm", "#ef4444", "观察近期心率变化。"),
+        "blood_oxygen": ("🫁", "血氧", "%", "#06b6d4", "观察近期血氧变化。"),
+        "steps_today": ("👟", "步数", "步", "#2563eb", "观察近期活动量变化。"),
+        "steps": ("👟", "步数", "步", "#2563eb", "观察近期活动量变化。"),
+        "blood_glucose": ("🧪", "血糖", "mmol/L", "#f59e0b", "观察近期血糖变化。"),
     }
 
     trend_data: dict[str, dict] = {}
@@ -1917,10 +1915,11 @@ def _build_trend_data(payload: dict) -> dict:
                 if isinstance(point, dict)
             ]
             labels = [_format_axis_label(point.get("t")) for point in all_points if point.get("t")]
+            aggregate_label = "每周平均" if window.get("granularity") == "week" else "每日平均"
             trend_data[window_key] = {
                 "axis_start": labels[0] if labels else "",
                 "axis_end": labels[-1] if labels else "",
-                "insight": f"{window_labels[window_key]}展示真实信号点，未插值、未估算。",
+                "insight": f"{window_labels[window_key]} · {aggregate_label}",
                 "metrics": metric_cards,
             }
     return trend_data
@@ -1942,7 +1941,7 @@ def _render_trend_story(trend_data: dict) -> str:
         '<div class="trend-card-head">'
         '<div>'
         '<div class="trend-card-title">信号趋势</div>'
-        '<div class="trend-card-copy">只展示真实测量点，方便一眼判断哪里需要优先跟进。</div>'
+        '<div class="trend-card-copy">滑动曲线，查看每天或每周的平均记录。</div>'
         '</div>'
         f'<div class="trend-insight-chip" id="trendInsightChip">{escape(trend_data[default_key].get("insight") or "")}</div>'
         '</div>'
@@ -1959,8 +1958,8 @@ def _journey_page(page_key: str, title: str, subtitle: str, body: str, active: b
     if not body or not body.strip():
         body = (
             '<section class="journey-card">'
-            '<div class="journey-section-title">暂无可展示内容</div>'
-            '<div class="journey-section-copy">主服务这次没有提供对应字段，所以这里不生成补充内容。</div>'
+            '<div class="journey-section-title">暂无内容</div>'
+            '<div class="journey-section-copy">有新的记录后，这里会自动更新。</div>'
             '</section>'
         )
     active_class = " active" if active else ""
@@ -2063,12 +2062,10 @@ def _render_journey_status(so: dict) -> tuple[str, str, str]:
         '<section class="journey-card">'
         '<div class="journey-section-kicker">今日整体状态</div>'
         f'<div class="journey-section-title">{escape(overall)}</div>'
-        '<div class="journey-section-copy">这里只放本次遵从回访已经确认的执行状态，不再额外生成健康评分。</div>'
         f'<div class="status-alert-row">{"".join(chips)}</div>'
         '</section>'
         '<section class="journey-card">'
         '<div class="journey-section-title">关键执行概览</div>'
-        '<div class="journey-section-copy">用药、饮食、活动和监测分开看，后续建议放到计划页。</div>'
         f'<div class="journey-status-grid">{"".join(cards)}</div>'
         '</section>'
     )
@@ -2103,7 +2100,6 @@ def _render_journey_vitals(summary: dict) -> str:
     return (
         '<section class="journey-card">'
         '<div class="journey-section-title">最新生命体征</div>'
-        '<div class="journey-section-copy">来自主服务 latest_health；没有提供的指标不会展示。</div>'
         f'<div class="signal-mini-grid">{"".join(cards)}</div>'
         '</section>'
     )
@@ -2113,7 +2109,7 @@ def _render_journey_home(so: dict, payload: dict, memory: dict, current_time_raw
     name = _extract_patient_name(payload)
     greeting = _time_greeting(current_time_raw)
     avatar = escape(name[:1] if name and name != "您" else "您")
-    status_html, overall, status_copy = _render_journey_status(so)
+    status_html, _overall, _status_copy = _render_journey_status(so)
     latest = so.get("latest_health_summary") or {}
     vitals_html = _render_journey_vitals(latest)
     summary = _build_supportive_note(so, payload)
@@ -2143,14 +2139,7 @@ def _render_journey_home(so: dict, payload: dict, memory: dict, current_time_raw
         '</div>'
         '</section>'
     )
-    status_line = (
-        '<section class="journey-card">'
-        '<div class="journey-section-kicker">今日提醒</div>'
-        f'<div class="journey-section-title">当前状态：{escape(overall)}</div>'
-        f'<div class="journey-section-copy">{escape(status_copy or "先完成今天最关键的照护事项。")}</div>'
-        '</section>'
-    )
-    return hero + status_line + status_html + vitals_html
+    return hero + status_html + vitals_html
 
 
 def _render_journey_tasks(so: dict, payload: dict) -> str:
@@ -2238,7 +2227,6 @@ def _render_nutrition_focus_pills(so: dict) -> str:
     return (
         '<section class="journey-card">'
         '<div class="journey-section-title">今日营养重点</div>'
-        '<div class="journey-section-copy">来自 AI 对本次饮食情况的整理，不包含主服务没有提供的热量或宏量营养数据。</div>'
         f'<div class="nutrition-focus-row">{"".join(parts)}</div>'
         '</section>'
     )
@@ -2336,7 +2324,6 @@ def _render_journey_nutrition(
         plan_html = (
             '<section class="journey-card">'
             '<div class="journey-section-title">膳食计划</div>'
-            '<div class="journey-section-copy">先给 3 天参考，后面可再扩展到 7 天或 14 天。</div>'
             f'{meal_plan_html}'
             '</section>'
         )
@@ -2360,7 +2347,6 @@ def _render_journey_nutrition(
 
 def _render_journey_why(so: dict, payload: dict, memory: dict) -> str:
     context_html = _render_personalized_context(so, payload, memory)
-    reasoning = _localize_zh_text(str(so.get("reasoning") or "")).strip()
     sections = []
     if context_html:
         sections.append(
@@ -2368,13 +2354,6 @@ def _render_journey_why(so: dict, payload: dict, memory: dict) -> str:
             '<div class="journey-section-title">建议依据</div>'
             '<div class="journey-section-copy">把用药、饮食、活动和监测的依据拆开看。</div>'
             f'<div class="why-stack mt-3">{context_html}</div>'
-            '</section>'
-        )
-    if reasoning:
-        sections.append(
-            '<section class="journey-card">'
-            '<div class="journey-section-title">推理摘要</div>'
-            f'<div class="journey-section-copy">{escape(reasoning)}</div>'
             '</section>'
         )
     note = _build_supportive_note(so, payload)
@@ -2928,28 +2907,31 @@ def main() -> None:
         _render_journey_home(so, payload, memory, current_time_raw),
         active=True,
     )
+    plan_page_body = _render_journey_plan(so, payload)
+    if "map" in visible and map_section.strip():
+        plan_page_body += map_section
     plan_page_html = _journey_page(
         "plan",
         "今日计划",
         "今天先集中完成这三件事。",
-        _render_journey_plan(so, payload),
+        plan_page_body,
     )
     nutrition_page_html = _journey_page(
         "nutrition",
         "营养与饮食建议",
-        "营养重点、下一餐建议、膳食计划和疾病饮食对照放在同一页。",
+        "查看适合今天的饮食重点和餐食建议。",
         _render_journey_nutrition(so, meal_items, meal_plan_html, current_time_raw),
     )
     trend_page_html = _journey_page(
         "trends",
         "健康趋势",
-        "周、月、季度维度只展示真实信号点。",
+        "查看近期血压、心率和血氧变化。",
         trend_story_html,
     )
     why_page_html = _journey_page(
         "why",
         "为什么这样建议",
-        "结合本次执行情况、长期记忆和最新信号给出依据。",
+        "了解每条建议与您近期情况的关系。",
         _render_journey_why(so, payload, memory),
     )
 
