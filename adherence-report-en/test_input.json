@@ -5,6 +5,11 @@
       "lang": "en",
       "current_time": "2026-05-13T14:00:00"
     },
+    "patient": {
+      "id": "P-20260513-002",
+      "name": "Margaret Chen",
+      "lang": "en"
+    },
     "memory": {
       "patient_long_term_profile": "Margaret Chen, female, 71 years old. Diagnosed with hypertension (8 years), type 2 diabetes (4 years), hyperlipidemia. Post-surgery recovery (knee replacement, 6 weeks ago). Medications: amlodipine 5mg qd, metformin 500mg bid, atorvastatin 20mg qn. Lives alone, daughter visits weekly.",
       "recent_health_dynamics": "Over the past 14 days: appetite noticeably decreased, likely related to metformin side effects and post-surgery discomfort. Steps dropped from average 4,000/day to about 1,500/day. Blood pressure stable around 138/85. Blood glucose slightly elevated at 7.0-7.4 fasting. Reports feeling tired and not wanting to eat much.",
@@ -43,6 +48,98 @@
       "blood_oxygen": 97,
       "blood_glucose": 7.2,
       "steps": 1500
+    },
+    "signal_trends": {
+      "week": {
+        "days": 7,
+        "granularity": "day",
+        "metrics": {
+          "blood_pressure": [
+            {"t": "2026-05-07", "sbp": 142, "dbp": 87, "n": 2},
+            {"t": "2026-05-09", "sbp": 139, "dbp": 85, "n": 2},
+            {"t": "2026-05-11", "sbp": 137, "dbp": 84, "n": 2},
+            {"t": "2026-05-13", "sbp": 138, "dbp": 85, "n": 2}
+          ],
+          "heart_rate": [
+            {"t": "2026-05-07", "value": 78, "n": 8},
+            {"t": "2026-05-09", "value": 76, "n": 8},
+            {"t": "2026-05-11", "value": 73, "n": 8},
+            {"t": "2026-05-13", "value": 74, "n": 8}
+          ],
+          "blood_oxygen": [
+            {"t": "2026-05-07", "value": 96, "n": 8},
+            {"t": "2026-05-09", "value": 97, "n": 8},
+            {"t": "2026-05-11", "value": 98, "n": 8},
+            {"t": "2026-05-13", "value": 97, "n": 8}
+          ],
+          "steps": [
+            {"t": "2026-05-07", "value": 2100, "n": 1},
+            {"t": "2026-05-09", "value": 1850, "n": 1},
+            {"t": "2026-05-11", "value": 1620, "n": 1},
+            {"t": "2026-05-13", "value": 1500, "n": 1}
+          ]
+        }
+      },
+      "month": {
+        "days": 30,
+        "granularity": "day",
+        "metrics": {
+          "blood_pressure": [
+            {"t": "2026-04-15", "sbp": 145, "dbp": 88, "n": 2},
+            {"t": "2026-04-22", "sbp": 141, "dbp": 86, "n": 2},
+            {"t": "2026-05-01", "sbp": 140, "dbp": 85, "n": 2},
+            {"t": "2026-05-13", "sbp": 138, "dbp": 85, "n": 2}
+          ],
+          "heart_rate": [
+            {"t": "2026-04-15", "value": 80, "n": 8},
+            {"t": "2026-04-22", "value": 77, "n": 8},
+            {"t": "2026-05-01", "value": 75, "n": 8},
+            {"t": "2026-05-13", "value": 74, "n": 8}
+          ],
+          "blood_oxygen": [
+            {"t": "2026-04-15", "value": 96, "n": 8},
+            {"t": "2026-04-22", "value": 97, "n": 8},
+            {"t": "2026-05-01", "value": 97, "n": 8},
+            {"t": "2026-05-13", "value": 97, "n": 8}
+          ],
+          "steps": [
+            {"t": "2026-04-15", "value": 3900, "n": 1},
+            {"t": "2026-04-22", "value": 3200, "n": 1},
+            {"t": "2026-05-01", "value": 2400, "n": 1},
+            {"t": "2026-05-13", "value": 1500, "n": 1}
+          ]
+        }
+      },
+      "quarter": {
+        "days": 90,
+        "granularity": "week",
+        "metrics": {
+          "blood_pressure": [
+            {"t": "2026-03-16", "sbp": 147, "dbp": 89, "n": 8},
+            {"t": "2026-04-06", "sbp": 144, "dbp": 87, "n": 8},
+            {"t": "2026-04-27", "sbp": 141, "dbp": 86, "n": 8},
+            {"t": "2026-05-11", "sbp": 138, "dbp": 85, "n": 8}
+          ],
+          "heart_rate": [
+            {"t": "2026-03-16", "value": 82, "n": 24},
+            {"t": "2026-04-06", "value": 79, "n": 24},
+            {"t": "2026-04-27", "value": 76, "n": 24},
+            {"t": "2026-05-11", "value": 74, "n": 24}
+          ],
+          "blood_oxygen": [
+            {"t": "2026-03-16", "value": 96, "n": 24},
+            {"t": "2026-04-06", "value": 96, "n": 24},
+            {"t": "2026-04-27", "value": 97, "n": 24},
+            {"t": "2026-05-11", "value": 97, "n": 24}
+          ],
+          "steps": [
+            {"t": "2026-03-16", "value": 4200, "n": 7},
+            {"t": "2026-04-06", "value": 3700, "n": 7},
+            {"t": "2026-04-27", "value": 2800, "n": 7},
+            {"t": "2026-05-11", "value": 1600, "n": 7}
+          ]
+        }
+      }
     },
     "adherence_analysis": {
       "medication": {"compliance": "mostly compliant", "missed_doses": "skipped metformin twice due to nausea"},

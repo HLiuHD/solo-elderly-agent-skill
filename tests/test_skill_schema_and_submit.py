@@ -1,4 +1,5 @@
 import json
+import re
 import subprocess
 import sys
 import unittest
@@ -79,9 +80,9 @@ class SkillSchemaAndSubmitTests(unittest.TestCase):
     def test_english_meal_plan_uses_compact_stacked_layout(self) -> None:
         html = (ROOT / "adherence-report-en/templates/report.html").read_text(encoding="utf-8")
 
-        self.assertIn('.section-card[data-section="meal_plan"] #mealContent .grid', html)
+        self.assertIn('.journey-page[data-page="nutrition"] #mealContent .grid', html)
         self.assertIn("grid-template-columns:1fr !important", html)
-        self.assertIn('.section-card[data-section="meal_plan"] .meal-card', html)
+        self.assertIn('.journey-page[data-page="nutrition"] #mealContent .meal-card', html)
         self.assertIn("grid-template-columns:repeat(2,minmax(0,1fr))", html)
 
     def test_english_feedback_controls_use_friendly_text(self) -> None:
@@ -98,7 +99,16 @@ class SkillSchemaAndSubmitTests(unittest.TestCase):
             self.assertNotIn("👎", html)
 
         self.assertIn("Keep this", rendered_html)
-        self.assertIn("Useful", rendered_html)
+
+    def test_english_report_uses_care_journey_pages_without_chinese_copy(self) -> None:
+        rendered_html = render_json(
+            "adherence-report-en/scripts/render_report.py",
+            "adherence-report-en/test_input.json",
+        )["structured_output"]["html"]
+
+        for page in ("home", "plan", "why", "nutrition", "trends"):
+            self.assertIn(f'data-page="{page}"', rendered_html)
+        self.assertIsNone(re.search(r"[\u4e00-\u9fff]", rendered_html))
 
     def test_adherence_reports_do_not_render_doctor_notes(self) -> None:
         cases = [

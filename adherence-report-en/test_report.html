@@ -2,31 +2,37 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Adherence report</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Care Journey</title>
 <script src="https://cdn.tailwindcss.com"></script>
-
+<script type="text/javascript" src="https://api.map.baidu.com/api?v=3.0&ak=6zXfgKZZiCdrL3MZBH7DGpjemq5IRxRC"></script>
 <style>
   :root {
     --app-bg-top: #f7fbff;
     --app-bg-bottom: #edf4ff;
     --app-ink: #0f172a;
+    --app-muted: #64748b;
+    --app-line: rgba(148, 163, 184, 0.24);
     --app-card-shadow: 0 16px 36px rgba(15,23,42,.08), 0 3px 10px rgba(15,23,42,.05);
     --app-card-shadow-strong: 0 22px 46px rgba(15,23,42,.12), 0 10px 22px rgba(15,23,42,.08);
     --app-icon-shadow: 0 10px 22px rgba(148,163,184,.24), inset 0 1px 0 rgba(255,255,255,.95), inset 0 -10px 16px rgba(15,23,42,.08);
+    --bottom-nav-space: 90px;
   }
   body {
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     margin:0;
     padding:0;
     -webkit-text-size-adjust:100%;
-    color:var(--app-ink);
+    text-size-adjust:100%;
+    color: var(--app-ink);
     background:
       radial-gradient(circle at top left, rgba(96,165,250,.18), transparent 28%),
       radial-gradient(circle at top right, rgba(52,211,153,.16), transparent 24%),
       linear-gradient(180deg, var(--app-bg-top) 0%, var(--app-bg-bottom) 100%);
     min-height:100vh;
+    min-height:100dvh;
     position:relative;
+    overflow-x:hidden;
   }
   body::before {
     content:"";
@@ -42,6 +48,10 @@
   .app-shell {
     position:relative;
     isolation:isolate;
+    overflow-x:hidden;
+    min-height:100vh;
+    min-height:100dvh;
+    padding-bottom:calc(var(--bottom-nav-space) + env(safe-area-inset-bottom, 0px)) !important;
   }
   .app-shell::before {
     content:"";
@@ -71,10 +81,6 @@
     transform:translateY(0);
     transition:transform .18s ease, box-shadow .18s ease;
   }
-  .condition-chip:hover {
-    transform:translateY(-1px);
-    box-shadow:0 12px 24px rgba(15,23,42,.16), inset 0 1px 0 rgba(255,255,255,.35);
-  }
   .context-chip {
     display:inline-flex;
     align-items:center;
@@ -87,6 +93,10 @@
     border:1px solid rgba(203,213,225,.95);
     box-shadow:0 6px 14px rgba(148,163,184,.12);
   }
+  .condition-chip:hover {
+    transform:translateY(-1px);
+    box-shadow:0 12px 24px rgba(15,23,42,.16), inset 0 1px 0 rgba(255,255,255,.35);
+  }
   .ai-panel {
     border:1px solid rgba(255,255,255,.9);
     background:linear-gradient(180deg, rgba(255,255,255,.94), rgba(248,250,252,.88));
@@ -97,19 +107,344 @@
     background:linear-gradient(180deg, rgba(239,246,255,.96), rgba(248,250,252,.92));
     box-shadow:var(--app-card-shadow);
   }
-  .ai-panel-kicker, .top-overview-kicker {
+  .ai-panel-kicker {
     width:34px;
     height:34px;
     border-radius:12px;
     display:flex;
     align-items:center;
     justify-content:center;
+    background:linear-gradient(180deg, #f8fbff 0%, #ddeafe 100%);
     box-shadow:var(--app-icon-shadow);
   }
-  .ai-panel-kicker { background:linear-gradient(180deg, #f8fbff 0%, #ddeafe 100%); }
-  .top-overview-kicker { background:linear-gradient(180deg, #ffffff 0%, #dbeafe 100%); }
+  .top-overview-kicker {
+    width:34px;
+    height:34px;
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(180deg, #ffffff 0%, #dbeafe 100%);
+    box-shadow:var(--app-icon-shadow);
+  }
+  .hero-welcome-card {
+    display:grid;
+    grid-template-columns:minmax(0,1.5fr) minmax(110px,.9fr);
+    gap:14px;
+    padding:18px;
+    border-radius:30px;
+    border:1px solid rgba(255,255,255,.92);
+    background:
+      radial-gradient(circle at top right, rgba(129,140,248,.18), transparent 30%),
+      linear-gradient(135deg, rgba(255,255,255,.98) 0%, rgba(243,244,255,.96) 48%, rgba(237,233,254,.94) 100%);
+    box-shadow:var(--app-card-shadow-strong);
+    overflow:hidden;
+    position:relative;
+  }
+  .hero-welcome-card::after {
+    content:"";
+    position:absolute;
+    inset:auto -30px -35px auto;
+    width:170px;
+    height:170px;
+    border-radius:50%;
+    background:radial-gradient(circle, rgba(167,139,250,.18) 0%, transparent 72%);
+    pointer-events:none;
+  }
+  .hero-welcome-eyebrow { font-size:.82rem; font-weight:800; color:#7c3aed; margin-bottom:8px; }
+  .hero-welcome-title { font-size:1.58rem; line-height:1.2; font-weight:900; color:#111827; margin:0 0 10px; letter-spacing:-.02em; }
+  .hero-welcome-summary { font-size:.94rem; line-height:1.65; color:#334155; margin:0 0 12px; }
+  .hero-welcome-note {
+    font-size:.9rem;
+    line-height:1.7;
+    color:#312e81;
+    background:rgba(255,255,255,.7);
+    border:1px solid rgba(196,181,253,.55);
+    border-radius:18px;
+    padding:12px 14px;
+    box-shadow:0 10px 20px rgba(124,58,237,.08);
+  }
+  .hero-welcome-meta { margin-top:12px; font-size:.78rem; font-weight:700; color:#64748b; }
+  .hero-welcome-visual {
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+    justify-content:space-between;
+    position:relative;
+    min-height:172px;
+  }
+  .hero-avatar-badge {
+    width:68px;
+    height:68px;
+    border-radius:22px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:1.4rem;
+    font-weight:900;
+    color:#334155;
+    background:linear-gradient(180deg,#ffffff 0%, #e0f2fe 100%);
+    box-shadow:var(--app-icon-shadow);
+    border:1px solid rgba(255,255,255,.95);
+  }
+  .hero-assistant-orb {
+    width:96px;
+    height:96px;
+    border-radius:30px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:2.4rem;
+    color:#4f46e5;
+    background:linear-gradient(180deg, rgba(255,255,255,.95), rgba(224,231,255,.96));
+    border:1px solid rgba(255,255,255,.95);
+    box-shadow:0 18px 30px rgba(99,102,241,.16), inset 0 1px 0 rgba(255,255,255,.95);
+  }
+  .quick-nav-strip {
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:10px;
+    padding:0 12px;
+  }
+  .quick-nav-btn {
+    border:none;
+    border-radius:18px;
+    padding:12px 10px;
+    text-align:center;
+    background:linear-gradient(180deg, rgba(255,255,255,.96), rgba(239,246,255,.92));
+    border:1px solid rgba(226,232,240,.95);
+    box-shadow:0 12px 22px rgba(15,23,42,.06);
+    cursor:pointer;
+    transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  }
+  .quick-nav-btn:hover { transform:translateY(-1px); box-shadow:0 16px 24px rgba(15,23,42,.09); }
+  .quick-nav-btn.active { border-color:rgba(139,92,246,.42); background:linear-gradient(180deg, rgba(243,244,255,.98), rgba(237,233,254,.92)); }
+  .quick-nav-icon { font-size:1.15rem; line-height:1; }
+  .quick-nav-title { margin-top:6px; font-size:.78rem; font-weight:850; color:#0f172a; }
+  .quick-nav-copy { margin-top:2px; font-size:.68rem; line-height:1.4; color:#64748b; }
+  .status-overview-card {
+    border-radius:28px;
+    border:1px solid rgba(255,255,255,.94);
+    background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(248,250,255,.96));
+    box-shadow:var(--app-card-shadow);
+    padding:18px;
+  }
+  .status-overview-top { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
+  .status-overview-label { font-size:.92rem; color:#0f172a; font-weight:800; }
+  .status-overview-score { margin-top:6px; font-size:3rem; line-height:1; font-weight:900; color:#111827; letter-spacing:-.04em; }
+  .status-overview-score span { font-size:1rem; font-weight:700; color:#94a3b8; margin-left:4px; }
+  .status-overview-caption { margin-top:8px; font-size:.86rem; font-weight:800; }
+  .status-overview-ring {
+    position:relative;
+    width:88px;
+    height:88px;
+    border-radius:999px;
+    padding:8px;
+    background:conic-gradient(from 180deg, rgba(124,58,237,.2), rgba(139,92,246,.92), rgba(59,130,246,.78));
+    box-shadow:0 20px 32px rgba(99,102,241,.18);
+  }
+  .status-overview-ring-fill { width:100%; height:100%; border-radius:999px; opacity:.92; }
+  .status-overview-ring-text {
+    position:absolute;
+    inset:15px;
+    border-radius:999px;
+    background:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:1.1rem;
+    font-weight:900;
+    color:#1f2937;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.96);
+  }
+  .status-overview-progress { margin-top:14px; height:10px; border-radius:999px; background:#ede9fe; overflow:hidden; }
+  .status-overview-progress-bar { height:100%; border-radius:999px; background:linear-gradient(90deg, #8b5cf6 0%, #7c3aed 55%, #4f46e5 100%); }
+  .status-overview-foot { margin-top:12px; font-size:.84rem; line-height:1.65; color:#475569; }
+  .dashboard-panel {
+    border-radius:28px;
+    border:1px solid rgba(255,255,255,.94);
+    background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(247,250,255,.96));
+    box-shadow:var(--app-card-shadow);
+    padding:18px;
+  }
+  .dashboard-panel-head { margin-bottom:12px; }
+  .dashboard-panel-title { font-size:1rem; font-weight:850; color:#0f172a; }
+  .dashboard-panel-copy { margin-top:4px; font-size:.8rem; color:#64748b; line-height:1.5; }
+  .dashboard-metric-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+  .dashboard-metric-card {
+    border-radius:20px;
+    background:linear-gradient(180deg,#ffffff 0%, #f8fbff 100%);
+    border:1px solid rgba(226,232,240,.95);
+    box-shadow:0 12px 20px rgba(15,23,42,.05);
+    padding:14px;
+    min-height:132px;
+  }
+  .dashboard-metric-icon { font-size:1.35rem; margin-bottom:8px; }
+  .dashboard-metric-title { font-size:.78rem; font-weight:800; color:#64748b; }
+  .dashboard-metric-value { margin-top:6px; font-size:1.28rem; font-weight:850; color:#0f172a; line-height:1.15; }
+  .dashboard-metric-note { margin-top:7px; font-size:.75rem; line-height:1.55; color:#64748b; }
+  .dashboard-progress-card {
+    margin-top:14px;
+    border-radius:20px;
+    background:linear-gradient(180deg, rgba(245,243,255,.96), rgba(255,255,255,.95));
+    border:1px solid rgba(196,181,253,.55);
+    padding:14px 15px;
+  }
+  .dashboard-progress-title { font-size:.82rem; font-weight:850; color:#6d28d9; }
+  .dashboard-progress-copy { margin-top:6px; font-size:.84rem; line-height:1.65; color:#475569; }
+  .trend-card {
+    border-radius:28px;
+    border:1px solid rgba(255,255,255,.94);
+    background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(247,250,255,.96));
+    box-shadow:var(--app-card-shadow);
+    padding:18px;
+  }
+  .trend-card-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; margin-bottom:14px; }
+  .trend-card-head > div { min-width:0; }
+  .trend-card-title { font-size:1.04rem; font-weight:850; color:#0f172a; }
+  .trend-card-copy { margin-top:4px; font-size:.82rem; line-height:1.55; color:#64748b; }
+  .trend-range-tabs {
+    display:inline-grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:6px;
+    padding:5px;
+    border-radius:999px;
+    background:#f1f5f9;
+    border:1px solid rgba(226,232,240,.95);
+  }
+  .trend-range-btn {
+    border:none;
+    background:transparent;
+    border-radius:999px;
+    padding:8px 12px;
+    font-size:.75rem;
+    font-weight:800;
+    color:#64748b;
+    cursor:pointer;
+    transition:all .18s ease;
+  }
+  .trend-range-btn.active {
+    color:#6d28d9;
+    background:linear-gradient(180deg, #ffffff 0%, #ede9fe 100%);
+    box-shadow:0 8px 16px rgba(99,102,241,.12);
+  }
+  .trend-insight-chip {
+    padding:8px 10px;
+    border-radius:16px;
+    background:linear-gradient(180deg, #ffffff 0%, #eff6ff 100%);
+    border:1px solid rgba(191,219,254,.95);
+    font-size:.74rem;
+    font-weight:800;
+    color:#2563eb;
+    white-space:normal;
+    line-height:1.45;
+    max-width:100%;
+  }
+  .trend-metric-stack { display:grid; grid-template-columns:1fr; gap:12px; }
+  .trend-metric-card {
+    border-radius:22px;
+    padding:14px;
+    background:linear-gradient(180deg,#ffffff 0%, #fbfdff 100%);
+    border:1px solid rgba(226,232,240,.95);
+    box-shadow:0 10px 18px rgba(15,23,42,.04);
+  }
+  .trend-metric-top { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+  .trend-metric-kicker { display:flex; align-items:center; gap:8px; }
+  .trend-metric-icon {
+    width:34px;
+    height:34px;
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:1rem;
+    background:linear-gradient(180deg,#ffffff 0%, #eff6ff 100%);
+    box-shadow:var(--app-icon-shadow);
+  }
+  .trend-metric-label { font-size:.8rem; font-weight:800; color:#64748b; }
+  .trend-metric-value { margin-top:3px; font-size:1.2rem; font-weight:850; color:#0f172a; }
+  .trend-metric-delta { font-size:.75rem; font-weight:800; }
+  .trend-metric-copy { margin-top:8px; font-size:.76rem; line-height:1.55; color:#64748b; }
+  .trend-chart { width:100%; height:76px; margin-top:10px; display:block; }
+  .trend-axis { margin-top:6px; display:flex; justify-content:space-between; font-size:.68rem; color:#94a3b8; }
+  .priority-plan-card {
+    border-radius:28px;
+    border:1px solid rgba(255,255,255,.94);
+    background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(249,250,255,.96));
+    box-shadow:var(--app-card-shadow);
+    padding:18px;
+  }
+  .priority-plan-head { margin-bottom:14px; }
+  .priority-plan-title { font-size:1.04rem; font-weight:850; color:#0f172a; }
+  .priority-plan-copy { margin-top:4px; font-size:.8rem; line-height:1.55; color:#64748b; }
+  .priority-task-card {
+    border-radius:22px;
+    border:1px solid rgba(226,232,240,.95);
+    background:linear-gradient(180deg,#ffffff 0%, #fbfcff 100%);
+    box-shadow:0 12px 22px rgba(15,23,42,.05);
+    padding:14px;
+    margin-bottom:12px;
+  }
+  .priority-task-main { display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:12px; align-items:flex-start; }
+  .priority-task-index {
+    width:32px;
+    height:32px;
+    border-radius:999px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:linear-gradient(135deg,#8b5cf6 0%, #7c3aed 100%);
+    color:#fff;
+    font-size:.9rem;
+    font-weight:900;
+    box-shadow:0 12px 20px rgba(124,58,237,.24);
+  }
+  .priority-task-title { font-size:1rem; font-weight:800; line-height:1.45; color:#111827; }
+  .priority-task-reason { margin-top:8px; font-size:.8rem; line-height:1.6; color:#f97316; font-weight:700; }
+  .priority-task-emoji { font-size:2.1rem; line-height:1; filter:drop-shadow(0 10px 18px rgba(148,163,184,.16)); }
+  .priority-task-actions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin-top:12px; }
+  .priority-task-btn {
+    border:none;
+    border-radius:999px;
+    padding:10px 12px;
+    font-size:.78rem;
+    font-weight:800;
+    color:#fff;
+    cursor:pointer;
+    background:linear-gradient(135deg,#8b5cf6 0%, #7c3aed 100%);
+    box-shadow:0 12px 20px rgba(124,58,237,.18);
+    transition:background .18s ease, color .18s ease, box-shadow .18s ease, transform .18s ease, border-color .18s ease;
+  }
+  .priority-task-btn:hover { transform:translateY(-1px); }
+  .priority-task-btn.active {
+    background:linear-gradient(135deg,#10b981 0%, #059669 100%);
+    box-shadow:0 0 0 3px rgba(16,185,129,.14), 0 12px 20px rgba(5,150,105,.18);
+  }
+  .priority-task-btn.secondary {
+    color:#6b7280;
+    background:#f8fafc;
+    border:1px solid #e2e8f0;
+    box-shadow:none;
+  }
+  .priority-task-btn.secondary.active {
+    color:#fff;
+    background:#64748b;
+    border-color:#64748b;
+    box-shadow:0 0 0 3px rgba(100,116,139,.14);
+  }
+  .priority-special-note {
+    margin-top:8px;
+    border-radius:18px;
+    background:linear-gradient(180deg, rgba(237,233,254,.92), rgba(248,250,255,.95));
+    border:1px solid rgba(196,181,253,.62);
+    padding:12px 14px;
+    font-size:.84rem;
+    line-height:1.7;
+    color:#4338ca;
+  }
+  .priority-special-label { display:block; font-size:.76rem; font-weight:850; margin-bottom:4px; }
   .meal-card { transition: all .2s; }
-  .meal-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.08); }
+  .meal-card:hover { transform: translateY(-2px); box-shadow: 0 12px 24px rgba(15,23,42,.1); }
   .feedback-actions { display:flex; flex-direction:column; gap:6px; align-self:stretch; }
   .feedback-btn {
     opacity:1;
@@ -177,18 +512,26 @@
 
   /* ─── Card/Accordion Layout (Message Center Style) ─── */
   .section-card {
-    border-radius: 18px;
+    border-radius: 24px;
     overflow: hidden;
-    margin-bottom: 14px;
-    border: 2px solid #e8ecf0;
-    background: #fff;
-    transition: border-color .25s, box-shadow .25s, transform .15s;
-    box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    margin-bottom: 16px;
+    border: 1px solid rgba(255,255,255,.95);
+    background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(246,249,252,.96));
+    transition: border-color .25s, box-shadow .25s, transform .18s ease;
+    box-shadow: var(--app-card-shadow);
+    position:relative;
   }
-  .section-card:active { transform: scale(0.985); }
+  .section-card::before {
+    content:"";
+    position:absolute;
+    inset:0;
+    background:linear-gradient(180deg, rgba(255,255,255,.55), transparent 28%);
+    pointer-events:none;
+  }
+  .section-card:active { transform: scale(0.988) translateY(1px); }
   .section-card.expanded {
-    border-color: #6ee7b7;
-    box-shadow: 0 6px 24px rgba(16,185,129,.12);
+    border-color: rgba(110,231,183,.68);
+    box-shadow: var(--app-card-shadow-strong);
   }
   .section-card-header {
     display: flex;
@@ -199,7 +542,7 @@
     user-select: none;
     min-height: 88px;
   }
-  .section-card-header:hover { background: #fafbfc; }
+  .section-card-header:hover { background: rgba(255,255,255,.28); }
   .section-card-icon {
     font-size: 1.8em;
     flex-shrink: 0;
@@ -208,7 +551,20 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 16px;
+    border-radius: 18px;
+    box-shadow: var(--app-icon-shadow);
+    border: 1px solid rgba(255,255,255,.72);
+    position:relative;
+    transform: translateY(-1px);
+  }
+  .section-card-icon::after {
+    content:"";
+    position:absolute;
+    inset:7px 8px auto;
+    height:14px;
+    border-radius:999px;
+    background:rgba(255,255,255,.42);
+    filter:blur(1px);
   }
   .section-card-title {
     font-size: 1.2em;
@@ -238,11 +594,13 @@
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    background: #f1f5f9;
+    background: linear-gradient(180deg, #ffffff 0%, #e8f0fb 100%);
+    border:1px solid rgba(255,255,255,.9);
+    box-shadow: 0 8px 18px rgba(148,163,184,.18), inset 0 1px 0 rgba(255,255,255,.85);
   }
   .section-card.expanded .section-card-arrow {
     transform: rotate(180deg);
-    background: #d1fae5;
+    background: linear-gradient(180deg, #f0fdf4 0%, #c9f7dd 100%);
     color: #065f46;
   }
   .section-card-body {
@@ -259,16 +617,17 @@
 
   /* ─── Sub-card (nested tap-to-expand items) ─── */
   .sub-card {
-    border-radius: 12px;
-    margin-bottom: 8px;
-    border: 1px solid #f1f5f9;
-    background: #f8fafc;
+    border-radius: 18px;
+    margin-bottom: 10px;
+    border: 1px solid rgba(255,255,255,.92);
+    background: linear-gradient(180deg, #fbfdff 0%, #f4f8fc 100%);
     overflow: hidden;
-    transition: border-color .2s, box-shadow .2s;
+    transition: border-color .2s, box-shadow .2s, transform .18s ease;
+    box-shadow: 0 10px 24px rgba(15,23,42,.05);
   }
   .sub-card.open {
     border-color: #d1d5db;
-    box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    box-shadow: 0 16px 30px rgba(15,23,42,.08);
   }
   .sub-card.sub-card-static {
     border-color: rgba(226,232,240,.95);
@@ -284,8 +643,20 @@
     user-select: none;
     min-height: 52px;
   }
-  .sub-card-header:active { background: #f1f5f9; }
-  .sub-card-icon { font-size: 1.3em; flex-shrink: 0; }
+  .sub-card-header:active { background: rgba(241,245,249,.62); }
+  .sub-card-icon {
+    font-size: 1.15em;
+    flex-shrink: 0;
+    width: 38px;
+    height: 38px;
+    border-radius: 13px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background: linear-gradient(180deg, #ffffff 0%, #e6eef8 100%);
+    border: 1px solid rgba(255,255,255,.92);
+    box-shadow: 0 10px 20px rgba(148,163,184,.18), inset 0 1px 0 rgba(255,255,255,.95);
+  }
   .sub-card-label { font-size: 0.82em; color: #64748b; line-height: 1.2; }
   .sub-card-value { font-size: 1.05em; font-weight: 700; color: #1e293b; line-height: 1.3; }
   .sub-card-arrow { margin-left: auto; font-size: 0.7em; color: #94a3b8; transition: transform .3s; }
@@ -316,23 +687,49 @@
     padding: 0 16px 14px 16px;
     border-top: none;
   }
+  .sub-card.sub-card-static .sub-card-value {
+    margin-bottom: 2px;
+  }
 
   /* ─── Mobile-First App Layout ─── */
   @media (max-width: 640px) {
     body { font-size: 16px; line-height: 1.6; }
-    .max-w-md { max-width: 100% !important; padding: 0 !important; }
+    .max-w-md { max-width: 100% !important; padding-left: 0 !important; padding-right: 0 !important; }
+    .app-shell::before { inset:10px 8px auto; height:110px; }
+    .app-header { margin:0 8px; border-radius:0 0 22px 22px; }
+    .hero-welcome-card { grid-template-columns:minmax(0,1fr); border-radius:24px; padding:16px; }
+    .hero-welcome-visual { min-height:0; flex-direction:row; align-items:center; justify-content:space-between; }
+    .hero-welcome-title { font-size:1.34rem; }
+    .hero-assistant-orb { width:78px; height:78px; border-radius:24px; font-size:2rem; }
+    .quick-nav-strip { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; padding:0 12px; }
+    .status-overview-card, .dashboard-panel, .priority-plan-card, .trend-card { border-radius:24px; padding:16px; }
+    .status-overview-score { font-size:2.5rem; }
+    .dashboard-metric-grid { gap:10px; }
+    .dashboard-metric-card { min-height:120px; }
+    .trend-card-head { flex-direction:column; }
+    .trend-range-tabs { width:100%; }
+    .trend-insight-chip { width:100%; font-size:.72rem; }
+    .trend-metric-top { flex-direction:column; gap:8px; }
+    .trend-metric-delta { margin-left:42px; }
+    .trend-metric-value { font-size:1.12rem; }
+    .trend-metric-copy { font-size:.74rem; }
+    .trend-chart { height:64px; }
+    .priority-task-card { border-radius:20px; }
+    .priority-task-main { grid-template-columns:auto minmax(0,1fr); }
+    .priority-task-emoji { display:none; }
 
     /* Section cards full width, less rounded */
-    .section-card { border-radius: 14px; margin-bottom: 10px; }
+    .section-card { border-radius: 20px; margin-bottom: 12px; }
     .section-card-header { padding: 16px 14px; min-height: 72px; gap: 12px; }
-    .section-card-icon { width: 46px; height: 46px; font-size: 1.5em; border-radius: 12px; }
+    .section-card-icon { width: 50px; height: 50px; font-size: 1.45em; border-radius: 16px; }
     .section-card-title { font-size: 1.05em; }
     .section-card-summary { font-size: 0.8em; }
     .section-card-body { padding-left: 14px !important; padding-right: 14px !important; }
 
     /* Sub-cards touch-friendly */
-    .sub-card { border-radius: 10px; margin-bottom: 6px; }
+    .sub-card { border-radius: 16px; margin-bottom: 8px; }
     .sub-card-header { padding: 14px 14px; min-height: 50px; }
+    .sub-card-icon { width: 36px; height: 36px; border-radius: 12px; }
     .sub-card-value { font-size: 1em; }
     .sub-card-label { font-size: 0.85em; }
     .sub-card-body .text-sm { font-size: 0.95em; }
@@ -341,6 +738,7 @@
     .feedback-btn { opacity: 1 !important; font-size: .78rem !important; padding: 8px 10px !important; min-width: 0; min-height: 38px; }
     .feedback-modal-box { padding: 24px; max-width: 94%; }
     .feedback-reason { padding: 14px 16px; font-size: 1em; }
+    .bottom-tab-label { font-size:.66rem; }
 
     /* Meal tabs */
     #dayTabs button { padding: 8px 12px !important; font-size: 0.82em !important; }
@@ -355,14 +753,22 @@
 
   /* ─── Larger screens (tablet+): slightly more breathing room ─── */
   @media (min-width: 641px) {
-    .max-w-md { max-width: 480px; }
+    .max-w-md {
+      max-width: 460px;
+      margin-top: 18px;
+      margin-bottom: 28px;
+      border-radius: 34px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.86);
+      box-shadow: 0 30px 60px rgba(15,23,42,.15), 0 8px 18px rgba(15,23,42,.08);
+    }
     body { font-size: 15px; }
   }
   .hero-vitals {
-    background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-    border: 1px solid #e2e8f0;
-    border-radius: 22px;
-    box-shadow: 0 12px 32px rgba(15,23,42,.06);
+    background: linear-gradient(180deg, rgba(255,255,255,.98) 0%, rgba(244,248,252,.95) 100%);
+    border: 1px solid rgba(255,255,255,.92);
+    border-radius: 26px;
+    box-shadow: var(--app-card-shadow);
     padding: 18px;
   }
   .hero-vitals-grid {
@@ -371,14 +777,15 @@
     gap:12px;
   }
   .hero-vital-card {
-    border-radius:18px;
+    border-radius:20px;
     padding:14px;
-    border:1px solid #e2e8f0;
+    border:1px solid rgba(255,255,255,.95);
     background:#fff;
     min-height:132px;
     display:flex;
     flex-direction:column;
     gap:8px;
+    box-shadow:0 12px 24px rgba(15,23,42,.06);
   }
   .hero-vital-card.good {
     background:linear-gradient(180deg,#f0fdf4 0%,#ffffff 100%);
@@ -401,12 +808,14 @@
   .hero-vital-icon {
     width:42px;
     height:42px;
-    border-radius:14px;
+    border-radius:15px;
     display:flex;
     align-items:center;
     justify-content:center;
     font-size:1.3em;
-    background:#f8fafc;
+    background:linear-gradient(180deg,#ffffff 0%, #e6eef8 100%);
+    border:1px solid rgba(255,255,255,.9);
+    box-shadow:var(--app-icon-shadow);
   }
   .hero-vital-label {
     font-size:.78em;
@@ -438,9 +847,9 @@
     color:#475569;
   }
   .module-subsection {
-    border-top:1px solid #edf2f7;
-    padding-top:14px;
-    margin-top:14px;
+    border-top:1px solid rgba(226,232,240,.78);
+    padding-top:16px;
+    margin-top:16px;
   }
   .module-subsection:first-child {
     border-top:none;
@@ -465,17 +874,674 @@
     margin-bottom:10px;
   }
   .app-footer {
-    margin: 6px 10px 0;
-    border:1px solid rgba(255,255,255,.85);
-    border-radius:20px 20px 0 0;
-    background:rgba(248,250,252,.82);
-    backdrop-filter:blur(14px);
+    margin: 8px 10px 0;
+    padding: 10px 12px calc(12px + env(safe-area-inset-bottom, 0px));
+    border:1px solid rgba(255,255,255,.88);
+    border-radius:22px 22px 0 0;
+    background:rgba(248,250,252,.88);
+    backdrop-filter:blur(18px);
+    box-shadow:0 -10px 28px rgba(15,23,42,.08);
+  }
+  .footer-disclaimer {
+    margin:0 14px 10px;
+    text-align:center;
+    font-size:11px;
+    line-height:1.55;
+    color:#94a3b8;
+  }
+  .bottom-tabbar { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:6px; }
+  .bottom-tab {
+    border:none;
+    background:transparent;
+    border-radius:18px;
+    padding:8px 4px;
+    cursor:pointer;
+    transition:background .18s ease, transform .18s ease;
+  }
+  .bottom-tab:hover { background:rgba(255,255,255,.6); transform:translateY(-1px); }
+  .bottom-tab:focus { outline: none; }
+  .bottom-tab:focus-visible { outline: none; box-shadow: none; }
+  .bottom-tab.active { background:linear-gradient(180deg, rgba(237,233,254,.96), rgba(243,244,255,.92)); }
+  .bottom-tab-icon { font-size:1.15rem; line-height:1; }
+  .bottom-tab-label { margin-top:4px; font-size:.7rem; font-weight:800; color:#64748b; }
+  .bottom-tab.active .bottom-tab-label { color:#7c3aed; }
+  .journey-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 45;
+    min-height: 58px;
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr) 42px;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px 8px;
+    background: rgba(248,250,252,.9);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(226,232,240,.7);
+  }
+  .topbar-icon {
+    width: 38px;
+    height: 38px;
+    border: none;
+    border-radius: 14px;
+    background: transparent;
+    color: #0f172a;
+    font-size: 1.18rem;
+    font-weight: 850;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .topbar-icon:hover { background: rgba(255,255,255,.74); }
+  .topbar-title { text-align: center; min-width: 0; }
+  .topbar-name { font-size: 1.02rem; font-weight: 900; color: #0f172a; line-height: 1.15; }
+  .topbar-subtitle { margin-top: 2px; font-size: .66rem; font-weight: 800; color: #8b5cf6; letter-spacing: .08em; text-transform: uppercase; }
+  .journey-pages { padding: 12px 12px 6px; }
+  .journey-page { display: none; animation: pageFade .18s ease; }
+  .journey-page.active { display: block; }
+  @keyframes pageFade {
+    from { opacity: .2; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .journey-screen-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 2px 0 12px;
+  }
+  .journey-screen-title { font-size: 1.05rem; font-weight: 900; color: #0f172a; line-height: 1.25; }
+  .journey-screen-copy { margin-top: 4px; font-size: .78rem; line-height: 1.55; color: #64748b; }
+  .journey-card {
+    border-radius: 18px;
+    border: 1px solid rgba(226,232,240,.92);
+    background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+    box-shadow: 0 12px 24px rgba(15,23,42,.055);
+    padding: 15px;
+    margin-bottom: 12px;
+  }
+  .journey-hero {
+    min-height: 154px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 104px;
+    gap: 12px;
+    align-items: center;
+    border: 1px solid rgba(221,214,254,.85);
+    background:
+      radial-gradient(circle at right 30%, rgba(124,58,237,.16), transparent 36%),
+      linear-gradient(135deg, #ffffff 0%, #f7f5ff 54%, #efeaff 100%);
+    box-shadow: 0 18px 34px rgba(124,58,237,.11);
+  }
+  .journey-hero-main { min-width: 0; }
+  .journey-hero-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .journey-avatar {
+    width: 54px;
+    height: 54px;
+    border-radius: 20px;
+    background: linear-gradient(180deg, #fff 0%, #e0f2fe 100%);
+    border: 1px solid rgba(255,255,255,.92);
+    box-shadow: var(--app-icon-shadow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.18rem;
+    font-weight: 900;
+    color: #334155;
+    flex-shrink: 0;
+  }
+  .journey-hello { font-size: 1.08rem; line-height: 1.35; font-weight: 900; color: #111827; }
+  .journey-hero-text { font-size: .82rem; line-height: 1.65; color: #475569; }
+  .journey-robot {
+    width: 94px;
+    height: 94px;
+    border-radius: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    justify-self: end;
+    font-size: 2.3rem;
+    background: linear-gradient(180deg, #ffffff 0%, #ddd6fe 100%);
+    border: 1px solid rgba(255,255,255,.95);
+    box-shadow: 0 18px 30px rgba(124,58,237,.18), inset 0 1px 0 rgba(255,255,255,.94);
+  }
+  .status-alert-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .status-alert-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px;
+    border-radius: 999px;
+    font-size: .76rem;
+    font-weight: 850;
+    background: #fff7ed;
+    color: #c2410c;
+    border: 1px solid #fed7aa;
+  }
+  .status-alert-chip.good { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
+  .status-alert-chip.warn { background: #fffbeb; color: #b45309; border-color: #fde68a; }
+  .status-alert-chip.alert { background: #fff7ed; color: #c2410c; border-color: #fed7aa; }
+  .journey-section-kicker { font-size: .75rem; font-weight: 850; color: #8b5cf6; margin-bottom: 4px; }
+  .journey-section-title { font-size: .98rem; font-weight: 900; color: #0f172a; }
+  .journey-section-copy { margin-top: 4px; font-size: .78rem; line-height: 1.55; color: #64748b; }
+  .journey-status-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; margin-top: 12px; }
+  .execution-card {
+    min-height: 128px;
+    border-radius: 17px;
+    padding: 12px;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    box-shadow: 0 8px 16px rgba(15,23,42,.04);
+  }
+  .execution-card.good { background: linear-gradient(180deg, #f0fdf4 0%, #fff 100%); border-color: #bbf7d0; }
+  .execution-card.warn { background: linear-gradient(180deg, #fffbeb 0%, #fff 100%); border-color: #fde68a; }
+  .execution-card.alert { background: linear-gradient(180deg, #fff7ed 0%, #fff 100%); border-color: #fed7aa; }
+  .execution-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .execution-icon { font-size: 1.35rem; line-height: 1; }
+  .execution-status { font-size: .7rem; font-weight: 850; color: #64748b; white-space: nowrap; }
+  .execution-title { margin-top: 10px; font-size: .8rem; font-weight: 850; color: #475569; }
+  .execution-detail { margin-top: 5px; font-size: .82rem; line-height: 1.55; color: #0f172a; font-weight: 700; }
+  .signal-mini-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; margin-top: 12px; }
+  .signal-mini-card {
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    background: linear-gradient(180deg, #fbfdff 0%, #f8fafc 100%);
+    padding: 12px 10px;
+    min-height: 92px;
+  }
+  .signal-mini-icon { font-size: 1.15rem; }
+  .signal-mini-label { margin-top: 7px; font-size: .73rem; color: #64748b; font-weight: 800; }
+  .signal-mini-value { margin-top: 4px; font-size: 1rem; color: #0f172a; font-weight: 900; line-height: 1.2; }
+  .signal-mini-unit { margin-top: 2px; font-size: .68rem; color: #94a3b8; font-weight: 750; }
+  .journey-segment {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0,1fr));
+    gap: 4px;
+    padding: 4px;
+    border-radius: 14px;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 14px;
+  }
+  .journey-segment span {
+    text-align: center;
+    border-radius: 11px;
+    padding: 7px 4px;
+    font-size: .73rem;
+    color: #64748b;
+    font-weight: 850;
+  }
+  .journey-segment .active {
+    color: #6d28d9;
+    background: linear-gradient(180deg, #fff 0%, #ede9fe 100%);
+    box-shadow: 0 7px 14px rgba(124,58,237,.1);
+  }
+  .journey-task {
+    display: grid;
+    grid-template-columns: 34px minmax(0,1fr) 58px;
+    gap: 12px;
+    align-items: center;
+    border-radius: 18px;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    padding: 13px;
+    margin-bottom: 11px;
+    box-shadow: 0 9px 18px rgba(15,23,42,.045);
+  }
+  .journey-task-index {
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: .9rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+    box-shadow: 0 10px 18px rgba(124,58,237,.2);
+  }
+  .journey-task-title { font-size: .94rem; line-height: 1.45; font-weight: 900; color: #111827; }
+  .journey-task-reason { margin-top: 5px; font-size: .75rem; line-height: 1.55; color: #f97316; font-weight: 750; }
+  .journey-task-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin-top: 12px;
+    max-width: 220px;
+  }
+  .journey-task-visual { text-align: center; font-size: 2rem; line-height: 1; }
+  .journey-record-btn {
+    border: none;
+    border-radius: 999px;
+    padding: 8px 13px;
+    color: #fff;
+    background: linear-gradient(135deg, #7c3aed, #8b5cf6);
+    font-size: .76rem;
+    font-weight: 850;
+    box-shadow: 0 10px 18px rgba(124,58,237,.18);
+  }
+  .journey-record-btn.liked {
+    background: linear-gradient(135deg, #10b981, #059669);
+    box-shadow: 0 0 0 3px rgba(16,185,129,.15);
+  }
+  .assistant-note {
+    display: grid;
+    grid-template-columns: 48px minmax(0,1fr);
+    gap: 10px;
+    align-items: center;
+    border-radius: 18px;
+    padding: 12px;
+    background: linear-gradient(135deg, #f5f3ff 0%, #eef2ff 100%);
+    border: 1px solid #ddd6fe;
+    color: #4338ca;
+    font-size: .82rem;
+    line-height: 1.65;
+    font-weight: 750;
+  }
+  .assistant-note-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    box-shadow: var(--app-icon-shadow);
+    font-size: 1.4rem;
+  }
+  .nutrition-focus-row { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; margin-top: 12px; }
+  .nutrition-focus-pill { text-align: center; min-width: 0; }
+  .nutrition-focus-icon {
+    width: 50px;
+    height: 50px;
+    margin: 0 auto;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #ddd6fe;
+    background: linear-gradient(180deg, #fff 0%, #f5f3ff 100%);
+    box-shadow: 0 8px 16px rgba(124,58,237,.08);
+    font-size: 1.3rem;
+  }
+  .nutrition-focus-title { margin-top: 7px; font-size: .74rem; line-height: 1.3; font-weight: 850; color: #0f172a; }
+  .nutrition-focus-copy { margin-top: 2px; font-size: .65rem; line-height: 1.35; color: #64748b; }
+  .meal-suggestion {
+    display: grid;
+    grid-template-columns: 78px minmax(0,1fr);
+    gap: 12px;
+    align-items: center;
+  }
+  .meal-suggestion-art {
+    height: 78px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, #fff7ed 0%, #ecfdf5 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.2rem;
+    border: 1px solid #e2e8f0;
+  }
+  .meal-suggestion-title { font-size: .95rem; font-weight: 900; color: #0f172a; line-height: 1.45; }
+  .meal-suggestion-copy { margin-top: 5px; font-size: .78rem; line-height: 1.55; color: #64748b; }
+  .diet-table-compact table { min-width: 520px; }
+  .diet-advice-list {
+    display: grid;
+    gap: 10px;
+    margin-top: 12px;
+  }
+  .diet-advice-card {
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    background: linear-gradient(180deg, #fff 0%, #fbfcff 100%);
+    padding: 13px;
+  }
+  .diet-advice-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 9px;
+  }
+  .diet-advice-title {
+    font-size: .88rem;
+    font-weight: 900;
+    color: #111827;
+  }
+  .diet-advice-principle {
+    font-size: .72rem;
+    font-weight: 800;
+    color: #4f46e5;
+    background: #eef2ff;
+    border: 1px solid #e0e7ff;
+    border-radius: 999px;
+    padding: 5px 8px;
+    white-space: nowrap;
+  }
+  .diet-advice-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .diet-advice-column {
+    border-radius: 13px;
+    background: #f8fafc;
+    border: 1px solid #edf0f4;
+    padding: 10px;
+  }
+  .diet-advice-label {
+    font-size: .68rem;
+    font-weight: 900;
+    color: #64748b;
+    margin-bottom: 5px;
+  }
+  .diet-advice-copy {
+    font-size: .76rem;
+    line-height: 1.55;
+    color: #334155;
+    font-weight: 700;
+  }
+  .journey-page[data-page="nutrition"] #mealContent .grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+  .journey-page[data-page="nutrition"] #mealContent .meal-card {
+    display: grid !important;
+    grid-template-columns: 34px minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 10px;
+    border-radius: 16px !important;
+    padding: 12px !important;
+  }
+  .journey-page[data-page="nutrition"] #mealContent .meal-card .feedback-actions {
+    flex-direction: column;
+    min-width: 86px;
+  }
+  .why-stack { display: grid; gap: 11px; }
+  .why-stack .sub-card {
+    margin-bottom: 0;
+    border-radius: 18px;
+    background: #fff;
+  }
+  .why-footer-note {
+    margin-top: 12px;
+    border-radius: 18px;
+    padding: 12px 14px;
+    background: linear-gradient(135deg, #f5f3ff 0%, #eef2ff 100%);
+    border: 1px solid #ddd6fe;
+    color: #4338ca;
+    font-size: .82rem;
+    line-height: 1.7;
+    font-weight: 750;
+  }
+  .app-footer {
+    position: fixed;
+    left: 50%;
+    bottom: 0;
+    transform: translateX(-50%);
+    width: min(100vw, 460px);
+    margin: 0;
+    z-index: 55;
+  }
+  .bottom-tab.center {
+    margin-top: -22px;
+  }
+  .bottom-tab.center .bottom-tab-icon {
+    width: 58px;
+    height: 58px;
+    margin: 0 auto -4px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 1.55rem;
+    background: radial-gradient(circle at 35% 25%, #c4b5fd 0%, #8b5cf6 46%, #6d28d9 100%);
+    border: 4px solid rgba(255,255,255,.96);
+    box-shadow: 0 16px 28px rgba(124,58,237,.34);
+  }
+  .bottom-tab.center.active { background: transparent; }
+  .bottom-tab.center.active .bottom-tab-label { color: #6d28d9; }
+  .trend-range-tabs { grid-template-columns: repeat(auto-fit, minmax(0,1fr)); width: 100%; }
+  .trend-chart path.trend-area { opacity: .88; }
+  .trend-point-readout {
+    display: inline-flex;
+    align-items: center;
+    width: max-content;
+    max-width: 100%;
+    font-size: .75rem;
+    line-height: 1.4;
+    color: #334155;
+    font-weight: 800;
+    margin-top: 8px;
+    padding: 5px 9px;
+    border-radius: 999px;
+    background: #f8fafc;
+    border: 1px solid #e5e7eb;
+  }
+  .trend-point-dot {
+    transition: opacity .16s ease, r .16s ease;
+    cursor: pointer;
+  }
+  .trend-point-dot.active {
+    opacity: 1;
+  }
+  .trend-selected-dot {
+    transition: cx .16s ease, cy .16s ease;
+  }
+  .meal-day-tab {
+    border: none;
+    border-radius: 999px;
+    padding: 7px 12px;
+    font-size: .74rem;
+    font-weight: 800;
+    color: #64748b;
+    background: #f8fafc;
+    transition: background .16s ease, color .16s ease, box-shadow .16s ease;
+    white-space: nowrap;
+  }
+  .meal-day-tab.active {
+    color: #fff;
+    background: #4f46e5;
+    box-shadow: 0 8px 16px rgba(79,70,229,.18);
+  }
+  .meal-reason {
+    color: #64748b;
+    font-weight: 650;
+  }
+  body {
+    background: #f4f6fa;
+  }
+  body::before, .app-shell::before {
+    display: none;
+  }
+  .app-shell {
+    background: #f4f6fa;
+  }
+  .journey-topbar {
+    display: block;
+    min-height: auto;
+    padding: 16px 16px 10px;
+    background: rgba(255,255,255,.86);
+    border-bottom: 1px solid #e8ecf2;
+  }
+  .topbar-title {
+    text-align: left;
+  }
+  .topbar-name {
+    font-size: 1.08rem;
+    letter-spacing: 0;
+  }
+  .topbar-subtitle {
+    color: #64748b;
+    letter-spacing: .04em;
+  }
+  .journey-card {
+    border-radius: 16px;
+    border-color: #e6eaf0;
+    background: #fff;
+    box-shadow: 0 8px 18px rgba(15,23,42,.045);
+  }
+  .journey-hero {
+    min-height: 0;
+    grid-template-columns: 1fr;
+    border-color: #e6eaf0;
+    background: #fff;
+    box-shadow: 0 8px 18px rgba(15,23,42,.045);
+  }
+  .journey-avatar {
+    border-radius: 16px;
+    background: #f8fafc;
+    box-shadow: none;
+    color: #0f172a;
+  }
+  .journey-robot {
+    display: none;
+  }
+  .context-chip {
+    background: #f8fafc;
+    border-color: #e5e7eb;
+    box-shadow: none;
+    color: #475569;
+  }
+  .status-alert-chip {
+    background: #fff;
+    border-color: #e5e7eb;
+    color: #475569;
+  }
+  .status-alert-chip.good { background: #fff; color: #047857; border-color: #d1d5db; }
+  .status-alert-chip.warn { background: #fff; color: #92400e; border-color: #d1d5db; }
+  .status-alert-chip.alert { background: #fff; color: #9a3412; border-color: #d1d5db; }
+  .journey-section-kicker {
+    color: #4f46e5;
+  }
+  .execution-card, .execution-card.good, .execution-card.warn, .execution-card.alert {
+    background: #fff;
+    border-color: #e5e7eb;
+    box-shadow: none;
+  }
+  .execution-card.warn { border-left: 3px solid #d97706; }
+  .execution-card.alert { border-left: 3px solid #ea580c; }
+  .execution-card.good { border-left: 3px solid #059669; }
+  .signal-mini-card {
+    background: #fff;
+    box-shadow: none;
+  }
+  .journey-task {
+    border-radius: 16px;
+    box-shadow: none;
+  }
+  .journey-task-index, .journey-record-btn {
+    background: #4f46e5;
+    box-shadow: 0 8px 16px rgba(79,70,229,.16);
+  }
+  .journey-record-btn.liked {
+    background: #0f172a;
+    box-shadow: none;
+  }
+  .journey-task-actions .feedback-btn {
+    min-width: 0;
+    width: 100%;
+    min-height: 38px;
+  }
+  .journey-task-actions .feedback-btn.like {
+    color: #4f46e5;
+    border-color: #c7d2fe;
+    background: #fff;
+  }
+  .journey-task-actions .feedback-btn.like:hover {
+    background: #eef2ff;
+  }
+  .journey-task-actions .feedback-btn.liked {
+    color: #fff;
+    background: #4f46e5;
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79,70,229,.12);
+  }
+  .journey-task-reason {
+    color: #64748b;
+  }
+  .assistant-note {
+    display: block;
+    background: #f8fafc;
+    border-color: #e5e7eb;
+    color: #334155;
+  }
+  .assistant-note-icon {
+    box-shadow: none;
+  }
+  .nutrition-focus-icon {
+    border-color: #e5e7eb;
+    background: #f8fafc;
+    box-shadow: none;
+  }
+  .meal-suggestion-art {
+    background: #f8fafc;
+  }
+  .journey-page[data-page="nutrition"] #mealContent .meal-card {
+    background: #fff !important;
+    border-color: #e5e7eb !important;
+    box-shadow: none !important;
+  }
+  .journey-page[data-page="nutrition"] .feedback-btn.like {
+    background: #fff;
+    color: #4f46e5;
+    border-color: #c7d2fe;
+  }
+  .journey-page[data-page="nutrition"] .feedback-btn.like:hover {
+    background: #eef2ff;
+  }
+  .journey-page[data-page="nutrition"] .feedback-btn.liked {
+    background: #4f46e5;
+    color: #fff;
+    border-color: #4f46e5;
+  }
+  .app-footer {
+    border-top: 1px solid #e8ecf2;
+    border-left: none;
+    border-right: none;
+    border-radius: 0;
+    background: rgba(255,255,255,.92);
+    box-shadow: 0 -8px 18px rgba(15,23,42,.045);
+  }
+  .bottom-tab {
+    border-radius: 12px;
+    padding: 8px 4px;
+  }
+  .bottom-tab.active {
+    background: #eef2ff;
+  }
+  .bottom-tab-icon {
+    color: #64748b;
+    font-size: 1rem;
+  }
+  .bottom-tab.active .bottom-tab-icon,
+  .bottom-tab.active .bottom-tab-label {
+    color: #4f46e5;
+  }
+  .bottom-tab.center {
+    margin-top: 0;
+  }
+  .bottom-tab.center .bottom-tab-icon {
+    width: auto;
+    height: auto;
+    margin: 0;
+    border-radius: 0;
+    color: #64748b;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    font-size: 1rem;
+  }
+  .bottom-tab.center.active .bottom-tab-icon {
+    color: #4f46e5;
   }
   .submit-cta-shell {
     position: sticky;
-    bottom: 14px;
+    bottom: calc(var(--bottom-nav-space) + env(safe-area-inset-bottom, 0px));
     z-index: 48;
-    margin: 4px 12px 14px;
+    margin: 4px 12px calc(14px + env(safe-area-inset-bottom, 0px));
     padding: 10px;
     border-radius: 24px;
     border: 1px solid rgba(255,255,255,.88);
@@ -500,7 +1566,9 @@
     box-shadow: 0 22px 34px rgba(14,165,233,.26), 0 12px 22px rgba(16,185,129,.28), inset 0 1px 0 rgba(255,255,255,.32);
     filter: saturate(1.02);
   }
-  .submit-cta-button:active { transform: translateY(1px) scale(.992); }
+  .submit-cta-button:active {
+    transform: translateY(1px) scale(.992);
+  }
   .submit-cta-button:disabled {
     cursor: not-allowed;
     background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%);
@@ -516,55 +1584,197 @@
 </style>
 </head>
 <body class="app-body text-slate-800">
-<div class="app-shell max-w-md mx-auto px-0 py-0 " style="min-height:100vh">
+<div class="app-shell max-w-md mx-auto px-0 ">
 
-  <!-- App Header (compact, sticky) -->
-  <div class="app-header sticky top-0 z-50 px-4 py-3 shadow-sm">
-    <div class="flex items-center justify-between">
-      <div>
-        <h1 class="text-lg font-bold text-slate-900">Hello, Margaret</h1>
-        <p class="text-xs text-slate-500">May 13, 2026 14:00</p>
-      </div>
-      <span class="status-pill inline-flex items-center gap-1 bg-amber-100 text-amber-800 px-3 py-1.5 rounded-full text-xs font-semibold">⚠️ Needs attention</span>
-    </div>
-    <div class="flex gap-1.5 mt-2 flex-wrap"><span class="condition-chip inline-block bg-rose-500 text-white px-3 py-1 rounded-full text-xs font-semibold">Hypertension</span>
-<span class="condition-chip inline-block bg-amber-500 text-white px-3 py-1 rounded-full text-xs font-semibold">Type 2 diabetes</span>
-<span class="condition-chip inline-block bg-orange-500 text-white px-3 py-1 rounded-full text-xs font-semibold">Hyperlipidemia</span></div>
-  </div>
-
-  <div class="px-3 pt-3"><section class="hero-vitals"><div class="flex items-center justify-between gap-3 mb-3"><div><div class="text-sm font-bold text-slate-900">Your latest health numbers</div><div class="text-xs text-slate-500 mt-1">Start here for a simple look at how your body is doing today.</div></div><div class="text-xl">📊</div></div><div class="hero-vitals-grid"><div class="hero-vital-card caution"><div class="hero-vital-top"><div><div class="hero-vital-label">Blood pressure</div><div class="hero-vital-value">138/85</div></div><div class="hero-vital-icon">🩺</div></div><div class="hero-vital-range">Reference 90-120 / 60-80 mmHg</div><div class="hero-vital-note">Your blood pressure is a little above the usual range. Rest, keep your nutrition lighter, and continue watching the trend.</div></div><div class="hero-vital-card good"><div class="hero-vital-top"><div><div class="hero-vital-label">Heart rate</div><div class="hero-vital-value">74</div></div><div class="hero-vital-icon">🫀</div></div><div class="hero-vital-range">Reference 60-100 bpm</div><div class="hero-vital-note">Your heart rate is within the usual healthy range.</div></div><div class="hero-vital-card good"><div class="hero-vital-top"><div><div class="hero-vital-label">Blood oxygen</div><div class="hero-vital-value">97</div></div><div class="hero-vital-icon">🫁</div></div><div class="hero-vital-range">Reference 95-100%</div><div class="hero-vital-note">Your oxygen level is in the normal range and looks stable.</div></div><div class="hero-vital-card good"><div class="hero-vital-top"><div><div class="hero-vital-label">Glucose</div><div class="hero-vital-value">7.2</div></div><div class="hero-vital-icon">🧪</div></div><div class="hero-vital-range">Reference 3.9-7.8 mmol/L</div><div class="hero-vital-note">Your glucose is within the reference range. Keep your nutrition routine and monitoring consistent.</div></div><div class="hero-vital-card caution"><div class="hero-vital-top"><div><div class="hero-vital-label">Steps today</div><div class="hero-vital-value">1,500</div></div><div class="hero-vital-icon">👟</div></div><div class="hero-vital-range">Reference Goal 6000-10000 steps/day</div><div class="hero-vital-note">Your activity is on the low side today. If you feel up to it, a few short walks may be easier than one longer session.</div></div></div></section></div>
-  <div class="px-3 pt-3"><div class="top-overview-panel rounded-[28px] p-3 shadow-sm"><div class="flex items-center gap-2 mb-2 px-1"><span class="top-overview-kicker text-base">🗂️</span><span class="text-xs font-bold text-slate-600 uppercase tracking-wide">Long-term picture</span></div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">👤</span><div class="flex-1 min-w-0"><div class="sub-card-label">Long-term profile</div><div class="sub-card-value">Your background matters for every suggestion</div></div></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">Margaret Chen, female, 71 years old. Diagnosed with hypertension (8 years), type 2 diabetes (4 years), hyperlipidemia. Post-surgery recovery (knee replacement, 6 weeks ago). Medications: amlodipine 5mg qd, metformin 500mg bid, atorvastatin 20mg qn. Lives alone, daughter visits weekly.</div></div></div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">📈</span><div class="flex-1 min-w-0"><div class="sub-card-label">Recent trends</div><div class="sub-card-value">How things have been changing lately</div></div></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">Over the past 14 days: appetite noticeably decreased, likely related to metformin side effects and post-surgery discomfort. Steps dropped from average 4,000/day to about 1,500/day. Blood pressure stable around 138/85. Blood glucose slightly elevated at 7.0-7.4 fasting. Reports feeling tired and not wanting to eat much.</div></div></div></div></div>
-
-  <!-- Escalation Banners -->
-  <div class="px-3 pt-3"><div class="rounded-xl border-2 bg-gradient-to-r from-amber-50 to-orange-50 border-amber-300 p-5 mb-3"><div class="flex items-center gap-2 mb-2"><span class="text-xl">⚠️</span><span class="text-sm font-bold text-amber-800 flex-1">Recurring headache — escalated to attention</span><span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500 text-white">ESCALATED</span></div><p class="text-sm text-slate-700 leading-relaxed mb-3">You have reported headaches 3 times in recent records. Because this symptom keeps coming back, we are flagging this for closer monitoring and your doctor will be notified.</p><div class="flex items-start gap-2 bg-white/70 rounded-lg p-3 border border-slate-200"><span class="text-sm mt-0.5">💡</span><div class="text-xs text-slate-600 leading-relaxed"><span class="font-semibold">What to do:</span> Please note the time, severity (1-10), and any triggers each time it happens.</div></div></div></div>
-
-  <!-- AI Message (modular sub-cards) -->
-  <div class="px-3 pt-3 pb-1">
-    <div class="ai-panel rounded-[28px] p-3 shadow-sm">
-      <div class="flex items-center gap-2 mb-2 px-1">
-        <span class="ai-panel-kicker text-base">🤖</span>
-        <span class="text-xs font-bold text-slate-600 uppercase tracking-wide">AI Health Companion</span>
-      </div>
-      <div class="sub-card sub-card-static bg-emerald-50 border-emerald-200"><div class="sub-card-header" style="padding:12px 14px 8px"><span class="sub-card-icon" style="font-size:1.2em">🎉</span><div class="flex-1 min-w-0"><div class="sub-card-value text-emerald-800" style="font-size:0.95em">Good news</div></div></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">Your blood pressure has been pretty steady, and you&#x27;ve been taking most of your medications on time — great job!</div></div></div><div class="sub-card sub-card-static bg-amber-50 border-amber-200"><div class="sub-card-header" style="padding:12px 14px 8px"><span class="sub-card-icon" style="font-size:1.2em">⚠️</span><div class="flex-1 min-w-0"><div class="sub-card-value text-amber-800" style="font-size:0.95em">Things to watch</div></div></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">Your appetite has been lower than usual, and you mentioned feeling nauseous sometimes. This might be related to your metformin — your doctor is aware and may adjust the timing or dosage. Your walking has also slowed down since your knee surgery, which is understandable.</div></div></div><div class="sub-card sub-card-static bg-blue-50 border-blue-200"><div class="sub-card-header" style="padding:12px 14px 8px"><span class="sub-card-icon" style="font-size:1.2em">📝</span><div class="flex-1 min-w-0"><div class="sub-card-value text-blue-800" style="font-size:0.95em">What we&#x27;ve prepared</div></div></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">We&#x27;ve put together some gentle suggestions and a meal plan that focuses on easy-to-digest, nutrient-rich foods to help you get your strength back.</div></div></div><div class="sub-card sub-card-static bg-purple-50 border-purple-200"><div class="sub-card-header" style="padding:12px 14px 8px"><span class="sub-card-icon" style="font-size:1.2em">💪</span><div class="flex-1 min-w-0"><div class="sub-card-value text-purple-800" style="font-size:0.95em">You&#x27;ve got this</div></div></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">Small steps count! Every bit of effort you put into your recovery matters, and we&#x27;re here to support you along the way.</div></div></div>
+  <div class="journey-topbar">
+    <div class="topbar-title">
+      <div class="topbar-name">Care Journey</div>
+      <div class="topbar-subtitle">Care Journey</div>
     </div>
   </div>
 
-  <!-- Cards -->
-  <div class="px-3 pt-2 pb-3">
-    <div class="section-card" data-section="guidance_bundle"><div class="section-card-header"><div class="section-card-icon" style="background:#d1fae5">💚</div><div class="flex-1 min-w-0"><div class="section-card-title">What to focus on now</div><div class="section-card-summary">Put the key takeaways and next steps together so they are easier to act on.</div></div><div class="section-card-arrow">&#9662;</div></div><div class="section-card-body"><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">Why these suggestions fit you</div></div><div class="module-subsection-copy">Your history, medication, and recent readings come first so the advice feels clearly tied to your own situation.</div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">🧾</span><div class="flex-1 min-w-0"><div class="sub-card-label">History highlights</div><div class="sub-card-value">Your background shapes the plan on this page</div></div></div><div class="sub-card-body"><div class="flex flex-wrap gap-2 mb-3"><span class="context-chip">Hypertension</span><span class="context-chip">Type 2 diabetes</span><span class="context-chip">Hyperlipidemia</span><span class="context-chip">2026-03-28 Right knee replacement surgery (total arthroplasty)</span></div><div class="text-xs text-slate-600 bg-slate-50 rounded-xl px-3 py-2 leading-relaxed border border-slate-200">Why it matters here: more protein, gentler foods, and gradual activity matter more right now; salt control stays important; steady nutrition timing and lower-sugar choices matter more</div></div></div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">💊</span><div class="flex-1 min-w-0"><div class="sub-card-label">Current medication</div><div class="sub-card-value">Medication and side effects directly shape food advice</div></div></div><div class="sub-card-body"><div class="flex flex-wrap gap-2 mb-3"><span class="context-chip">amlodipine 5mg qd</span><span class="context-chip">metformin 500mg bid</span><span class="context-chip">atorvastatin 20mg qn</span></div><div class="text-sm text-slate-700 leading-relaxed">What recent notes show: Skipped metformin twice due to nausea after meals</div><div class="mt-3 text-xs text-slate-600 bg-slate-50 rounded-xl px-3 py-2 leading-relaxed border border-slate-200">Why it changes your plan: Consider taking metformin with food or asking your doctor about extended-release formulation</div></div></div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">📈</span><div class="flex-1 min-w-0"><div class="sub-card-label">Recent readings</div><div class="sub-card-value">These suggestions are tied to what your latest data actually shows</div></div></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed mb-2">Recent readings: BP 138/85, Glucose 7.2, Steps 1,500</div><div class="text-sm text-slate-700 leading-relaxed mb-2">Device flags: Activity level declining, No home exits in 5 days</div><div class="text-sm text-slate-700 leading-relaxed mb-2">Monitoring gap: Missed glucose checks on 3 days. Blood pressure monitoring is consistent.</div><div class="text-xs text-slate-600 bg-slate-50 rounded-xl px-3 py-2 leading-relaxed border border-slate-200">Why it changes your plan: nutrition timing and steadier carbohydrates matter more; activity advice should stay gentle and realistic; closing the monitoring gap matters too</div></div></div></div><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">Health guidance</div></div><div class="module-subsection-copy">The main things to keep in mind right now, based on how you have been feeling.</div><div class="text-xs text-slate-500 mb-2">Personalized for <span class="font-semibold">Margaret</span></div><div class="leading-relaxed mb-3 bg-emerald-50 border-l-4 border-emerald-400 rounded-lg p-4" style="font-size:0.95em">Margaret, you&#x27;re recovering from knee surgery while managing hypertension and diabetes. Right now, your body needs extra protein to heal the surgical site, and stable blood sugar to support your energy. We&#x27;ve tailored everything below specifically for your situation — please trust the process, even when your appetite is low.</div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">🥩</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.95em">Prioritize protein at every meal — even a few bites count</div></div></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic">→ Your knee is still healing. Protein repairs tissue and prevents muscle loss while you&#x27;re less active.</div></div></div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">🧂</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.95em">Keep meals low in salt — aim for less than 5g per day</div></div></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic">→ With your blood pressure at 138/85, reducing salt helps your medication work better and protects your heart.</div></div></div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">🫒</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.95em">Choose steamed, boiled, or baked over fried</div></div></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic">→ Your cholesterol levels benefit from less oil. Steaming also keeps food soft and easy to eat when appetite is low.</div></div></div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">💧</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.95em">Drink warm water or herbal tea throughout the day</div></div></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic">→ Hydration helps your kidneys process medication (metformin) and reduces the nausea you&#x27;ve been experiencing.</div></div></div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">🚶</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.95em">Even a 5-minute walk counts as progress</div></div></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic">→ After knee surgery, any gentle movement prevents stiffness and helps blood glucose come down naturally.</div></div></div></div><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">Suggestions</div></div><div class="module-subsection-copy">Simple next steps that may feel the most helpful today.</div><div class="flex flex-wrap gap-2 mb-3"><span class="inline-block px-3 py-1 rounded-full text-xs font-medium border bg-orange-50 text-orange-700 border-orange-200">Appetite decreased</span>
-<span class="inline-block px-3 py-1 rounded-full text-xs font-medium border bg-sky-50 text-sky-700 border-sky-200">Low activity level</span>
-<span class="inline-block px-3 py-1 rounded-full text-xs font-medium border bg-amber-50 text-amber-700 border-amber-200">Glucose monitoring gaps</span></div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">💊</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">Take metformin right in the middle of a meal (not before or after) to reduce nausea</div></div></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic mb-2">💬 You&#x27;ve reported nausea twice after taking metformin on an empty stomach. Mid-meal timing significantly reduces GI side effects during post-surgery recovery.</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="Helpful" onclick="saveLike(-1,'rec','Take metformin right in the middle of a meal (not before or after) to reduce nausea')">Useful</button><button class="feedback-btn feedback-skip" title="Not for me" onclick="showFeedbackModal(-1,'rec','Take metformin right in the middle of a meal (not before or after) to reduce nausea')">Not for me</button></div></div></div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">🥗</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">Try eating 5-6 small meals instead of 3 big ones — even a few bites count</div></div></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic mb-2">💬 Your appetite has decreased since surgery. Smaller, frequent meals are easier to tolerate and help maintain blood glucose stability with your diabetes.</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="Helpful" onclick="saveLike(-1,'rec','Try eating 5-6 small meals instead of 3 big ones — even a few bites count')">Useful</button><button class="feedback-btn feedback-skip" title="Not for me" onclick="showFeedbackModal(-1,'rec','Try eating 5-6 small meals instead of 3 big ones — even a few bites count')">Not for me</button></div></div></div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">🏃</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">Do 10 minutes of seated leg exercises twice a day to keep your muscles active</div></div></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic mb-2">💬 After your knee replacement 6 weeks ago, gentle movement prevents muscle atrophy and improves circulation, which supports healing and glucose regulation.</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="Helpful" onclick="saveLike(-1,'rec','Do 10 minutes of seated leg exercises twice a day to keep your muscles active')">Useful</button><button class="feedback-btn feedback-skip" title="Not for me" onclick="showFeedbackModal(-1,'rec','Do 10 minutes of seated leg exercises twice a day to keep your muscles active')">Not for me</button></div></div></div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">🏃</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">Take a short 5-minute walk around your home when you feel up to it</div></div></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic mb-2">💬 Light walking — even indoors — promotes knee recovery, reduces blood pressure, and helps counter the low activity pattern we&#x27;ve noticed over the past 5 days.</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="Helpful" onclick="saveLike(-1,'rec','Take a short 5-minute walk around your home when you feel up to it')">Useful</button><button class="feedback-btn feedback-skip" title="Not for me" onclick="showFeedbackModal(-1,'rec','Take a short 5-minute walk around your home when you feel up to it')">Not for me</button></div></div></div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">📋</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">Set a daily alarm for glucose checking — consistency helps your doctor adjust your plan</div></div></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic mb-2">💬 You missed glucose checks on 3 days this period. Regular data helps your doctor decide if your metformin dosage needs adjustment.</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="Helpful" onclick="saveLike(-1,'rec','Set a daily alarm for glucose checking — consistency helps your doctor adjust your plan')">Useful</button><button class="feedback-btn feedback-skip" title="Not for me" onclick="showFeedbackModal(-1,'rec','Set a daily alarm for glucose checking — consistency helps your doctor adjust your plan')">Not for me</button></div></div></div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">🏠</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">Ask your daughter to help prep some easy grab-and-go snacks for the week</div></div></div><div class="sub-card-body"><div class="text-sm text-emerald-700 leading-relaxed italic mb-2">💬 Since you live alone and haven&#x27;t been going out, having pre-made nutritious snacks removes the barrier of cooking when you&#x27;re fatigued.</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="Helpful" onclick="saveLike(-1,'rec','Ask your daughter to help prep some easy grab-and-go snacks for the week')">Useful</button><button class="feedback-btn feedback-skip" title="Not for me" onclick="showFeedbackModal(-1,'rec','Ask your daughter to help prep some easy grab-and-go snacks for the week')">Not for me</button></div></div></div><div class="text-xs text-slate-500 mt-3 bg-slate-50 rounded-lg p-3 leading-relaxed">💭 Margaret&#x27;s adherence data over 14 days shows a clear pattern: medication compliance is good except for metformin-related nausea, appetite is reduced likely due to the combination of metformin side effects and post-surgery recovery, and activity levels have dropped significantly due to knee pain. The meal plan focuses on easy-to-digest, nutrient-dense options that address all three conditions while being gentle on her stomach.</div></div></div></div>
-<div class="section-card" data-section="adherence"><div class="section-card-header"><div class="section-card-icon" style="background:#f3e8ff">📋</div><div class="flex-1 min-w-0"><div class="section-card-title">Recent patterns</div><div class="section-card-summary">See how daily habits and important events fit together.</div></div><div class="section-card-arrow">&#9662;</div></div><div class="section-card-body"><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">How things have been going</div></div><div class="module-subsection-copy">A quick look at medication, nutrition, activity, and monitoring.</div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">💊</span><div class="flex-1 min-w-0"><div class="sub-card-label">Medication</div><div class="sub-card-value text-emerald-700">Mostly on track</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 mb-1"><span class="font-medium text-slate-500">Issue:</span> Skipped metformin twice due to nausea after meals</div><div class="text-sm text-slate-600 mb-1"><span class="font-medium text-slate-500">Adjustment:</span> Consider taking metformin with food or asking your doctor about extended-release formulation</div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">🍽️</span><div class="flex-1 min-w-0"><div class="sub-card-label">Appetite & diet</div><div class="sub-card-value text-amber-700">Decreased</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 mb-1"><span class="font-medium text-slate-500">Likely cause:</span> Likely metformin-related nausea combined with post-surgery fatigue and reduced activity</div><div class="text-sm text-slate-600 mb-1"><span class="font-medium text-slate-500">Suggestion:</span> Try smaller, more frequent meals. Warm soups and soft foods may be easier to tolerate.</div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">🏃</span><div class="flex-1 min-w-0"><div class="sub-card-label">Exercise & activity</div><div class="sub-card-value text-amber-700">Below target</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 mb-1"><span class="font-medium text-slate-500">Barrier:</span> Knee pain from recent surgery limits walking distance and duration</div><div class="text-sm text-slate-600 mb-1"><span class="font-medium text-slate-500">Plan:</span> Start with 10-minute seated exercises twice daily. Add short walks (5 min) as tolerated.</div></div></div><div class="sub-card"><div class="sub-card-header"><span class="sub-card-icon">📋</span><div class="flex-1 min-w-0"><div class="sub-card-label">Health monitoring</div><div class="sub-card-value text-amber-700">Needs improvement</div></div><span class="sub-card-arrow">▶</span></div><div class="sub-card-body"><div class="text-sm text-slate-600 mb-1"><span class="font-medium text-slate-500">Gap:</span> Missed glucose checks on 3 days. Blood pressure monitoring is consistent.</div></div></div></div><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">Key events</div></div><div class="module-subsection-copy">Important recent events are grouped here so the changes around them are easier to follow.</div><div class="space-y-2"><div class="flex items-start gap-3 rounded-lg p-2.5 border bg-purple-50 text-purple-700 border-purple-200"><span class="text-base mt-0.5">🩺</span><div class="flex-1 min-w-0"><div class="text-sm font-semibold">Right knee replacement surgery (total arthroplasty)</div><div class="text-xs text-slate-400 mt-0.5">2026-03-28</div></div></div><div class="flex items-start gap-3 rounded-lg p-2.5 border bg-amber-50 text-amber-700 border-amber-200"><span class="text-base mt-0.5">⚠️</span><div class="flex-1 min-w-0"><div class="text-sm font-semibold">Post-op follow-up: healing well, cleared for light walking</div><div class="text-xs text-slate-400 mt-0.5">2026-04-15</div></div></div><div class="flex items-start gap-3 rounded-lg p-2.5 border bg-amber-50 text-amber-700 border-amber-200"><span class="text-base mt-0.5">⚠️</span><div class="flex-1 min-w-0"><div class="text-sm font-semibold">Reported headache in the morning, mild intensity</div><div class="text-xs text-slate-400 mt-0.5">2026-04-22</div></div></div><div class="flex items-start gap-3 rounded-lg p-2.5 border bg-amber-50 text-amber-700 border-amber-200"><span class="text-base mt-0.5">⚠️</span><div class="flex-1 min-w-0"><div class="text-sm font-semibold">Reported recurring nausea after taking metformin</div><div class="text-xs text-slate-400 mt-0.5">2026-05-01</div></div></div><div class="flex items-start gap-3 rounded-lg p-2.5 border bg-amber-50 text-amber-700 border-amber-200"><span class="text-base mt-0.5">⚠️</span><div class="flex-1 min-w-0"><div class="text-sm font-semibold">Headache again, moderate intensity, lasted 2 hours</div><div class="text-xs text-slate-400 mt-0.5">2026-05-03</div></div></div><div class="flex items-start gap-3 rounded-lg p-2.5 border bg-amber-50 text-amber-700 border-amber-200"><span class="text-base mt-0.5">⚠️</span><div class="flex-1 min-w-0"><div class="text-sm font-semibold">Appetite decreased noticeably, skipping lunch</div><div class="text-xs text-slate-400 mt-0.5">2026-05-05</div></div></div><div class="flex items-start gap-3 rounded-lg p-2.5 border bg-amber-50 text-amber-700 border-amber-200"><span class="text-base mt-0.5">⚠️</span><div class="flex-1 min-w-0"><div class="text-sm font-semibold">Headache reported third time, took paracetamol</div><div class="text-xs text-slate-400 mt-0.5">2026-05-09</div></div></div><div class="flex items-start gap-3 rounded-lg p-2.5 border bg-rose-50 text-rose-700 border-rose-200"><span class="text-base mt-0.5">🚨</span><div class="flex-1 min-w-0"><div class="text-sm font-semibold">Activity level dropped below 2000 steps for 5 consecutive days</div><div class="text-xs text-slate-400 mt-0.5">2026-05-10</div></div></div></div></div></div></div>
-<div class="section-card" data-section="nutrition_bundle"><div class="section-card-header"><div class="section-card-icon" style="background:#ecfdf5">🥗</div><div class="flex-1 min-w-0"><div class="section-card-title">Nutrition focus</div><div class="section-card-summary">Keep nutrition guidance, comparisons, and practical reminders in one place.</div></div><div class="section-card-arrow">&#9662;</div></div><div class="section-card-body"><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">Nutrition advice</div></div><div class="module-subsection-copy">The nutrition priorities that matter most for you right now.</div><div class="rounded-xl bg-emerald-50 border border-emerald-100 px-4 py-4 text-[0.95em] leading-7 text-slate-700">Margaret, since your appetite is lower right now, focus on nutrient-dense foods in smaller portions. Warm oatmeal, soft-boiled eggs, and broth-based soups are gentle on the stomach. Add a handful of nuts or a small piece of fruit as snacks between meals to keep your energy up.</div></div><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">Diet by condition</div></div><div class="module-subsection-copy">Helpful food choices and foods to go easier on.</div><div class="overflow-x-auto rounded-xl border border-slate-200 bg-white"><table class="w-full text-sm"><thead><tr class="bg-slate-50"><th class="px-4 py-2 text-left text-xs font-semibold text-slate-500">Condition</th><th class="px-4 py-2 text-left text-xs font-semibold text-slate-500">Principle</th><th class="px-4 py-2 text-left text-xs font-semibold text-slate-500">Favor</th><th class="px-4 py-2 text-left text-xs font-semibold text-slate-500">Limit</th></tr></thead><tbody class="divide-y divide-slate-100"><tr><td class="px-4 py-3 font-medium text-slate-800">Hypertension</td><td class="px-4 py-3 text-slate-600">Low sodium, high potassium</td><td class="px-4 py-3 text-emerald-700">Leafy greens, bananas, sweet potatoes, fish</td><td class="px-4 py-3 text-rose-600">Canned soups, deli meats, soy sauce, pickles</td></tr><tr><td class="px-4 py-3 font-medium text-slate-800">Type 2 diabetes</td><td class="px-4 py-3 text-slate-600">Low GI, controlled portions</td><td class="px-4 py-3 text-emerald-700">Oatmeal, lentils, non-starchy vegetables, nuts</td><td class="px-4 py-3 text-rose-600">White bread, sugary drinks, pastries, white rice</td></tr><tr><td class="px-4 py-3 font-medium text-slate-800">Hyperlipidemia</td><td class="px-4 py-3 text-slate-600">Low saturated fat, high fiber</td><td class="px-4 py-3 text-emerald-700">Salmon, olive oil, oats, almonds</td><td class="px-4 py-3 text-rose-600">Fried foods, butter, fatty meats, full-fat dairy</td></tr></tbody></table></div></div><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">Nutrition tips</div></div><div class="module-subsection-copy">Small reminders that can make your nutrition plan easier to follow.</div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">🍽️</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">Small &amp; frequent</div></div></div><div class="sub-card-body"><div class="text-sm text-slate-600 leading-relaxed mb-2">When appetite is low, eat 5-6 small meals rather than 3 large ones. Even a few bites help.</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="Helpful" onclick="saveLike(-1,'tip','Small &amp; frequent')">Useful</button><button class="feedback-btn feedback-skip" title="Not for me" onclick="showFeedbackModal(-1,'tip','Small &amp; frequent')">Not for me</button></div></div></div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">💊</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">Medication timing</div></div></div><div class="sub-card-body"><div class="text-sm text-slate-600 leading-relaxed mb-2">Take metformin in the middle of eating (not on an empty stomach) to reduce nausea.</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="Helpful" onclick="saveLike(-1,'tip','Medication timing')">Useful</button><button class="feedback-btn feedback-skip" title="Not for me" onclick="showFeedbackModal(-1,'tip','Medication timing')">Not for me</button></div></div></div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">🥣</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">Gentle foods first</div></div></div><div class="sub-card-body"><div class="text-sm text-slate-600 leading-relaxed mb-2">Start with warm, soft foods like oatmeal, soups, and eggs when your stomach feels sensitive.</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="Helpful" onclick="saveLike(-1,'tip','Gentle foods first')">Useful</button><button class="feedback-btn feedback-skip" title="Not for me" onclick="showFeedbackModal(-1,'tip','Gentle foods first')">Not for me</button></div></div></div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">🥤</span><div class="flex-1 min-w-0"><div class="sub-card-value" style="font-size:0.92em">Stay hydrated</div></div></div><div class="sub-card-body"><div class="text-sm text-slate-600 leading-relaxed mb-2">Sip water throughout the day. Warm herbal tea can also help with appetite and digestion.</div><div class="feedback-actions" style="flex-direction:row;flex-wrap:wrap"><button class="feedback-btn like" title="Helpful" onclick="saveLike(-1,'tip','Stay hydrated')">Useful</button><button class="feedback-btn feedback-skip" title="Not for me" onclick="showFeedbackModal(-1,'tip','Stay hydrated')">Not for me</button></div></div></div></div></div></div>
-<div class="section-card" data-section="meal_bundle"><div class="section-card-header"><div class="section-card-icon" style="background:#eff6ff">🍽️</div><div class="flex-1 min-w-0"><div class="section-card-title">Nutrition plan</div><div class="section-card-summary">Your taste preferences and weekly nutrition plan live together here.</div></div><div class="section-card-arrow">&#9662;</div></div><div class="section-card-body"><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">Cuisine preferences</div></div><div class="module-subsection-copy">Choose flavors you enjoy so future suggestions feel more aligned with your preferences.</div><p class="text-sm text-slate-500 mb-3">Tell us which cuisines you enjoy so future nutrition suggestions feel more natural for you.</p><div class="flex flex-wrap gap-2 mb-3" id="cuisineChips"></div><div class="flex items-center gap-2"><input id="customCuisineInput" type="text" placeholder="Add another cuisine..." class="flex-1 text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-200"><button onclick="addCustomCuisine()" class="px-3 py-2 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm font-medium hover:bg-emerald-100">+ Add</button></div></div><div class="module-subsection"><div class="module-subsection-head"><div class="module-subsection-title">Weekly nutrition plan</div></div><div class="module-subsection-copy">A gentle weekly nutrition plan for breakfast, lunch, and dinner.</div><div class="flex gap-2 mb-4 overflow-x-auto pb-2" id="dayTabs"></div><div id="mealContent"></div></div></div></div>
-<div class="section-card" data-section="map"><div class="section-card-header"><div class="section-card-icon" style="background:#f0f9ff">🏥</div><div class="flex-1 min-w-0"><div class="section-card-title">Nearby places</div><div class="section-card-summary">Care nearby and a gentle walk option, all in one place.</div></div><div class="section-card-arrow">&#9662;</div></div><div class="section-card-body"><div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-3"><div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100"><span class="text-lg">📍</span><h2 class="text-sm font-bold text-slate-800">Nearby picks</h2></div><p class="text-sm text-slate-600 mb-3">Your recent activity looks a bit low. On a nice day, a gentle walk in a nearby park can help.</p><div class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 mb-3">Set GOOGLE_MAPS_API_KEY to render the interactive map.</div><div class="grid grid-cols-1 sm:grid-cols-2 gap-2"><a class="block rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm font-semibold text-slate-700 hover:bg-slate-100 text-center" href="https://www.google.com/maps/search/hospitals/@42.2766632,-71.8079906,14z" target="_blank" rel="noopener">🏥 Nearby hospitals</a><a class="block rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm font-semibold text-slate-700 hover:bg-slate-100 text-center" href="https://www.google.com/maps/search/parks/@42.2766632,-71.8079906,14z" target="_blank" rel="noopener">🌳 Nearby parks</a></div></div></div></div>
+  <div class="journey-pages">
+    <main class="journey-page active" data-page="home"><div class="journey-screen-head"><div><div class="journey-screen-title">Home</div><div class="journey-screen-copy">Start with today&#x27;s status, adherence, and latest health readings.</div></div></div><section class="journey-card journey-hero"><div class="journey-hero-main"><div class="journey-hero-row"><div class="journey-avatar">M</div><div><div class="journey-hello">Good afternoon, Margaret Chen</div><div class="journey-hero-text">Start with today's status, then focus on the few steps that matter most.</div></div></div><div class="journey-hero-text">Your appetite has been lower recently, so nutrition deserves extra attention while your body recovers. You do not need a large meal today; one small protein-rich snack is already a useful start.</div><div class="flex gap-1.5 mt-3 flex-wrap"><span class="context-chip">Hypertension</span><span class="context-chip">Type 2 diabetes</span><span class="context-chip">Hyperlipidemia</span></div></div></section><section class="journey-card"><div class="journey-section-kicker">Today's overall status</div><div class="journey-section-title">Needs attention</div><div class="status-alert-row"><span class="status-alert-chip good">● Mostly on track</span><span class="status-alert-chip alert">● Decreased</span><span class="status-alert-chip alert">● Activity not completed</span><span class="status-alert-chip alert">● Monitoring gap</span></div></section><section class="journey-card"><div class="journey-section-title">Adherence overview</div><div class="journey-status-grid"><div class="execution-card good"><div class="execution-card-top"><span class="execution-icon">💊</span><span class="execution-status">Mostly on track</span></div><div class="execution-title">Medication</div><div class="execution-detail">Skipped metformin twice due to nausea after meals</div></div><div class="execution-card alert"><div class="execution-card-top"><span class="execution-icon">🍽️</span><span class="execution-status">Decreased</span></div><div class="execution-title">Appetite and diet</div><div class="execution-detail">Decreased</div></div><div class="execution-card alert"><div class="execution-card-top"><span class="execution-icon">🏃</span><span class="execution-status">Below target</span></div><div class="execution-title">Exercise and activity</div><div class="execution-detail">Knee pain from recent surgery limits walking distance and duration</div></div><div class="execution-card alert"><div class="execution-card-top"><span class="execution-icon">📋</span><span class="execution-status">Needs improvement</span></div><div class="execution-title">Health monitoring</div><div class="execution-detail">Missed glucose checks on 3 days. Blood pressure monitoring is consistent.</div></div></div></section><section class="journey-card"><div class="journey-section-title">Latest health readings</div><div class="signal-mini-grid"><div class="signal-mini-card"><div class="signal-mini-icon">💜</div><div class="signal-mini-label">Blood pressure</div><div class="signal-mini-value">138/85</div><div class="signal-mini-unit">mmHg</div></div><div class="signal-mini-card"><div class="signal-mini-icon">❤️</div><div class="signal-mini-label">Heart rate</div><div class="signal-mini-value">74</div><div class="signal-mini-unit">bpm</div></div><div class="signal-mini-card"><div class="signal-mini-icon">💧</div><div class="signal-mini-label">Blood oxygen</div><div class="signal-mini-value">97</div><div class="signal-mini-unit">%</div></div><div class="signal-mini-card"><div class="signal-mini-icon">👟</div><div class="signal-mini-label">Steps</div><div class="signal-mini-value">1500</div><div class="signal-mini-unit">steps</div></div><div class="signal-mini-card"><div class="signal-mini-icon">🧪</div><div class="signal-mini-label">Glucose</div><div class="signal-mini-value">7.2</div><div class="signal-mini-unit">mmol/L</div></div></div></section></main>
+    <main class="journey-page" data-page="plan"><div class="journey-screen-head"><div><div class="journey-screen-title">Today&#x27;s plan</div><div class="journey-screen-copy">Focus on these three actions today.</div></div></div><section class="journey-card"><div class="journey-section-title">Today's three most useful actions</div><div class="journey-section-copy">Focus on a few practical steps for today.</div><div class="mt-3"><div class="journey-task"><div class="journey-task-index">1</div><div><div class="journey-task-title">Take metformin right in the middle of a meal (not before or after) to reduce nausea</div><div class="journey-task-reason">Why: You&#x27;ve reported nausea twice after taking metformin on an empty stomach. Mid-meal timing significantly reduces GI side effects during post-surgery recovery.</div><div class="journey-task-actions feedback-actions"><button class="feedback-btn like" data-day-idx="-1" data-meal-type="priority" data-item-name="Take metformin right in the middle of a meal (not before or after) to reduce nausea" data-default-label="Keep this" data-active-label="Kept" onclick="saveLikeFromButton(this)">Keep this</button><button class="feedback-btn feedback-skip" data-day-idx="-1" data-meal-type="priority" data-item-name="Take metformin right in the middle of a meal (not before or after) to reduce nausea" data-default-label="Not for me" data-active-label="Skipped" onclick="showFeedbackModalFromButton(this)">Not for me</button></div></div><div class="journey-task-visual">💊</div></div><div class="journey-task"><div class="journey-task-index">2</div><div><div class="journey-task-title">Try eating 5-6 small meals instead of 3 big ones — even a few bites count</div><div class="journey-task-reason">Why: Your appetite has decreased since surgery. Smaller, frequent meals are easier to tolerate and help maintain blood glucose stability with your diabetes.</div><div class="journey-task-actions feedback-actions"><button class="feedback-btn like" data-day-idx="-1" data-meal-type="priority" data-item-name="Try eating 5-6 small meals instead of 3 big ones — even a few bites count" data-default-label="Keep this" data-active-label="Kept" onclick="saveLikeFromButton(this)">Keep this</button><button class="feedback-btn feedback-skip" data-day-idx="-1" data-meal-type="priority" data-item-name="Try eating 5-6 small meals instead of 3 big ones — even a few bites count" data-default-label="Not for me" data-active-label="Skipped" onclick="showFeedbackModalFromButton(this)">Not for me</button></div></div><div class="journey-task-visual">🥣</div></div><div class="journey-task"><div class="journey-task-index">3</div><div><div class="journey-task-title">Do 10 minutes of seated leg exercises twice a day to keep your muscles active</div><div class="journey-task-reason">Why: After your knee replacement 6 weeks ago, gentle movement prevents muscle atrophy and improves circulation, which supports healing and glucose regulation.</div><div class="journey-task-actions feedback-actions"><button class="feedback-btn like" data-day-idx="-1" data-meal-type="priority" data-item-name="Do 10 minutes of seated leg exercises twice a day to keep your muscles active" data-default-label="Keep this" data-active-label="Kept" onclick="saveLikeFromButton(this)">Keep this</button><button class="feedback-btn feedback-skip" data-day-idx="-1" data-meal-type="priority" data-item-name="Do 10 minutes of seated leg exercises twice a day to keep your muscles active" data-default-label="Not for me" data-active-label="Skipped" onclick="showFeedbackModalFromButton(this)">Not for me</button></div></div><div class="journey-task-visual">🚶</div></div></div><div class="assistant-note">Your appetite has been lower recently, so nutrition deserves extra attention while your body recovers. You do not need a large meal today; one small protein-rich snack is already a useful start.</div></section><style>#bmap{width:100%;height:100%}#locate-btn{position:absolute;bottom:12px;right:12px;z-index:999;width:38px;height:38px;border-radius:50%;border:none;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.2);cursor:pointer;font-size:1.1em;display:flex;align-items:center;justify-content:center}#locate-btn:active{transform:scale(0.92)}.map-toggle{display:flex;margin-top:10px;background:#f1f5f9;border-radius:10px;padding:3px}.map-toggle button{flex:1;padding:8px 0;border:none;background:transparent;border-radius:8px;font-size:0.85em;font-weight:600;color:#94a3b8;cursor:pointer;transition:all 0.25s}.map-toggle button.active{background:linear-gradient(135deg,#42a5f5,#1e88e5);color:#fff;box-shadow:0 2px 8px rgba(30,136,229,0.3)}.map-toggle button.active.park-mode{background:linear-gradient(135deg,#66bb6a,#43a047);box-shadow:0 2px 8px rgba(67,160,71,0.3)}.map-place{display:flex;align-items:center;gap:10px;background:#f8fafc;border-radius:10px;padding:12px;margin-top:8px;cursor:pointer;border:2px solid transparent;transition:all 0.15s}.map-place:active{transform:scale(0.98)}.map-place.focused{border-color:#1e88e5;box-shadow:0 2px 10px rgba(30,136,229,0.15)}.map-place.focused.park-mode{border-color:#43a047;box-shadow:0 2px 10px rgba(67,160,71,0.15)}.map-place-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1em;flex-shrink:0}.map-place-icon.hospital{background:#e3f2fd}.map-place-icon.park{background:#e8f5e9}.map-place-nav{flex-shrink:0;width:30px;height:30px;border-radius:50%;border:none;background:#1e88e5;color:#fff;font-size:0.9em;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(30,136,229,0.35)}.map-place-nav.park-mode{background:#43a047;box-shadow:0 2px 6px rgba(67,160,71,0.35)}.map-place-nav:active{transform:scale(0.9)}.map-dist{font-size:0.75em;font-weight:700;padding:3px 8px;border-radius:16px;white-space:nowrap;flex-shrink:0}.map-dist.hospital{background:#e3f2fd;color:#1565c0}.map-dist.park{background:#e8f5e9;color:#2e7d32}</style>
+<section class="journey-card nearby-support-card"><div class="journey-section-title">Nearby support</div><div class="journey-section-copy">Find hospitals and parks near your current location.</div><p class="text-sm text-slate-600 mb-3" id="ai-map-text">Your recent activity has been low. A gentle walk in a nearby park may help when the weather is comfortable.</p><div class="rounded-2xl overflow-hidden border border-slate-200 relative" style="height:240px"><div id="bmap"></div><button id="locate-btn" title="Back to my location">📍</button></div><div class="map-toggle"><button class="active" id="btn-hospital" onclick="switchMapMode('hospital')">🏥 Hospitals</button><button id="btn-park" onclick="switchMapMode('park')">🌳 Parks</button></div><div id="map-cards"></div></section>
+<script>
+(function() {
+  var bmap = new BMap.Map("bmap");
+  bmap.enableScrollWheelZoom(true);
+  var userPoint = new BMap.Point(-71.8079906, 42.2766632);
+  var mapMode = 'hospital';
+  var mapMarkers = [];
+  var mapCards = [];
+  var mapRoute = null;
+  var userOverlays = [];
+  var AI_MAP_TEXT = { hospital: "Your recent activity has been low. A gentle walk in a nearby park may help when the weather is comfortable.", park: "Your recent activity has been low. A gentle walk in a nearby park may help when the weather is comfortable." };
+
+  document.getElementById('locate-btn').addEventListener('click', function() {
+    if (userPoint) { bmap.panTo(userPoint); bmap.setZoom(15); }
+  });
+
+  var USER_ICON_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28">'
+    + '<circle cx="14" cy="14" r="13" fill="#4285f4" fill-opacity="0.2" stroke="#4285f4" stroke-width="1"/>'
+    + '<circle cx="14" cy="14" r="7" fill="#4285f4" stroke="#fff" stroke-width="2.5"/>'
+    + '</svg>';
+  var USER_ICON = new BMap.Icon(
+    'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(USER_ICON_SVG),
+    new BMap.Size(28, 28),
+    { anchor: new BMap.Size(14, 14) }
+  );
+
+  function addUserOverlays() {
+    userOverlays.forEach(function(o) { bmap.removeOverlay(o); });
+    userOverlays = [];
+    var marker = new BMap.Marker(userPoint, { icon: USER_ICON });
+    bmap.addOverlay(marker);
+    userOverlays.push(marker);
+    var label = new BMap.Label('You are here', {
+      position: userPoint,
+      offset: new BMap.Size(16, -8)
+    });
+    label.setStyle({
+      background:'#4285f4',color:'#fff',border:'none',
+      borderRadius:'6px',padding:'2px 8px',
+      fontSize:'12px',fontWeight:'600',
+      boxShadow:'0 1px 4px rgba(0,0,0,0.25)',whiteSpace:'nowrap'
+    });
+    bmap.addOverlay(label);
+    userOverlays.push(label);
+  }
+
+  function clearRoute() {
+    if (mapRoute) { mapRoute.clearResults(); mapRoute = null; }
+  }
+  function clearResultMarkers() {
+    clearRoute();
+    mapMarkers.forEach(function(m) { bmap.removeOverlay(m); });
+    mapMarkers = [];
+    mapCards = [];
+  }
+
+  bmap.centerAndZoom(userPoint, 15);
+  addUserOverlays();
+  doMapSearch('hospital');
+
+  window.switchMapMode = function(mode) {
+    if (mode === mapMode) return;
+    mapMode = mode;
+    document.getElementById('btn-hospital').className = mode === 'hospital' ? 'active' : '';
+    document.getElementById('btn-park').className = mode === 'park' ? 'active park-mode' : '';
+    document.getElementById('ai-map-text').textContent = AI_MAP_TEXT[mode];
+    clearResultMarkers();
+    document.getElementById('map-cards').innerHTML = '<div style="text-align:center;color:#bbb;padding:16px;font-size:0.85em">Searching...</div>';
+    doMapSearch(mode);
+  };
+
+  function doMapSearch(mode) {
+    if (!userPoint) return;
+    var keyword = mode === 'hospital' ? '\u533b\u9662' : '\u516c\u56ed';
+    var local = new BMap.LocalSearch(bmap, {
+      renderOptions: { autoViewport: false },
+      onSearchComplete: function(results) {
+        clearResultMarkers();
+        var container = document.getElementById('map-cards');
+        container.innerHTML = '';
+        if (!results || local.getStatus() !== BMAP_STATUS_SUCCESS || results.getCurrentNumPois() === 0) {
+          container.innerHTML = '<div style="text-align:center;color:#bbb;padding:16px;font-size:0.85em">No nearby places found</div>';
+          return;
+        }
+        var count = results.getCurrentNumPois();
+        for (var i = 0; i < count; i++) {
+          (function(idx) {
+            var poi = results.getPoi(idx);
+            var dist = bmap.getDistance(userPoint, poi.point);
+            var distText = dist >= 1000 ? (dist/1000).toFixed(1)+' km' : Math.round(dist)+' m';
+            var marker = new BMap.Marker(poi.point);
+            bmap.addOverlay(marker);
+            mapMarkers.push(marker);
+            marker.addEventListener('click', function() { focusMapCard(idx, poi); });
+            var card = document.createElement('div');
+            card.className = 'map-place';
+            card.innerHTML = '<div class="map-place-icon '+mode+'">'+(mode==='hospital'?'\ud83c\udfe5':'\ud83c\udf33')+'</div>'
+              +'<div style="flex:1;min-width:0"><div style="font-size:0.9em;font-weight:600;color:#222;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+poi.title+'</div>'
+              +'<div style="font-size:0.75em;color:#999;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(poi.address||'No address')+'</div></div>'
+              +'<div class="map-dist '+mode+'">'+distText+'</div>'
+              +'<button class="map-place-nav'+(mode==='park'?' park-mode':'')+'" title="Directions">\u27a4</button>';
+            card.addEventListener('click', function(e) {
+              if (e.target.classList.contains('map-place-nav')) return;
+              focusMapCard(idx, poi);
+            });
+            card.querySelector('.map-place-nav').addEventListener('click', function(e) {
+              e.stopPropagation();
+              navigateMapTo(poi);
+            });
+            container.appendChild(card);
+            mapCards.push(card);
+          })(i);
+        }
+      }
+    });
+    local.searchNearby(keyword, userPoint, 4000);
+  }
+
+  function focusMapCard(idx, poi) {
+    mapCards.forEach(function(c) { c.classList.remove('focused','park-mode'); });
+    mapCards[idx].classList.add('focused');
+    if (mapMode === 'park') mapCards[idx].classList.add('park-mode');
+    mapCards[idx].scrollIntoView({ behavior:'smooth', block:'nearest' });
+    bmap.panTo(poi.point);
+    mapMarkers[idx].openInfoWindow(
+      new BMap.InfoWindow('<b>'+poi.title+'</b><br><span style="color:#888;font-size:12px">'+(poi.address||'')+'</span>')
+    );
+    clearRoute();
+    var routeColor = mapMode === 'hospital' ? '#1e88e5' : '#43a047';
+    var walking = new BMap.WalkingRoute(bmap, {
+      renderOptions: { map: bmap, autoViewport: false },
+      onSearchComplete: function(results) {
+        if (walking.getStatus() !== BMAP_STATUS_SUCCESS) return;
+        var plan = results.getPlan(0);
+        for (var s = 0; s < plan.getNumRoutes(); s++) {
+          var route = plan.getRoute(s);
+          var path = route.getPolyline();
+          if (path) { path.setStrokeColor(routeColor); path.setStrokeWeight(5); path.setStrokeOpacity(0.85); }
+        }
+        addUserOverlays();
+      }
+    });
+    walking.search(userPoint, poi.point);
+    mapRoute = walking;
+  }
+
+  function navigateMapTo(poi) {
+    var destLat = poi.point.lat;
+    var destLng = poi.point.lng;
+    var destName = encodeURIComponent(poi.title);
+    var isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    var appUrl = 'baidumap://map/direction?destination=latlng:'+destLat+','+destLng+'|name:'+destName+'&mode=walking&coord_type=bd09ll&src=webapp';
+    var webUrl = 'https://api.map.baidu.com/marker?location='+destLat+','+destLng+'&title='+destName+'&output=html&coord_type=bd09ll&src=webapp';
+    if (isMobile) {
+      window.location.href = appUrl;
+      setTimeout(function() { window.location.href = webUrl; }, 2000);
+    } else {
+      window.open(webUrl, '_blank');
+    }
+  }
+})();
+</script></main>
+    <main class="journey-page" data-page="nutrition"><div class="journey-screen-head"><div><div class="journey-screen-title">Nutrition and meals</div><div class="journey-screen-copy">See today&#x27;s nutrition priorities and meal suggestions.</div></div></div><section class="journey-card diet-table-compact"><div class="journey-section-title">Food guidance by condition</div><div class="journey-section-copy">Start with the food choices most relevant to your conditions and medications.</div><div class="diet-advice-list"><div class="diet-advice-card"><div class="diet-advice-head"><div class="diet-advice-title">Hypertension</div><div class="diet-advice-principle">Low sodium, high potassium</div></div><div class="diet-advice-grid"><div class="diet-advice-column"><div class="diet-advice-label">Choose more often</div><div class="diet-advice-copy">Leafy greens, bananas, sweet potatoes, fish</div></div><div class="diet-advice-column"><div class="diet-advice-label">Limit or avoid</div><div class="diet-advice-copy">Canned soups, deli meats, soy sauce, pickles</div></div></div></div><div class="diet-advice-card"><div class="diet-advice-head"><div class="diet-advice-title">Type 2 diabetes</div><div class="diet-advice-principle">Low GI, controlled portions</div></div><div class="diet-advice-grid"><div class="diet-advice-column"><div class="diet-advice-label">Choose more often</div><div class="diet-advice-copy">Oatmeal, lentils, non-starchy vegetables, nuts</div></div><div class="diet-advice-column"><div class="diet-advice-label">Limit or avoid</div><div class="diet-advice-copy">White bread, sugary drinks, pastries, white rice</div></div></div></div><div class="diet-advice-card"><div class="diet-advice-head"><div class="diet-advice-title">Hyperlipidemia</div><div class="diet-advice-principle">Low saturated fat, high fiber</div></div><div class="diet-advice-grid"><div class="diet-advice-column"><div class="diet-advice-label">Choose more often</div><div class="diet-advice-copy">Salmon, olive oil, oats, almonds</div></div><div class="diet-advice-column"><div class="diet-advice-label">Limit or avoid</div><div class="diet-advice-copy">Fried foods, butter, fatty meats, full-fat dairy</div></div></div></div></div></section><section class="journey-card meal-suggestion"><div class="meal-suggestion-art">🍲</div><div><div class="journey-section-kicker">Next meal</div><div class="meal-suggestion-title">Dinner: Baked salmon fillet / Steamed broccoli / Brown rice (small portion)</div><div class="meal-suggestion-copy">Heart-healthy omega-3; Potassium-rich</div></div></section><section class="journey-card"><div class="journey-section-title">Nutrition notes</div><div class="journey-section-copy">Margaret, since your appetite is lower right now, focus on nutrient-dense foods in smaller portions. Warm oatmeal, soft-boiled eggs, and broth-based soups are gentle on the stomach. Add a handful of nuts or a small piece of fruit as snacks between meals to keep your energy up.</div></section><section class="journey-card"><div class="journey-section-title">Meal plan</div><div class="flex gap-2 mb-4 overflow-x-auto pb-2" id="dayTabs"></div><div id="mealContent"></div></section></main>
+    <main class="journey-page" data-page="trends"><div class="journey-screen-head"><div><div class="journey-screen-title">Health trends</div><div class="journey-screen-copy">See recent blood pressure, heart rate, and blood oxygen changes.</div></div></div><div id="trendOverviewAnchor" class="px-3 pt-3"><section class="trend-card"><div class="trend-card-head"><div><div class="trend-card-title">Signal trends</div><div class="trend-card-copy">Slide along a curve to see daily or weekly averages.</div></div><div class="trend-insight-chip" id="trendInsightChip">Past week · daily average</div></div><div class="trend-range-tabs"><button class="trend-range-btn active" data-range="week" onclick="renderTrendRange('week')">Week</button><button class="trend-range-btn" data-range="month" onclick="renderTrendRange('month')">Month</button><button class="trend-range-btn" data-range="quarter" onclick="renderTrendRange('quarter')">Quarter</button></div><div id="trendMetricStack" class="trend-metric-stack mt-3"></div></section></div></main>
+    <main class="journey-page" data-page="why"><div class="journey-screen-head"><div><div class="journey-screen-title">Why these suggestions</div><div class="journey-screen-copy">See how each suggestion connects to your recent situation.</div></div></div><section class="journey-card"><div class="journey-section-title">Why these suggestions fit</div><div class="journey-section-copy">See the medication, diet, activity, and monitoring context separately.</div><div class="why-stack mt-3"><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">🧾</span><div class="flex-1 min-w-0"><div class="sub-card-label">Health history</div><div class="sub-card-value">These suggestions reflect your conditions and recovery stage</div></div></div><div class="sub-card-body"><div class="flex flex-wrap gap-2 mb-3"><span class="context-chip">Hypertension</span><span class="context-chip">Type 2 diabetes</span><span class="context-chip">Hyperlipidemia</span></div><div class="text-xs text-slate-600 bg-slate-50 rounded-xl px-3 py-2 leading-relaxed border border-slate-200">What this changes: keep sodium lower; keep meals regular and reduce refined sugar</div></div></div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">💊</span><div class="flex-1 min-w-0"><div class="sub-card-label">Current medication</div><div class="sub-card-value">Medication routines and side effects shape the nutrition plan</div></div></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed">Recent note: Skipped metformin twice due to nausea after meals</div><div class="mt-3 text-xs text-slate-600 bg-slate-50 rounded-xl px-3 py-2 leading-relaxed border border-slate-200">What to focus on: Consider taking metformin with food or asking your doctor about extended-release formulation</div></div></div><div class="sub-card sub-card-static"><div class="sub-card-header"><span class="sub-card-icon">📈</span><div class="flex-1 min-w-0"><div class="sub-card-label">Recent readings</div><div class="sub-card-value">Advice grounded in your recent records</div></div></div><div class="sub-card-body"><div class="text-sm text-slate-700 leading-relaxed mb-2">Recent readings: Blood pressure 138/85, Glucose 7.2, Steps 1500</div><div class="text-sm text-slate-700 leading-relaxed mb-2">Monitoring note: Missed glucose checks on 3 days. Blood pressure monitoring is consistent.</div><div class="text-xs text-slate-600 bg-slate-50 rounded-xl px-3 py-2 leading-relaxed border border-slate-200">What this changes: keep meals regular; build activity gradually; close the monitoring gap</div></div></div></div></section><div class="why-footer-note">Small steps add up. Your appetite has been lower recently, so nutrition deserves extra attention while your body recovers. You do not need a large meal today; one small protein-rich snack is already a useful start.</div></main>
   </div>
 
-  <div id="submitCtaShell" class="submit-cta-shell"><button id="exportFeedbackBtn" onclick="exportFeedbackJSON()" class="submit-cta-button" disabled>✓ Choose preferences first</button><p class="submit-cta-hint" id="submitHint">Start by choosing cuisines or marking suggestions that fit you</p></div>
+  <div class="submit-cta-shell" id="submitCtaShell" style="display:none">
+    <button class="submit-cta-button" id="exportFeedbackBtn" type="button" onclick="exportFeedbackJSON()">
+      Choose preferences first
+    </button>
+    <div class="submit-cta-hint" id="submitHint" aria-live="polite"></div>
+  </div>
 
   <!-- Guardrail (slim footer) -->
-  <div class="app-footer px-4 py-3 bg-slate-50 border-t border-slate-200">
-    <p class="text-[11px] text-slate-400 text-center leading-relaxed">This report was generated by an AI health assistant for information only. It is not medical advice. If you feel unwell, please contact your doctor or call emergency services. Always follow your clinician&#x27;s instructions regarding medications and treatment.</p>
+  <div class="footer-disclaimer">This report was generated by an AI health assistant for information only. It is not medical advice. If you feel unwell, please contact your doctor or call emergency services. Always follow your clinician&#x27;s instructions regarding medications and treatment.</div>
+  <div class="app-footer">
+    <div class="bottom-tabbar"><button class="bottom-tab active" data-page-target="home" onclick="switchJourneyPage('home')"><div class="bottom-tab-icon">⌂</div><div class="bottom-tab-label">Home</div></button><button class="bottom-tab" data-page-target="plan" onclick="switchJourneyPage('plan')"><div class="bottom-tab-icon">▣</div><div class="bottom-tab-label">Plan</div></button><button class="bottom-tab" data-page-target="why" onclick="switchJourneyPage('why')"><div class="bottom-tab-icon">◇</div><div class="bottom-tab-label">Why</div></button><button class="bottom-tab" data-page-target="nutrition" onclick="switchJourneyPage('nutrition')"><div class="bottom-tab-icon">♨</div><div class="bottom-tab-label">Nutrition</div></button><button class="bottom-tab" data-page-target="trends" onclick="switchJourneyPage('trends')"><div class="bottom-tab-icon">⌁</div><div class="bottom-tab-label">Trends</div></button></div>
   </div>
 
 </div>
@@ -573,25 +1783,39 @@
 const DAYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
 const MEAL_LABELS = {"breakfast":"Breakfast","lunch":"Lunch","dinner":"Dinner"};
 const rawMeals = [{"day": "Day 1", "breakfast": [{"name": "Warm oatmeal with banana", "icon": "🥣", "condition": "Diabetes", "benefit": "Low GI, gentle on stomach"}, {"name": "Soft-boiled egg", "icon": "🥚", "condition": "Hyperlipidemia", "benefit": "Lean protein boost"}], "lunch": [{"name": "Chicken broth with vegetables", "icon": "🍲", "condition": "Hypertension", "benefit": "Low sodium, hydrating"}, {"name": "Whole wheat crackers", "icon": "🍞", "condition": "Diabetes", "benefit": "Slow-release carbs"}], "dinner": [{"name": "Baked salmon fillet", "icon": "🐟", "condition": "Hyperlipidemia", "benefit": "Heart-healthy omega-3"}, {"name": "Steamed broccoli", "icon": "🥦", "condition": "Hypertension", "benefit": "Potassium-rich"}, {"name": "Brown rice (small portion)", "icon": "🍚", "condition": "Diabetes", "benefit": "High fiber whole grain"}]}, {"day": "Day 2", "breakfast": [{"name": "Greek yogurt with berries", "icon": "🫐", "condition": "Diabetes", "benefit": "Protein + low GI fruit"}, {"name": "Handful of almonds", "icon": "🥜", "condition": "Hyperlipidemia", "benefit": "Healthy fats, fiber"}], "lunch": [{"name": "Lentil soup", "icon": "🍲", "condition": "Diabetes", "benefit": "Low GI, high protein"}, {"name": "Side salad with olive oil", "icon": "🥗", "condition": "Hyperlipidemia", "benefit": "Heart-healthy fats"}], "dinner": [{"name": "Grilled chicken breast", "icon": "🍗", "condition": "Hyperlipidemia", "benefit": "Lean protein"}, {"name": "Roasted sweet potato", "icon": "🍠", "condition": "Hypertension", "benefit": "Potassium-rich"}, {"name": "Sauteed spinach", "icon": "🥬", "condition": "Hypertension", "benefit": "Magnesium + potassium"}]}, {"day": "Day 3", "breakfast": [{"name": "Scrambled eggs on toast", "icon": "🍳", "condition": "Diabetes", "benefit": "Protein-rich start"}, {"name": "Sliced avocado", "icon": "🥑", "condition": "Hyperlipidemia", "benefit": "Healthy monounsaturated fat"}], "lunch": [{"name": "Tuna salad (light mayo)", "icon": "🐟", "condition": "Hyperlipidemia", "benefit": "Omega-3 fatty acids"}, {"name": "Apple slices", "icon": "🍎", "condition": "Diabetes", "benefit": "Fiber-rich, low GI snack"}], "dinner": [{"name": "Turkey meatballs", "icon": "🍖", "condition": "Hyperlipidemia", "benefit": "Low-fat protein"}, {"name": "Quinoa pilaf", "icon": "🍚", "condition": "Diabetes", "benefit": "Complete protein grain"}, {"name": "Steamed green beans", "icon": "🥬", "condition": "Hypertension", "benefit": "Low sodium, high fiber"}]}];
-const meals = DAYS.map((d, i) => ({ ...rawMeals[i % rawMeals.length], day: d }));
+const mealSource = Array.isArray(rawMeals) ? rawMeals : [];
+const meals = mealSource.map((item, i) => {
+  const source = item && typeof item === "object" ? item : {};
+  return { ...source, day: source.day || DAYS[i] || `Day ${i + 1}` };
+});
+const TREND_DATA = {"week": {"axis_start": "5/7", "axis_end": "5/13", "insight": "Past week · daily average", "metrics": [{"icon": "🩺", "label": "Blood pressure", "value": "138/85 mmHg", "delta": "From start ↓ 4", "delta_direction": "down", "copy": "The curve shows systolic pressure; tap a point for the full reading.", "values": [142.0, 139.0, 137.0, 138.0], "color": "#7c3aed", "points": [{"label": "5/7", "display": "142/87 mmHg", "value": "142"}, {"label": "5/9", "display": "139/85 mmHg", "value": "139"}, {"label": "5/11", "display": "137/84 mmHg", "value": "137"}, {"label": "5/13", "display": "138/85 mmHg", "value": "138"}]}, {"icon": "🫀", "label": "Heart rate", "value": "74 bpm", "delta": "From start ↓ 4bpm", "delta_direction": "down", "copy": "See how your heart rate has changed.", "values": [78.0, 76.0, 73.0, 74.0], "color": "#ef4444", "points": [{"label": "5/7", "display": "78 bpm", "value": "78"}, {"label": "5/9", "display": "76 bpm", "value": "76"}, {"label": "5/11", "display": "73 bpm", "value": "73"}, {"label": "5/13", "display": "74 bpm", "value": "74"}]}, {"icon": "🫁", "label": "Blood oxygen", "value": "97 %", "delta": "From start ↑ 1%", "delta_direction": "up", "copy": "See how your blood oxygen has changed.", "values": [96.0, 97.0, 98.0, 97.0], "color": "#06b6d4", "points": [{"label": "5/7", "display": "96 %", "value": "96"}, {"label": "5/9", "display": "97 %", "value": "97"}, {"label": "5/11", "display": "98 %", "value": "98"}, {"label": "5/13", "display": "97 %", "value": "97"}]}, {"icon": "👟", "label": "Steps", "value": "1500 steps", "delta": "From start ↓ 600steps", "delta_direction": "down", "copy": "See how your activity has changed.", "values": [2100.0, 1850.0, 1620.0, 1500.0], "color": "#2563eb", "points": [{"label": "5/7", "display": "2100 steps", "value": "2100"}, {"label": "5/9", "display": "1850 steps", "value": "1850"}, {"label": "5/11", "display": "1620 steps", "value": "1620"}, {"label": "5/13", "display": "1500 steps", "value": "1500"}]}]}, "month": {"axis_start": "4/15", "axis_end": "5/13", "insight": "Past month · daily average", "metrics": [{"icon": "🩺", "label": "Blood pressure", "value": "138/85 mmHg", "delta": "From start ↓ 7", "delta_direction": "down", "copy": "The curve shows systolic pressure; tap a point for the full reading.", "values": [145.0, 141.0, 140.0, 138.0], "color": "#7c3aed", "points": [{"label": "4/15", "display": "145/88 mmHg", "value": "145"}, {"label": "4/22", "display": "141/86 mmHg", "value": "141"}, {"label": "5/1", "display": "140/85 mmHg", "value": "140"}, {"label": "5/13", "display": "138/85 mmHg", "value": "138"}]}, {"icon": "🫀", "label": "Heart rate", "value": "74 bpm", "delta": "From start ↓ 6bpm", "delta_direction": "down", "copy": "See how your heart rate has changed.", "values": [80.0, 77.0, 75.0, 74.0], "color": "#ef4444", "points": [{"label": "4/15", "display": "80 bpm", "value": "80"}, {"label": "4/22", "display": "77 bpm", "value": "77"}, {"label": "5/1", "display": "75 bpm", "value": "75"}, {"label": "5/13", "display": "74 bpm", "value": "74"}]}, {"icon": "🫁", "label": "Blood oxygen", "value": "97 %", "delta": "From start ↑ 1%", "delta_direction": "up", "copy": "See how your blood oxygen has changed.", "values": [96.0, 97.0, 97.0, 97.0], "color": "#06b6d4", "points": [{"label": "4/15", "display": "96 %", "value": "96"}, {"label": "4/22", "display": "97 %", "value": "97"}, {"label": "5/1", "display": "97 %", "value": "97"}, {"label": "5/13", "display": "97 %", "value": "97"}]}, {"icon": "👟", "label": "Steps", "value": "1500 steps", "delta": "From start ↓ 2400steps", "delta_direction": "down", "copy": "See how your activity has changed.", "values": [3900.0, 3200.0, 2400.0, 1500.0], "color": "#2563eb", "points": [{"label": "4/15", "display": "3900 steps", "value": "3900"}, {"label": "4/22", "display": "3200 steps", "value": "3200"}, {"label": "5/1", "display": "2400 steps", "value": "2400"}, {"label": "5/13", "display": "1500 steps", "value": "1500"}]}]}, "quarter": {"axis_start": "3/16", "axis_end": "5/11", "insight": "Past quarter · weekly average", "metrics": [{"icon": "🩺", "label": "Blood pressure", "value": "138/85 mmHg", "delta": "From start ↓ 9", "delta_direction": "down", "copy": "The curve shows systolic pressure; tap a point for the full reading.", "values": [147.0, 144.0, 141.0, 138.0], "color": "#7c3aed", "points": [{"label": "3/16", "display": "147/89 mmHg", "value": "147"}, {"label": "4/6", "display": "144/87 mmHg", "value": "144"}, {"label": "4/27", "display": "141/86 mmHg", "value": "141"}, {"label": "5/11", "display": "138/85 mmHg", "value": "138"}]}, {"icon": "🫀", "label": "Heart rate", "value": "74 bpm", "delta": "From start ↓ 8bpm", "delta_direction": "down", "copy": "See how your heart rate has changed.", "values": [82.0, 79.0, 76.0, 74.0], "color": "#ef4444", "points": [{"label": "3/16", "display": "82 bpm", "value": "82"}, {"label": "4/6", "display": "79 bpm", "value": "79"}, {"label": "4/27", "display": "76 bpm", "value": "76"}, {"label": "5/11", "display": "74 bpm", "value": "74"}]}, {"icon": "🫁", "label": "Blood oxygen", "value": "97 %", "delta": "From start ↑ 1%", "delta_direction": "up", "copy": "See how your blood oxygen has changed.", "values": [96.0, 96.0, 97.0, 97.0], "color": "#06b6d4", "points": [{"label": "3/16", "display": "96 %", "value": "96"}, {"label": "4/6", "display": "96 %", "value": "96"}, {"label": "4/27", "display": "97 %", "value": "97"}, {"label": "5/11", "display": "97 %", "value": "97"}]}, {"icon": "👟", "label": "Steps", "value": "1600 steps", "delta": "From start ↓ 2600steps", "delta_direction": "down", "copy": "See how your activity has changed.", "values": [4200.0, 3700.0, 2800.0, 1600.0], "color": "#2563eb", "points": [{"label": "3/16", "display": "4200 steps", "value": "4200"}, {"label": "4/6", "display": "3700 steps", "value": "3700"}, {"label": "4/27", "display": "2800 steps", "value": "2800"}, {"label": "5/11", "display": "1600 steps", "value": "1600"}]}]}};
 let activeDay = 0;
 
+function escapeHtml(value) {
+  const chars = {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"};
+  return String(value ?? "").replace(/[&<>"']/g, ch => chars[ch]);
+}
+
+function encodeInlineValue(value) {
+  return encodeURIComponent(String(value ?? "")).replace(/'/g, "%27");
+}
+
 const MEAL_FEEDBACK_REASONS = [
-  "Don't like the taste",
-  "Allergic / intolerant",
-  "Can't find this ingredient",
+  "I don't like the taste",
+  "Allergy or intolerance",
+  "Ingredients are hard to find",
   "Too difficult to prepare",
   "Other"
 ];
 const GENERAL_FEEDBACK_REASONS = [
-  "Not applicable to me",
-  "Too difficult to do",
-  "Already doing this",
-  "Don't agree with this",
+  "Not for me",
+  "Too difficult",
+  "I already do this",
+  "I disagree with this suggestion",
   "Other"
 ];
-const FEEDBACK_STORAGE_KEY = "mealFeedback_en";
-const CUISINE_STORAGE_KEY = "cuisinePrefs_en";
+const FEEDBACK_STORAGE_KEY = "careJourneyFeedback_zh_v1";
+const CUISINE_STORAGE_KEY = "cuisinePrefs_zh";
 let feedbackStore = JSON.parse(localStorage.getItem(FEEDBACK_STORAGE_KEY) || "{}");
 const pendingFeedbackSubmits = {};
 
@@ -602,16 +1826,88 @@ function saveFeedback(dayIdx, mealType, itemName, reason) {
   updateExportBadge();
 }
 
-function saveLike(dayIdx, mealType, itemName) {
+function clearFeedbackEntry(dayIdx, mealType, itemName) {
   const key = `${dayIdx}-${mealType}-${itemName}`;
+  delete feedbackStore[key];
+  localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(feedbackStore));
+}
+
+function applyStaticButtonState(sourceEl, sentiment) {
+  if (!sourceEl) return;
+  const group = sourceEl.closest(".priority-task-actions, .feedback-actions, .journey-task");
+  if (!group) return;
+  group.querySelectorAll("button").forEach(function(btn) {
+    const isSecondary = btn.classList.contains("secondary") || btn.classList.contains("feedback-skip");
+    btn.classList.remove("liked", "disliked", "active");
+    if (btn.dataset.defaultLabel) btn.textContent = btn.dataset.defaultLabel;
+    if (sentiment === "like" && !isSecondary) {
+      if (btn.classList.contains("priority-task-btn")) btn.classList.add("active");
+      else btn.classList.add("liked");
+      if (btn.dataset.activeLabel) btn.textContent = btn.dataset.activeLabel;
+    }
+    if (sentiment === "dislike" && isSecondary) {
+      if (btn.classList.contains("priority-task-btn")) btn.classList.add("active");
+      else btn.classList.add("disliked");
+      if (btn.dataset.activeLabel) btn.textContent = btn.dataset.activeLabel;
+    }
+  });
+}
+
+function clearStaticButtonState(sourceEl) {
+  applyStaticButtonState(sourceEl, null);
+}
+
+function syncStaticButtonState(dayIdx, mealType, itemName) {
+  const feedback = getFeedback(dayIdx, mealType, itemName);
+  if (!feedback) return;
+  const selector = [
+    `[data-day-idx="${dayIdx}"]`,
+    `[data-meal-type="${mealType}"]`,
+    `[data-item-name="${itemName.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"]`
+  ].join("");
+  const button = document.querySelector(selector);
+  if (button) applyStaticButtonState(button, feedback.sentiment);
+}
+
+function hydrateStaticFeedbackStates() {
+  document.querySelectorAll("[data-day-idx][data-meal-type][data-item-name]").forEach(function(btn) {
+    const dayIdx = Number(btn.dataset.dayIdx);
+    const mealType = btn.dataset.mealType;
+    if (dayIdx < 0 && mealType === "priority") return;
+    const itemName = btn.dataset.itemName;
+    const feedback = getFeedback(dayIdx, mealType, itemName);
+    if (feedback) applyStaticButtonState(btn, feedback.sentiment);
+  });
+}
+
+function saveLike(dayIdx, mealType, itemName, sourceEl) {
+  const key = `${dayIdx}-${mealType}-${itemName}`;
+  const existing = feedbackStore[key];
+  const isActive = sourceEl && (sourceEl.classList.contains("liked") || sourceEl.classList.contains("active"));
+  if (existing && existing.sentiment === "like" && isActive) {
+    clearFeedbackEntry(dayIdx, mealType, itemName);
+    if (dayIdx < 0) clearStaticButtonState(sourceEl);
+    renderMeals();
+    updateExportBadge();
+    return;
+  }
   feedbackStore[key] = { sentiment: "like", reason: null, timestamp: new Date().toISOString() };
   localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(feedbackStore));
+  if (dayIdx < 0) applyStaticButtonState(sourceEl, "like");
   renderMeals();
   updateExportBadge();
 }
 
 function getFeedback(dayIdx, mealType, itemName) {
   return feedbackStore[`${dayIdx}-${mealType}-${itemName}`];
+}
+
+function saveLikeFromButton(button) {
+  saveLike(Number(button.dataset.dayIdx), button.dataset.mealType, button.dataset.itemName, button);
+}
+
+function showFeedbackModalFromButton(button) {
+  showFeedbackModal(Number(button.dataset.dayIdx), button.dataset.mealType, button.dataset.itemName, button);
 }
 
 function buildPreferencePayload() {
@@ -650,7 +1946,7 @@ function exportFeedbackJSON() {
   const origText = btn.textContent;
   const feedbackId = "feedback_" + Date.now() + "_" + Math.random().toString(36).slice(2);
   pendingFeedbackSubmits[feedbackId] = { btn, origText };
-  btn.textContent = "⏳ Submitting...";
+  btn.textContent = "Submitting...";
   btn.disabled = true;
   window.parent.postMessage({
     type: "skill_feedback",
@@ -671,7 +1967,7 @@ window.addEventListener("message", function(event) {
   const pending = pendingFeedbackSubmits[data.feedback_id];
   if (!pending) return;
   delete pendingFeedbackSubmits[data.feedback_id];
-  pending.btn.textContent = data.ok === false ? "Submission failed" : "✓ Submitted";
+  pending.btn.textContent = data.ok === false ? "Submission failed" : "Submitted";
   setTimeout(() => {
     pending.btn.textContent = pending.origText;
     pending.btn.disabled = false;
@@ -688,38 +1984,38 @@ function updateExportBadge() {
   const total = fbCount + cuisineCount;
   if (shell) shell.style.display = "block";
   if (total > 0) {
-    btn.textContent = "✓ Submit my preferences (" + total + ")";
+    btn.textContent = "Submit my preferences (" + total + ")";
     btn.disabled = false;
     btn.style.display = "inline-block";
     if (hint) {
       hint.style.display = "block";
-      hint.textContent = "Your choices will shape future suggestions";
+      hint.textContent = "Your choices will help personalize future suggestions";
     }
   } else {
     btn.disabled = true;
-    btn.textContent = "✓ Choose preferences first";
+    btn.textContent = "Choose preferences first";
     btn.style.display = "inline-block";
     if (hint) {
       hint.style.display = "block";
-      hint.textContent = "Start by choosing cuisines or marking suggestions that fit you";
+      hint.textContent = "Choose a cuisine or mark an item as useful or not for me";
     }
   }
 }
 
-function showFeedbackModal(dayIdx, mealType, itemName) {
+function showFeedbackModal(dayIdx, mealType, itemName, sourceEl) {
   const existing = document.querySelector('.feedback-modal');
   if (existing) existing.remove();
   const isMeal = dayIdx >= 0;
   const reasons = isMeal ? MEAL_FEEDBACK_REASONS : GENERAL_FEEDBACK_REASONS;
-  const title = isMeal ? "Why don't you want this food?" : "Why doesn't this work for you?";
+  const title = isMeal ? "Why don't you want this meal?" : "Why isn't this suggestion right for you?";
   const displayName = itemName.length > 60 ? itemName.substring(0, 57) + "..." : itemName;
   const modal = document.createElement('div');
   modal.className = 'feedback-modal';
   modal.innerHTML = `
     <div class="feedback-modal-box">
       <div class="text-sm font-bold text-slate-800 mb-1">${title}</div>
-      <div class="text-xs text-slate-500 mb-3">${displayName}</div>
-      ${reasons.map(r => `<button class="feedback-reason" data-reason="${r}">${r}</button>`).join('')}
+      <div class="text-xs text-slate-500 mb-3">${escapeHtml(displayName)}</div>
+      ${reasons.map(r => `<button class="feedback-reason" data-reason="${escapeHtml(r)}">${escapeHtml(r)}</button>`).join('')}
       <button class="feedback-reason" style="color:#94a3b8;border-color:#e2e8f0;margin-top:8px" data-reason="__cancel__">Cancel</button>
     </div>`;
   modal.addEventListener('click', function(e) {
@@ -727,6 +2023,7 @@ function showFeedbackModal(dayIdx, mealType, itemName) {
     if (!reason) return;
     if (reason === '__cancel__') { modal.remove(); return; }
     saveFeedback(dayIdx, mealType, itemName, reason);
+    if (!isMeal) applyStaticButtonState(sourceEl, "dislike");
     modal.remove();
     if (isMeal) renderMeals();
     e.target.closest('.feedback-modal').remove();
@@ -736,9 +2033,11 @@ function showFeedbackModal(dayIdx, mealType, itemName) {
 
 function renderTabs() {
   const container = document.getElementById("dayTabs");
-  container.innerHTML = DAYS.map((d, i) =>
-    `<button onclick="switchDay(${i})" class="px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${i === activeDay ? 'bg-emerald-600 text-white shadow-sm' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">${d}</button>`
-  ).join("");
+  if (!container) return;
+  container.innerHTML = meals.map((day, i) => {
+    const label = day.day || DAYS[i] || `Day ${i + 1}`;
+    return `<button onclick="switchDay(${i})" class="meal-day-tab ${i === activeDay ? 'active' : ''}">${escapeHtml(label)}</button>`;
+  }).join("");
 }
 
 function switchDay(i) {
@@ -748,8 +2047,10 @@ function switchDay(i) {
 }
 
 function renderMeals() {
+  const container = document.getElementById("mealContent");
+  if (!container) return;
   const day = meals[activeDay];
-  if (!day) { document.getElementById("mealContent").innerHTML = '<p class="text-sm text-slate-400">No data</p>'; return; }
+  if (!day) { container.innerHTML = '<p class="text-sm text-slate-400">No data yet</p>'; return; }
   let html = "";
   for (const [key, label] of Object.entries(MEAL_LABELS)) {
     const items = day[key] || [];
@@ -759,43 +2060,182 @@ function renderMeals() {
       const fb = getFeedback(activeDay, key, it.name);
       const likeClass = fb && fb.sentiment === "like" ? "liked" : "";
       const dislikeClass = fb && fb.sentiment === "dislike" ? "disliked" : "";
-      const safeName = it.name.replace(/'/g, "&#39;");
+      const itemName = String(it.name || "");
+      const safeName = encodeInlineValue(itemName);
       const reason = it.adc_reason || (
         it.condition && it.benefit
-          ? "For your " + it.condition.toLowerCase() + ": " + it.benefit.toLowerCase()
+          ? "For " + it.condition + ": " + it.benefit
           : (it.benefit || "")
       );
       html += `<div class="meal-card flex items-start gap-3 bg-slate-50 rounded-lg p-3 border border-slate-100">
-        <span class="text-2xl mt-0.5">${it.icon || "🍽️"}</span>
+        <span class="text-2xl mt-0.5">${escapeHtml(it.icon || "🍽️")}</span>
         <div class="flex-1 min-w-0">
-          <div class="text-sm font-semibold text-slate-800">${it.name}</div>
-          <div class="text-xs text-emerald-600 mt-0.5 leading-relaxed italic">${reason}</div>
+          <div class="text-sm font-semibold text-slate-800">${escapeHtml(itemName)}</div>
+          <div class="text-xs meal-reason mt-0.5 leading-relaxed">${escapeHtml(reason)}</div>
         </div>
         <div class="feedback-actions">
-          <button class="feedback-btn like ${likeClass}" title="Keep this nutrition suggestion" onclick="saveLike(${activeDay},'${key}','${safeName}')">Keep this</button>
-          <button class="feedback-btn feedback-skip ${dislikeClass}" title="This nutrition suggestion is not for me" onclick="showFeedbackModal(${activeDay},'${key}','${safeName}')">Not for me</button>
+          <button class="feedback-btn like ${likeClass}" title="Keep this meal suggestion" onclick="saveLike(${activeDay},'${key}',decodeURIComponent('${safeName}'), this)">Keep this</button>
+          <button class="feedback-btn feedback-skip ${dislikeClass}" title="This isn't for me" onclick="showFeedbackModal(${activeDay},'${key}',decodeURIComponent('${safeName}'), this)">Not for me</button>
         </div>
       </div>`;
     }
     html += "</div></div>";
   }
-  document.getElementById("mealContent").innerHTML = html;
+  container.innerHTML = html;
 }
 
 // ─── Cuisine Preferences ───
+function jumpToSection(sectionId) {
+  const target = document.getElementById(sectionId);
+  if (!target) return;
+  target.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function switchJourneyPage(pageKey, instant) {
+  const key = String(pageKey || "home");
+  document.querySelectorAll(".journey-page").forEach(function(page) {
+    page.classList.toggle("active", page.dataset.page === key);
+  });
+  document.querySelectorAll("[data-page-target]").forEach(function(btn) {
+    btn.classList.toggle("active", btn.dataset.pageTarget === key);
+  });
+  if (key === "nutrition") {
+    renderCuisineChips();
+    renderTabs();
+    renderMeals();
+  }
+  if (key === "trends") {
+    const activeRange = document.querySelector(".trend-range-btn.active");
+    const nextRange = activeRange ? activeRange.dataset.range : Object.keys(TREND_DATA || {})[0];
+    if (nextRange) renderTrendRange(nextRange);
+  }
+  if (!instant) window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function buildTrendSparkline(values, color) {
+  if (!Array.isArray(values) || !values.length) return "";
+  const width = 320;
+  const height = 76;
+  const pad = 6;
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const span = Math.max(max - min, 1);
+  const points = values.map((val, idx) => {
+    const x = pad + (idx * (width - pad * 2)) / Math.max(values.length - 1, 1);
+    const y = height - pad - ((val - min) / span) * (height - pad * 2);
+    return [x, y];
+  });
+  function smoothPath(items) {
+    if (items.length === 1) return `M ${items[0][0].toFixed(1)} ${items[0][1].toFixed(1)}`;
+    let d = `M ${items[0][0].toFixed(1)} ${items[0][1].toFixed(1)}`;
+    for (let i = 0; i < items.length - 1; i++) {
+      const [x0, y0] = items[i];
+      const [x1, y1] = items[i + 1];
+      const dx = (x1 - x0) * 0.45;
+      d += ` C ${(x0 + dx).toFixed(1)} ${y0.toFixed(1)}, ${(x1 - dx).toFixed(1)} ${y1.toFixed(1)}, ${x1.toFixed(1)} ${y1.toFixed(1)}`;
+    }
+    return d;
+  }
+  const line = smoothPath(points);
+  const area = `${line} L ${width} ${height} L 0 ${height} Z`;
+  const last = points[points.length - 1];
+  const dots = points.map(([x, y], idx) => {
+    const isActive = idx === points.length - 1;
+    return `<circle class="trend-point-dot ${isActive ? 'active' : ''}" data-point-index="${idx}" onclick="setTrendPointFromDot(this)" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${isActive ? '3.3' : '2.4'}" fill="#fff" stroke="${color}" stroke-width="1.7" opacity="${isActive ? '1' : '.62'}"></circle>`;
+  }).join("");
+  const gradId = "trendFill" + Math.abs(color.split("").reduce((sum, ch) => sum + ch.charCodeAt(0), 0));
+  return `
+    <svg class="trend-chart" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" aria-hidden="true">
+      <defs>
+        <linearGradient id="${gradId}" x1="0" x2="0" y1="0" y2="1">
+          <stop offset="0%" stop-color="${color}" stop-opacity="0.22"></stop>
+          <stop offset="100%" stop-color="${color}" stop-opacity="0"></stop>
+        </linearGradient>
+      </defs>
+      <path class="trend-area" d="${area}" fill="url(#${gradId})" stroke="none"></path>
+      <path d="${line}" fill="none" stroke="${color}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
+      ${dots}
+      <circle class="trend-selected-dot" cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="5.2" fill="#fff" stroke="${color}" stroke-width="2.3"></circle>
+    </svg>`;
+}
+
+function updateTrendPoint(sourceEl, forcedIndex) {
+  const card = sourceEl.closest(".trend-metric-card");
+  if (!card) return;
+  const rangeKey = card.dataset.rangeKey;
+  const metricIndex = Number(card.dataset.metricIndex || 0);
+  const pointIndex = Number(forcedIndex ?? sourceEl.dataset.pointIndex ?? 0);
+  const metric = (TREND_DATA[rangeKey] && TREND_DATA[rangeKey].metrics || [])[metricIndex] || {};
+  const point = (metric.points || [])[pointIndex];
+  const readout = card.querySelector(".trend-point-readout");
+  if (readout && point) readout.textContent = `${point.label || ""} · ${point.display || point.value || ""}`;
+
+  card.querySelectorAll(".trend-point-dot").forEach(function(dot) {
+    const active = Number(dot.dataset.pointIndex || 0) === pointIndex;
+    dot.classList.toggle("active", active);
+    dot.setAttribute("r", active ? "3.3" : "2.4");
+    dot.setAttribute("opacity", active ? "1" : ".62");
+  });
+  const selected = card.querySelector(".trend-selected-dot");
+  const dot = card.querySelector(`.trend-point-dot[data-point-index="${pointIndex}"]`);
+  if (selected && dot) {
+    selected.setAttribute("cx", dot.getAttribute("cx"));
+    selected.setAttribute("cy", dot.getAttribute("cy"));
+  }
+}
+
+function setTrendPointFromDot(dot) {
+  updateTrendPoint(dot, Number(dot.dataset.pointIndex || 0));
+}
+
+function renderTrendRange(rangeKey) {
+  const data = TREND_DATA[String(rangeKey)];
+  if (!data) return;
+  document.querySelectorAll(".trend-range-btn").forEach(function(btn) {
+    btn.classList.toggle("active", btn.dataset.range === String(rangeKey));
+  });
+  const shell = document.getElementById("trendMetricStack");
+  const chip = document.getElementById("trendInsightChip");
+  if (chip && data.insight) chip.textContent = data.insight;
+  if (!shell) return;
+  shell.innerHTML = (data.metrics || []).map(function(metric, metricIndex) {
+    const deltaColor = metric.delta_direction === "down" ? "#f97316" : (metric.delta_direction === "up" ? "#10b981" : "#64748b");
+    const points = metric.points || [];
+    const lastPointIndex = Math.max(points.length - 1, 0);
+    const lastPoint = points[lastPointIndex] || null;
+    const readout = points.length ? `<div class="trend-point-readout">${lastPoint ? `${lastPoint.label || ""} · ${lastPoint.display || lastPoint.value || ""}` : ""}</div>` : "";
+    return `
+      <div class="trend-metric-card" data-range-key="${String(rangeKey)}" data-metric-index="${metricIndex}">
+        <div class="trend-metric-top">
+          <div class="trend-metric-kicker">
+            <div class="trend-metric-icon">${metric.icon}</div>
+            <div>
+              <div class="trend-metric-label">${metric.label}</div>
+              <div class="trend-metric-value">${metric.value}</div>
+            </div>
+          </div>
+          <div class="trend-metric-delta" style="color:${deltaColor}">${metric.delta}</div>
+        </div>
+        <div class="trend-metric-copy">${metric.copy}</div>
+        ${readout}
+        ${buildTrendSparkline(metric.values || [], metric.color || "#8b5cf6")}
+        <div class="trend-axis"><span>${data.axis_start || ""}</span><span>${data.axis_end || ""}</span></div>
+      </div>`;
+  }).join("");
+  shell.querySelectorAll(".trend-point-dot.active").forEach(function(dot) {
+    updateTrendPoint(dot, Number(dot.dataset.pointIndex || 0));
+  });
+}
+
 const DEFAULT_CUISINES = [
-  { name: "American", icon: "🍔" },
-  { name: "Italian", icon: "🍝" },
-  { name: "Japanese", icon: "🍣" },
-  { name: "Korean", icon: "🥘" },
-  { name: "Mexican", icon: "🌮" },
-  { name: "Indian", icon: "🍛" },
-  { name: "Mediterranean", icon: "🫒" },
-  { name: "Sichuan", icon: "🌶️" },
+  { name: "Home-style", icon: "🍚" },
   { name: "Cantonese", icon: "🥡" },
-  { name: "Thai", icon: "🍜" },
-  { name: "French", icon: "🥐" },
-  { name: "Vietnamese", icon: "🍲" },
+  { name: "Sichuan", icon: "🌶️" },
+  { name: "Jiangnan", icon: "🥢" },
+  { name: "Light meals", icon: "🥣" },
+  { name: "Mediterranean", icon: "🫒" },
+  { name: "Japanese", icon: "🍣" },
+  { name: "Italian", icon: "🍝" },
 ];
 
 let cuisinePrefs = JSON.parse(localStorage.getItem(CUISINE_STORAGE_KEY) || "{}");
@@ -810,7 +2250,8 @@ function renderCuisineChips() {
   }
   container.innerHTML = allCuisines.map(c => {
     const sel = cuisinePrefs[c.name] ? "selected" : "";
-    return `<span class="cuisine-chip ${sel}" onclick="toggleCuisine('${c.name.replace(/'/g,"&#39;")}')">${c.icon} ${c.name}<span class="chip-x" onclick="event.stopPropagation();removeCuisine('${c.name.replace(/'/g,"&#39;")}')">✕</span></span>`;
+    const safeName = encodeInlineValue(c.name);
+    return `<span class="cuisine-chip ${sel}" onclick="toggleCuisine(decodeURIComponent('${safeName}'))">${escapeHtml(c.icon)} ${escapeHtml(c.name)}<span class="chip-x" onclick="event.stopPropagation();removeCuisine(decodeURIComponent('${safeName}'))">✕</span></span>`;
   }).join("");
   updateExportBadge();
 }
@@ -836,7 +2277,7 @@ function showCuisineToast() {
     existing.style.cssText = "position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#065f46;color:#fff;padding:10px 20px;border-radius:12px;font-size:0.8em;font-weight:500;box-shadow:0 4px 20px rgba(0,0,0,0.2);z-index:9999;transition:opacity 0.3s;max-width:90%;text-align:center";
     document.body.appendChild(existing);
   }
-  existing.textContent = "✓ Saved! Next report will include " + selected.join(", ") + " recipes.";
+  existing.textContent = "Saved. Future reports will consider: " + selected.join(", ");
   existing.style.opacity = "1";
   clearTimeout(existing._timer);
   existing._timer = setTimeout(() => { existing.style.opacity = "0"; }, 3000);
@@ -858,14 +2299,21 @@ function addCustomCuisine() {
   renderCuisineChips();
 }
 
-document.getElementById("customCuisineInput").addEventListener("keydown", function(e) {
-  if (e.key === "Enter") { e.preventDefault(); addCustomCuisine(); }
-});
+const customCuisineInput = document.getElementById("customCuisineInput");
+if (customCuisineInput) {
+  customCuisineInput.addEventListener("keydown", function(e) {
+    if (e.key === "Enter") { e.preventDefault(); addCustomCuisine(); }
+  });
+}
 
 renderCuisineChips();
 renderTabs();
 renderMeals();
 updateExportBadge();
+hydrateStaticFeedbackStates();
+const defaultTrendRange = Object.keys(TREND_DATA || {})[0];
+if (defaultTrendRange) renderTrendRange(defaultTrendRange);
+switchJourneyPage("home", true);
 
 // ─── Card Accordion Toggle ───
 document.querySelectorAll(".section-card-header").forEach(function(header) {
