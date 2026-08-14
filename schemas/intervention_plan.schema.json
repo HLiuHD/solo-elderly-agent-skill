@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kangningbebe.local/schemas/intervention_plan.schema.json",
+  "title": "InterventionPlan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "plan_id",
+    "scenario",
+    "com_b_assessment",
+    "intervention_function",
+    "bct_strategies",
+    "primary_goal",
+    "secondary_goals",
+    "doctor_handoff_needed",
+    "priority"
+  ],
+  "properties": {
+    "plan_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "scenario": {
+      "type": "string",
+      "enum": [
+        "adherence",
+        "emergency",
+        "background_fill",
+        "doctor_confirmation"
+      ]
+    },
+    "com_b_assessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "capability",
+        "opportunity",
+        "motivation",
+        "behavior"
+      ],
+      "properties": {
+        "capability": {
+          "$ref": "#/$defs/comBDimension"
+        },
+        "opportunity": {
+          "$ref": "#/$defs/comBDimension"
+        },
+        "motivation": {
+          "$ref": "#/$defs/comBDimension"
+        },
+        "behavior": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "target_behavior"
+          ],
+          "properties": {
+            "target_behavior": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "intervention_function": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "education",
+          "persuasion",
+          "enablement",
+          "environmental_restructuring",
+          "modelling",
+          "restriction"
+        ]
+      },
+      "minItems": 1
+    },
+    "bct_strategies": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "goal_setting",
+          "graded_task",
+          "self_monitoring",
+          "feedback",
+          "reward",
+          "social_support",
+          "prompt_cue",
+          "action_planning"
+        ]
+      }
+    },
+    "primary_goal": {
+      "type": "string"
+    },
+    "secondary_goals": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "doctor_handoff_needed": {
+      "type": "boolean"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ]
+    }
+  },
+  "$defs": {
+    "comBDimension": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "evidence"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "stable",
+            "partial_barrier",
+            "barrier",
+            "protective_factor",
+            "unknown"
+          ]
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

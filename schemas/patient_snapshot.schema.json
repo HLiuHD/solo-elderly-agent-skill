@@ -1,0 +1,245 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kangningbebe.local/schemas/patient_snapshot.schema.json",
+  "title": "PatientSnapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "meta",
+    "profile",
+    "risk_context",
+    "adherence_context",
+    "memory_gaps",
+    "signals",
+    "latest_health",
+    "user_message"
+  ],
+  "properties": {
+    "meta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "patient_id",
+        "lang",
+        "current_time",
+        "entry_intent"
+      ],
+      "properties": {
+        "patient_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "lang": {
+          "type": "string",
+          "minLength": 1
+        },
+        "current_time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "entry_intent": {
+          "type": "string",
+          "enum": [
+            "adherence_followup",
+            "emergency_triage",
+            "background_fill",
+            "doctor_confirmation_return",
+            "report_render"
+          ]
+        }
+      }
+    },
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "preferred_name",
+        "age",
+        "living_status",
+        "diagnoses",
+        "communication_style"
+      ],
+      "properties": {
+        "preferred_name": {
+          "type": "string"
+        },
+        "age": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "living_status": {
+          "type": "string",
+          "enum": [
+            "alone",
+            "with_family",
+            "with_caregiver",
+            "unknown"
+          ]
+        },
+        "diagnoses": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "communication_style": {
+          "type": "string",
+          "enum": [
+            "warm_encouraging",
+            "direct_practical",
+            "authority_based",
+            "gentle_patient",
+            "unknown"
+          ]
+        }
+      }
+    },
+    "risk_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "patient_status",
+        "risk_tags",
+        "doctor_required",
+        "doctor_state"
+      ],
+      "properties": {
+        "patient_status": {
+          "type": "string",
+          "enum": [
+            "stable",
+            "at_risk",
+            "critical"
+          ]
+        },
+        "risk_tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "doctor_required": {
+          "type": "boolean"
+        },
+        "doctor_state": {
+          "type": "string",
+          "enum": [
+            "none",
+            "notified",
+            "reviewing",
+            "confirmed",
+            "modified_plan",
+            "escalate_to_er"
+          ]
+        }
+      }
+    },
+    "adherence_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "medication_status",
+        "diet_status",
+        "exercise_status",
+        "monitoring_status"
+      ],
+      "properties": {
+        "medication_status": {
+          "type": "string",
+          "enum": [
+            "confirmed",
+            "partial_confirmed",
+            "unclear",
+            "missed",
+            "not_applicable"
+          ]
+        },
+        "diet_status": {
+          "type": "string",
+          "enum": [
+            "good",
+            "reduced",
+            "unclear",
+            "poor",
+            "not_applicable"
+          ]
+        },
+        "exercise_status": {
+          "type": "string",
+          "enum": [
+            "active",
+            "reduced",
+            "inactive",
+            "unclear",
+            "not_applicable"
+          ]
+        },
+        "monitoring_status": {
+          "type": "string",
+          "enum": [
+            "complete",
+            "partial",
+            "missing_data",
+            "unclear",
+            "not_applicable"
+          ]
+        }
+      }
+    },
+    "memory_gaps": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "signals": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "summary_text",
+        "anomalies"
+      ],
+      "properties": {
+        "summary_text": {
+          "type": "string"
+        },
+        "anomalies": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "latest_health": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "blood_pressure",
+        "heart_rate",
+        "blood_glucose",
+        "steps_today"
+      ],
+      "properties": {
+        "blood_pressure": {
+          "type": "string"
+        },
+        "heart_rate": {
+          "type": "string"
+        },
+        "blood_oxygen": {
+          "type": "string"
+        },
+        "blood_glucose": {
+          "type": "string"
+        },
+        "steps_today": {
+          "type": "string"
+        }
+      }
+    },
+    "user_message": {
+      "type": "string"
+    }
+  }
+}

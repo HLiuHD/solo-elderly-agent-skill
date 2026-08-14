@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kangningbebe.local/schemas/skill_plan.schema.json",
+  "title": "SkillPlan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "skill_plan_id",
+    "skill_type",
+    "reason",
+    "tone",
+    "conversation_goal",
+    "must_cover",
+    "must_avoid",
+    "allowed_outputs",
+    "renderer_hint"
+  ],
+  "properties": {
+    "skill_plan_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "skill_type": {
+      "type": "string",
+      "enum": [
+        "missing-background-collector",
+        "adherence-followup-dialogue",
+        "behavior-barrier-explainer",
+        "habit-activation-dialogue",
+        "emergency-calming-dialogue",
+        "doctor-summary-builder",
+        "doctor-confirmation-return",
+        "patient-report-renderer",
+        "emergency-instruction-renderer"
+      ]
+    },
+    "reason": {
+      "type": "string"
+    },
+    "tone": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "style",
+        "density",
+        "avoid"
+      ],
+      "properties": {
+        "style": {
+          "type": "string",
+          "enum": [
+            "warm_encouraging",
+            "direct_practical",
+            "authority_based",
+            "gentle_patient"
+          ]
+        },
+        "density": {
+          "type": "string",
+          "enum": [
+            "simple_focused",
+            "moderate",
+            "detailed"
+          ]
+        },
+        "avoid": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "conversation_goal": {
+      "type": "string"
+    },
+    "must_cover": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "must_avoid": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "allowed_outputs": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "chat_text",
+          "followup_question",
+          "lightweight_card",
+          "doctor_summary_json",
+          "html_report",
+          "emergency_page"
+        ]
+      }
+    },
+    "renderer_hint": {
+      "type": "string"
+    }
+  }
+}

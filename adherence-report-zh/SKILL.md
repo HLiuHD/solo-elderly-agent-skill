@@ -33,6 +33,13 @@ scripts:
   7. `adherence_analysis` — 当前依从对话结构化结果，输入形态为 `statuses[]` 和 `suggestions[]`
   8. `location`（可选）— 只有存在真实经纬度时才使用
   9. `patient`（可选）— 只有主服务提供时才使用称呼、性别、生日等基本信息
+- `memory.recent.*` 仅作为“近期变化线索”，不是已审核的医学事实。
+  - 纵向比较时，优先使用 `adherence_analysis.statuses[]`、`adherence_analysis.suggestions[]`、`latest_health_meta`、`signal_trends` 里的具体日期、指标和本次遵从事实。
+  - 不得直接复述其中未经客观证据支持的诊断、病因、严重程度、功能状态，或“稳定 / 持续 / 显著恶化”等结论。
+  - 可以把 `memory.recent.*` 作为“近期可能反复出现的行为线索”，帮助判断这次适合强调“继续保持”还是“把关键一步补上”。
+- 需要做病人横向分流，但分流依据只能来自 `patient`、`memory.archive`、`adherence_analysis` 等静态背景与本次回访事实。
+  - 可以根据年龄、认知负担、近期疾病负担决定“简明陪伴版”还是“详细管理版”的话术密度。
+  - 不要编造患者偏好，不要为了分流虚构兴趣、口味或生活习惯。
 - 不要生成或要求 `ehr` / `clinical_context` / `recent_memory[]` / `topic` / `conversation` 这类重复或膨胀字段。
 - 不要从 memory、EHR、病史或通用文案里推断最新体征数值。`latest_health` 没有的指标，输出也不要补。
 - `blood_glucose` 只有当 `latest_health.blood_glucose` 或 `signal_trends.*.metrics.blood_glucose` 真实存在时才允许出现；否则不要展示血糖卡片、血糖趋势或血糖结论。
@@ -58,6 +65,14 @@ scripts:
     - `type`: `"good_news"` | `"attention"` | `"plan"` | `"encouragement"` — 决定 icon 和颜色
     - `title`: 简短标签（如「好消息」「需要留意」「我们准备了什么」「您已经做得很好」）
     - `content`: 该部分 1–2 句话
+  - `patient_profile`（必填）：
+    - `{ "communication_mode": "simplified|detailed", "persona_label": "...", "summary": "...", "reasons": ["...", "..."] }`
+    - 这里只描述“为什么这次报告更适合用这种表达方式”，例如年龄较大、存在认知负担、近期病痛信息较重，或具备较完整自我管理能力。
+    - 不要把它写成对人格、偏好或依从性的主观定性。
+  - `longitudinal_highlights`（必填）：
+    - 2–4 项数组，每项为 `{ "category": "medication|appetite|exercise|monitoring", "title": "...", "summary": "...", "evidence": "...", "source": "objective|objective_plus_recent" }`
+    - 用来做“这次 vs 近期”的纵向比较：如果这次继续做到了，要明确鼓励“做得很好，继续坚持”；如果这次比前几次松了，要明确指出“这次先把关键一步补上”。
+    - `summary` 必须优先写本次客观事实，再决定是否补一句“近期线索也提示……”；`evidence` 尽量写具体日期、具体行为、具体指标来源。
   - `personalized_evidence`（必填）：
     - 3–5 项数组，每项为 `{ "title": "...", "evidence": "...", "why_it_matters": "...", "category": "history|surgery|medication|lab|symptom|monitoring" }`
     - 用来明确告诉患者：当前建议分别是根据哪些病史、药物反应、手术恢复阶段、检查异常或近期监测变化得出的
@@ -87,6 +102,10 @@ scripts:
 
 - **语言**：默认中文；若 `meta.lang` 明确设为其他语言则跟随。
 - **语气**：默认温暖、务实，像关心患者的家人；当前 MVP payload 不读取 `tone_profile`。
+- 需要根据 `patient_profile.communication_mode` 做话术分流：
+  - `simplified`：短句、少术语、一次只强调 2–3 个关键动作，适合年纪更大、认知负担更高或近期病痛较重的患者。
+  - `detailed`：可以多解释一点“为什么这样做”、管理逻辑和前后变化，适合认知负担较低、愿意看更完整健康管理信息的患者。
+- 在没有真实动态偏好数据时，分流只调整表达方式和信息密度，不要假装知道患者更喜欢哪类内容。
 - 引用 payload 中的具体近期事件（如「过去两周，您的食欲比平时低一些……」）。
 - 若 payload 中存在具体药名、手术名、时间点、异常指标或医生备注，尽量在文案中保留这些具体锚点，而不是泛化成“您最近情况不太稳定”。
 - `recommendations[].reason` 不能只写“适合高血压患者”“适合糖尿病患者”，应尽可能写成“因为您最近……所以这条建议更适合您”。

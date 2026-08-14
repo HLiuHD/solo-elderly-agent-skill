@@ -1,0 +1,163 @@
+{
+  "long_term_memory": {
+    "patient_profile": {
+      "patient_id": "p_knbb_001",
+      "preferred_name": "王阿姨",
+      "age": 76,
+      "gender": "female",
+      "living_status": "alone",
+      "caregiver_support": "limited"
+    },
+    "medical_background": {
+      "diagnoses": ["高血压", "2型糖尿病"],
+      "long_term_medications": [],
+      "allergies": [],
+      "past_surgeries": [],
+      "important_risks": ["跌倒风险"]
+    },
+    "behavior_profile": {
+      "communication_style": "warm_encouraging",
+      "information_density": "simple_focused",
+      "motivation_style": "positive_reinforcement",
+      "known_barriers": ["怕麻烦别人"],
+      "known_preferences": [],
+      "disliked_interventions": ["长篇教育内容"]
+    },
+    "care_context": {},
+    "memory_completeness": {
+      "profile_complete": true,
+      "medication_complete": false,
+      "preference_complete": false,
+      "care_context_complete": false
+    },
+    "recent_health_dynamics": "近一周活动量下降，最近两天多次说有点累，不太想出门。"
+  },
+  "short_term_memory": {
+    "session_context": {
+      "session_id": "sess_adherence_001",
+      "current_stage": "followup",
+      "started_at": "2026-08-03T09:25:00+08:00"
+    },
+    "today_facts": {
+      "took_medication_today": true,
+      "medication_notes": "早饭后服用了降压药",
+      "current_symptoms": ["有些疲劳"],
+      "latest_self_report": "今天没什么力气，不太想出门。"
+    },
+    "recent_events": [
+      {
+        "type": "self_report",
+        "time": "2026-08-03T09:26:00+08:00",
+        "content": "今天早上吃药了"
+      }
+    ],
+    "dialogue_state": {
+      "last_questions": ["今天早上有没有按时吃药？"],
+      "last_user_answers": ["吃了"],
+      "open_questions": ["午饭后是否复测血糖"]
+    }
+  },
+  "patient_snapshot": {
+    "meta": {
+      "patient_id": "KNBB-001",
+      "lang": "zh",
+      "current_time": "2026-08-03T09:30:00+08:00",
+      "entry_intent": "background_fill"
+    },
+    "profile": {
+      "preferred_name": "王阿姨",
+      "age": 76,
+      "living_status": "alone",
+      "diagnoses": ["高血压", "2型糖尿病"],
+      "communication_style": "warm_encouraging"
+    },
+    "risk_context": {
+      "patient_status": "at_risk",
+      "risk_tags": ["步数偏低", "活动量下降"],
+      "doctor_required": false,
+      "doctor_state": "none"
+    },
+    "adherence_context": {
+      "medication_status": "confirmed",
+      "diet_status": "unclear",
+      "exercise_status": "reduced",
+      "monitoring_status": "missing_data"
+    },
+    "memory_gaps": [
+      "长期用药信息不完整",
+      "患者偏好与障碍信息不完整",
+      "照护与就医上下文不完整",
+      "当日监测信息不完整"
+    ],
+    "signals": {
+      "summary_text": "近24小时步数偏低，患者表示有些累，不太想出门，未见明确危急信号。",
+      "anomalies": ["步数偏低", "活动量下降"]
+    },
+    "latest_health": {
+      "blood_pressure": "152/92",
+      "heart_rate": "76",
+      "blood_oxygen": "96",
+      "blood_glucose": "",
+      "steps_today": "1200"
+    },
+    "user_message": "今天没什么力气，不太想出门。"
+  },
+  "intervention_plan": {
+    "plan_id": "ip_KNBB-001_background_fill",
+    "scenario": "background_fill",
+    "com_b_assessment": {
+      "capability": {
+        "status": "partial_barrier",
+        "evidence": ["当日监测信息不完整"]
+      },
+      "opportunity": {
+        "status": "partial_barrier",
+        "evidence": ["患者独居，外部支持有限"]
+      },
+      "motivation": {
+        "status": "stable",
+        "evidence": []
+      },
+      "behavior": {
+        "target_behavior": "补齐高价值长期背景信息，提升后续个性化能力"
+      }
+    },
+    "intervention_function": ["enablement"],
+    "bct_strategies": ["action_planning"],
+    "primary_goal": "补齐高价值长期背景信息，提升后续个性化能力",
+    "secondary_goals": ["确认长期用药", "确认照护与偏好"],
+    "doctor_handoff_needed": false,
+    "priority": "medium"
+  },
+  "skill_plan": {
+    "skill_plan_id": "sp_KNBB-001_missing-background-collector",
+    "skill_type": "missing-background-collector",
+    "reason": "当前主目标是补齐长期背景信息，方便后续个性化随访",
+    "tone": {
+      "style": "warm_encouraging",
+      "density": "simple_focused",
+      "avoid": ["编造病史", "给出超出授权的药物调整建议"]
+    },
+    "conversation_goal": "补齐高价值长期背景信息，提升后续个性化能力",
+    "must_cover": ["长期背景缺口", "高价值耐久信息", "低负担提问"],
+    "must_avoid": ["编造病史", "给出超出授权的药物调整建议"],
+    "allowed_outputs": ["chat_text", "followup_question"],
+    "renderer_hint": "不生成报告，只收集长期背景"
+  },
+  "case_state": {
+    "case_id": "case_KNBB-001",
+    "case_type": "adherence",
+    "state": "followup_active",
+    "created_at": "2026-08-03T09:30:00+08:00",
+    "doctor_review": {
+      "status": "pending",
+      "assigned_doctor_id": "unassigned",
+      "doctor_note": ""
+    },
+    "patient_visible_status": {
+      "title": "随访进行中",
+      "message": "当前处于常规随访阶段。"
+    },
+    "next_action": "follow_current_plan"
+  }
+}

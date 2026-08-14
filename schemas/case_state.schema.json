@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kangningbebe.local/schemas/case_state.schema.json",
+  "title": "CaseState",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "case_id",
+    "case_type",
+    "state",
+    "created_at",
+    "doctor_review",
+    "patient_visible_status",
+    "next_action"
+  ],
+  "properties": {
+    "case_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "case_type": {
+      "type": "string",
+      "enum": [
+        "adherence",
+        "emergency"
+      ]
+    },
+    "state": {
+      "type": "string",
+      "enum": [
+        "collecting_info",
+        "followup_active",
+        "awaiting_doctor_review",
+        "doctor_confirmed",
+        "doctor_modified_plan",
+        "handoff_completed",
+        "report_generated"
+      ]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "doctor_review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "assigned_doctor_id",
+        "doctor_note"
+      ],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "notified",
+            "reviewing",
+            "confirmed",
+            "modified_plan",
+            "escalate_to_er"
+          ]
+        },
+        "assigned_doctor_id": {
+          "type": "string"
+        },
+        "doctor_note": {
+          "type": "string"
+        }
+      }
+    },
+    "patient_visible_status": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "message"
+      ],
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "next_action": {
+      "type": "string",
+      "enum": [
+        "wait_for_doctor_feedback",
+        "follow_current_plan",
+        "follow_updated_plan",
+        "seek_in_person_care",
+        "render_instruction_page"
+      ]
+    }
+  }
+}

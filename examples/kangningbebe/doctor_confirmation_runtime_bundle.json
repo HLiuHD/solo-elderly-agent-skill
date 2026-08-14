@@ -1,0 +1,161 @@
+{
+  "long_term_memory": {
+    "patient_profile": {
+      "patient_id": "p_knbb_002",
+      "preferred_name": "李叔叔",
+      "age": 72,
+      "gender": "male",
+      "living_status": "alone",
+      "caregiver_support": "limited"
+    },
+    "medical_background": {
+      "diagnoses": ["高血压", "2型糖尿病"],
+      "long_term_medications": ["氨氯地平 5mg qd", "二甲双胍 500mg bid"],
+      "allergies": [],
+      "past_surgeries": [],
+      "important_risks": ["高血压危象风险"]
+    },
+    "behavior_profile": {
+      "communication_style": "gentle_patient",
+      "information_density": "simple_focused",
+      "motivation_style": "authority_trust",
+      "known_barriers": ["紧张时说不清楚"],
+      "known_preferences": ["喜欢简短直接的话"],
+      "disliked_interventions": []
+    },
+    "care_context": {
+      "doctor_team": ["dr_zhang"],
+      "preferred_hospital": "朝阳医院"
+    },
+    "memory_completeness": {
+      "profile_complete": true,
+      "medication_complete": true,
+      "preference_complete": true,
+      "care_context_complete": true
+    },
+    "recent_health_dynamics": "近一周血压控制不佳，多次超过160mmHg。"
+  },
+  "short_term_memory": {
+    "session_context": {
+      "session_id": "sess_emergency_001",
+      "current_stage": "awaiting_doctor_review",
+      "started_at": "2026-08-03T10:50:00+08:00"
+    },
+    "today_facts": {
+      "took_medication_today": false,
+      "medication_notes": "早晨忘记服用降压药",
+      "current_symptoms": ["胸闷", "头晕"],
+      "latest_self_report": "胸口有点闷，头很晕。"
+    },
+    "recent_events": [
+      {
+        "type": "self_report",
+        "time": "2026-08-03T10:52:00+08:00",
+        "content": "今早忘记吃降压药"
+      }
+    ],
+    "dialogue_state": {
+      "last_questions": ["现在有没有胸痛或呼吸困难？"],
+      "last_user_answers": ["胸口闷，头很晕"],
+      "open_questions": []
+    }
+  },
+  "patient_snapshot": {
+    "meta": {
+      "patient_id": "KNBB-002",
+      "lang": "zh",
+      "current_time": "2026-08-03T11:05:00+08:00",
+      "entry_intent": "doctor_confirmation_return"
+    },
+    "profile": {
+      "preferred_name": "李叔叔",
+      "age": 72,
+      "living_status": "alone",
+      "diagnoses": ["高血压", "2型糖尿病"],
+      "communication_style": "gentle_patient"
+    },
+    "risk_context": {
+      "patient_status": "critical",
+      "risk_tags": ["血压危象", "胸闷", "头晕"],
+      "doctor_required": true,
+      "doctor_state": "confirmed"
+    },
+    "adherence_context": {
+      "medication_status": "missed",
+      "diet_status": "unclear",
+      "exercise_status": "unclear",
+      "monitoring_status": "complete"
+    },
+    "memory_gaps": [],
+    "signals": {
+      "summary_text": "血压185/110mmHg，伴胸闷头晕，已进入紧急复核流程。",
+      "anomalies": ["血压危象", "胸闷", "头晕"]
+    },
+    "latest_health": {
+      "blood_pressure": "185/110",
+      "heart_rate": "95",
+      "blood_oxygen": "93",
+      "blood_glucose": "8.5",
+      "steps_today": "180"
+    },
+    "user_message": "胸口有点闷，头很晕。"
+  },
+  "intervention_plan": {
+    "plan_id": "ip_KNBB-002_doctor_confirmation",
+    "scenario": "doctor_confirmation",
+    "com_b_assessment": {
+      "capability": {
+        "status": "stable",
+        "evidence": []
+      },
+      "opportunity": {
+        "status": "partial_barrier",
+        "evidence": ["患者独居，外部支持有限"]
+      },
+      "motivation": {
+        "status": "stable",
+        "evidence": []
+      },
+      "behavior": {
+        "target_behavior": "把医生状态清楚、安全地回传给患者"
+      }
+    },
+    "intervention_function": ["education", "enablement"],
+    "bct_strategies": ["feedback"],
+    "primary_goal": "把医生状态清楚、安全地回传给患者",
+    "secondary_goals": ["澄清当前要做什么", "降低等待焦虑"],
+    "doctor_handoff_needed": true,
+    "priority": "high"
+  },
+  "skill_plan": {
+    "skill_plan_id": "sp_KNBB-002_doctor-confirmation-return",
+    "skill_type": "doctor-confirmation-return",
+    "reason": "当前已经进入医生审核或医生回传阶段",
+    "tone": {
+      "style": "gentle_patient",
+      "density": "simple_focused",
+      "avoid": ["编造病史", "给出超出授权的药物调整建议"]
+    },
+    "conversation_goal": "把医生状态清楚、安全地回传给患者",
+    "must_cover": ["医生当前状态", "患者现在该做什么", "红旗提醒"],
+    "must_avoid": ["编造病史", "给出超出授权的药物调整建议"],
+    "allowed_outputs": ["chat_text", "lightweight_card"],
+    "renderer_hint": "生成轻量回传卡片，不生成长报告"
+  },
+  "case_state": {
+    "case_id": "case_knbb_002",
+    "case_type": "emergency",
+    "state": "doctor_confirmed",
+    "created_at": "2026-08-03T10:55:00+08:00",
+    "doctor_review": {
+      "status": "confirmed",
+      "assigned_doctor_id": "dr_zhang",
+      "doctor_note": "先坐位休息，立即复测血压；若胸闷持续或加重，尽快去急诊。"
+    },
+    "patient_visible_status": {
+      "title": "医生已确认",
+      "message": "医生已确认当前建议，请按最新提示继续处理。"
+    },
+    "next_action": "follow_current_plan"
+  }
+}

@@ -33,6 +33,7 @@ DOCTOR_SKILL_DIR = ROOT / "doctor-report"
 PATIENT_SKILL_DIR = ROOT / "patient-report"
 DEMO_DIR = ROOT / "demo"
 OUTPUT_DIR = ROOT / "output"
+SKILLS_DIR = ROOT / "skills"
 
 # ---------------------------------------------------------------------------
 # Env
@@ -384,6 +385,523 @@ def analyze_signals(payload: dict) -> tuple[str, str, str, list[str]]:
 
 
 # ---------------------------------------------------------------------------
+# Kangningbebe routing skeleton
+# ---------------------------------------------------------------------------
+
+_KNOWN_DIAGNOSES = [
+    "高血压", "2型糖尿病", "糖尿病", "高脂血症", "冠心病",
+    "慢阻肺", "心衰", "肿瘤", "肺癌",
+]
+
+
+def _ensure_dict(value) -> dict:
+    return value if isinstance(value, dict) else {}
+
+
+def _ensure_list(value) -> list:
+    return value if isinstance(value, list) else []
+
+
+def _clean_text(value) -> str:
+    if value is None:
+        return ""
+    return str(value).strip()
+
+
+def _contains_any(text: str, keywords: list[str]) -> bool:
+    return any(kw in text for kw in keywords)
+
+
+def _parse_age(*texts: str) -> int:
+    for text in texts:
+        m = re.search(r"(\d{2,3})岁", text or "")
+        if m:
+            return int(m.group(1))
+    return 0
+
+
+def _extract_diagnoses(*texts: str) -> list[str]:
+    found = []
+    merged = " ".join(t for t in texts if t)
+    for dx in _KNOWN_DIAGNOSES:
+        if dx in merged and dx not in found:
+            found.append(dx)
+    return found
+
+
+def _detect_living_status(long_term_memory: dict, profile_text: str) -> str:
+    patient_profile = _ensure_dict(long_term_memory.get("patient_profile"))
+    living_status = _clean_text(patient_profile.get("living_status"))
+    if living_status:
+        return living_status
+    if "独居" in profile_text:
+        return "alone"
+    if "家属" in profile_text or "与家人同住" in profile_text:
+        return "with_family"
+    return "unknown"
+
+
+def _detect_communication_style(long_term_memory: dict) -> str:
+    behavior_profile = _ensure_dict(long_term_memory.get("behavior_profile"))
+    style = _clean_text(behavior_profile.get("communication_style"))
+    if style:
+        return style
+    tone_profile = _ensure_dict(_ensure_dict(long_term_memory.get("legacy_memory")).get("tone_profile"))
+    style = _clean_text(tone_profile.get("style"))
+    return style or "warm_encouraging"
+
+
+def _infer_preferred_name(long_term_memory: dict, profile_text: str) -> str:
+    patient_profile = _ensure_dict(long_term_memory.get("patient_profile"))
+    preferred_name = _clean_text(patient_profile.get("preferred_name"))
+    if preferred_name:
+        return preferred_name
+    m = re.search(r"([\u4e00-\u9fff]{2,4})，", profile_text)
+    if m:
+        return m.group(1)
+    return "您"
+
+
+def _build_memory_completeness(long_term_memory: dict, profile_text: str) -> dict:
+    existing = _ensure_dict(long_term_memory.get("memory_completeness"))
+    if existing:
+        return {
+            "profile_complete": bool(existing.get("profile_complete")),
+            "medication_complete": bool(existing.get("medication_complete")),
+            "preference_complete": bool(existing.get("preference_complete")),
+            "care_context_complete": bool(existing.get("care_context_complete")),
+        }
+    medical_background = _ensure_dict(long_term_memory.get("medical_background"))
+    behavior_profile = _ensure_dict(long_term_memory.get("behavior_profile"))
+    care_context = _ensure_dict(long_term_memory.get("care_context"))
+    return {
+        "profile_complete": bool(profile_text or _ensure_dict(long_term_memory.get("patient_profile"))),
+        "medication_complete": bool(_ensure_list(medical_background.get("long_term_medications")) or "长期用药" in profile_text),
+        "preference_complete": bool(_ensure_list(behavior_profile.get("known_preferences")) or "偏好" in profile_text or "喜欢" in profile_text),
+        "care_context_complete": bool(care_context.get("doctor_team") or care_context.get("preferred_hospital")),
+    }
+
+
+def _extract_long_term_memory(payload: dict) -> dict:
+    if isinstance(payload.get("long_term_memory"), dict):
+        return payload["long_term_memory"]
+
+    memory = _ensure_dict(payload.get("memory"))
+    profile_text = _clean_text(memory.get("patient_long_term_profile"))
+    recent_text = _clean_text(memory.get("recent_health_dynamics"))
+    diagnoses = _extract_diagnoses(profile_text, recent_text)
+    patient_profile = {
+        "preferred_name": _infer_preferred_name({}, profile_text),
+        "age": _parse_age(profile_text, recent_text),
+        "living_status": "alone" if "独居" in profile_text else "unknown",
+    }
+    medical_background = {
+        "diagnoses": diagnoses,
+        "long_term_medications": [],
+    }
+    behavior_profile = {
+        "communication_style": "warm_encouraging",
+        "known_preferences": ["面食"] if "面食" in profile_text else [],
+        "known_barriers": [],
+    }
+    legacy_memory = {}
+    if isinstance(memory.get("tone_profile"), dict):
+        legacy_memory["tone_profile"] = memory.get("tone_profile")
+    long_term_memory = {
+        "patient_profile": patient_profile,
+        "medical_background": medical_background,
+        "behavior_profile": behavior_profile,
+        "care_context": {},
+        "recent_health_dynamics": recent_text,
+        "legacy_memory": legacy_memory,
+    }
+    long_term_memory["memory_completeness"] = _build_memory_completeness(long_term_memory, profile_text)
+    return long_term_memory
+
+
+def _extract_short_term_memory(payload: dict) -> dict:
+    if isinstance(payload.get("short_term_memory"), dict):
+        return payload["short_term_memory"]
+
+    return {
+        "session_context": {
+            "session_id": _clean_text(_ensure_dict(payload.get("meta")).get("session_id")),
+            "current_stage": "followup",
+            "started_at": _clean_text(_ensure_dict(payload.get("meta")).get("current_time")),
+        },
+        "today_facts": {
+            "latest_self_report": _clean_text(payload.get("latest_user_message")),
+            "current_symptoms": _ensure_list(_ensure_dict(payload.get("outlier_analysis")).get("symptoms")),
+        },
+        "recent_events": [],
+        "dialogue_state": {
+            "last_questions": [],
+            "last_user_answers": [],
+            "open_questions": [],
+        },
+    }
+
+
+def _stringify_latest_health(latest_health: dict) -> dict:
+    return {
+        "blood_pressure": _clean_text(latest_health.get("blood_pressure")),
+        "heart_rate": _clean_text(latest_health.get("heart_rate")),
+        "blood_oxygen": _clean_text(latest_health.get("blood_oxygen")),
+        "blood_glucose": _clean_text(latest_health.get("blood_glucose")),
+        "steps_today": _clean_text(latest_health.get("steps_today") or latest_health.get("steps")),
+    }
+
+
+def build_patient_snapshot(payload: dict) -> dict:
+    long_term_memory = _extract_long_term_memory(payload)
+    short_term_memory = _extract_short_term_memory(payload)
+    patient_profile = _ensure_dict(long_term_memory.get("patient_profile"))
+    medical_background = _ensure_dict(long_term_memory.get("medical_background"))
+    behavior_profile = _ensure_dict(long_term_memory.get("behavior_profile"))
+    profile_text = _clean_text(_ensure_dict(payload.get("memory")).get("patient_long_term_profile"))
+    recent_text = _clean_text(long_term_memory.get("recent_health_dynamics"))
+    scenario, status, _, risk_tags = analyze_signals(payload)
+    doctor_feedback = _ensure_dict(payload.get("doctor_feedback"))
+    existing_case = _ensure_dict(payload.get("case_state"))
+    doctor_review = _ensure_dict(existing_case.get("doctor_review"))
+
+    diagnoses = _ensure_list(medical_background.get("diagnoses")) or _extract_diagnoses(profile_text, recent_text)
+    preferred_name = _clean_text(patient_profile.get("preferred_name")) or _infer_preferred_name(long_term_memory, profile_text)
+    age = int(patient_profile.get("age") or _parse_age(profile_text, recent_text) or 0)
+    living_status = _detect_living_status(long_term_memory, profile_text)
+    communication_style = _detect_communication_style(long_term_memory)
+
+    doctor_state = (
+        _clean_text(doctor_feedback.get("status"))
+        or _clean_text(doctor_review.get("status"))
+        or ("none" if scenario != "emergency" else "notified")
+    )
+    if doctor_state == "pending":
+        doctor_state = "reviewing"
+    if doctor_state not in {"none", "notified", "reviewing", "confirmed", "modified_plan", "escalate_to_er"}:
+        doctor_state = "none"
+
+    adherence_analysis = _ensure_dict(payload.get("adherence_analysis"))
+    latest_user_message = _clean_text(payload.get("latest_user_message")) or _clean_text(
+        _ensure_dict(short_term_memory.get("today_facts")).get("latest_self_report")
+    )
+    monitoring_status = "complete"
+    if not _clean_text(payload.get("latest_user_message")) and not _ensure_list(_ensure_dict(short_term_memory.get("dialogue_state")).get("open_questions")):
+        monitoring_status = "unclear"
+    if not _stringify_latest_health(_ensure_dict(payload.get("latest_health"))).get("blood_glucose"):
+        monitoring_status = "missing_data"
+
+    medication_status = "confirmed"
+    text_blob = " ".join(_ensure_list(adherence_analysis.get("statuses"))) + " " + latest_user_message
+    if _contains_any(text_blob, ["忘了", "漏服", "没吃药", "未服药"]):
+        medication_status = "missed"
+    elif _contains_any(text_blob, ["按时", "吃药了"]):
+        medication_status = "partial_confirmed"
+    elif not text_blob:
+        medication_status = "unclear"
+
+    diet_status = "unclear"
+    if _contains_any(latest_user_message, ["食欲差", "吃不下", "没胃口"]):
+        diet_status = "poor"
+    elif _contains_any(latest_user_message, ["清淡", "吃得还行"]):
+        diet_status = "good"
+
+    exercise_status = "unclear"
+    if _contains_any(" ".join(risk_tags) + " " + latest_user_message, ["活动量持续下降", "不想出门", "没力气", "步数偏低"]):
+        exercise_status = "reduced"
+    elif _contains_any(latest_user_message, ["散步", "出去走", "活动中心"]):
+        exercise_status = "active"
+
+    completeness = _build_memory_completeness(long_term_memory, profile_text)
+    memory_gaps = []
+    if not completeness["profile_complete"]:
+        memory_gaps.append("患者基本背景信息不完整")
+    if not completeness["medication_complete"]:
+        memory_gaps.append("长期用药信息不完整")
+    if not completeness["preference_complete"]:
+        memory_gaps.append("患者偏好与障碍信息不完整")
+    if not completeness["care_context_complete"]:
+        memory_gaps.append("照护与就医上下文不完整")
+    if monitoring_status in {"missing_data", "unclear"}:
+        memory_gaps.append("当日监测信息不完整")
+
+    entry_intent = "adherence_followup"
+    if doctor_state in {"reviewing", "confirmed", "modified_plan", "escalate_to_er"}:
+        entry_intent = "doctor_confirmation_return"
+    elif scenario == "emergency":
+        entry_intent = "emergency_triage"
+    elif any("不完整" in gap for gap in memory_gaps[:2]):
+        entry_intent = "background_fill"
+
+    return {
+        "meta": {
+            "patient_id": _clean_text(_ensure_dict(payload.get("meta")).get("user_id")) or "unknown_patient",
+            "lang": _clean_text(_ensure_dict(payload.get("meta")).get("lang")) or "zh",
+            "current_time": _clean_text(_ensure_dict(payload.get("meta")).get("current_time")),
+            "entry_intent": entry_intent,
+        },
+        "profile": {
+            "preferred_name": preferred_name,
+            "age": age,
+            "living_status": living_status,
+            "diagnoses": diagnoses,
+            "communication_style": communication_style,
+        },
+        "risk_context": {
+            "patient_status": status,
+            "risk_tags": risk_tags,
+            "doctor_required": scenario == "emergency" or doctor_state != "none",
+            "doctor_state": doctor_state,
+        },
+        "adherence_context": {
+            "medication_status": medication_status,
+            "diet_status": diet_status,
+            "exercise_status": exercise_status,
+            "monitoring_status": monitoring_status,
+        },
+        "memory_gaps": memory_gaps,
+        "signals": {
+            "summary_text": _clean_text(_ensure_dict(payload.get("signals")).get("summary_text")),
+            "anomalies": _ensure_list(_ensure_dict(payload.get("signals")).get("anomalies")),
+        },
+        "latest_health": _stringify_latest_health(_ensure_dict(payload.get("latest_health"))),
+        "user_message": latest_user_message,
+    }
+
+
+def build_intervention_plan(snapshot: dict) -> dict:
+    user_message = _clean_text(snapshot.get("user_message"))
+    risk_context = _ensure_dict(snapshot.get("risk_context"))
+    profile = _ensure_dict(snapshot.get("profile"))
+    adherence_context = _ensure_dict(snapshot.get("adherence_context"))
+    memory_gaps = _ensure_list(snapshot.get("memory_gaps"))
+    entry_intent = _clean_text(_ensure_dict(snapshot.get("meta")).get("entry_intent"))
+
+    scenario = "adherence"
+    if entry_intent == "doctor_confirmation_return":
+        scenario = "doctor_confirmation"
+    elif entry_intent == "emergency_triage":
+        scenario = "emergency"
+    elif entry_intent == "background_fill":
+        scenario = "background_fill"
+
+    capability_status = "stable"
+    capability_evidence = []
+    if adherence_context.get("monitoring_status") in {"missing_data", "unclear"}:
+        capability_status = "partial_barrier"
+        capability_evidence.append("当日监测信息不完整")
+    if adherence_context.get("medication_status") == "unclear":
+        capability_status = "partial_barrier"
+        capability_evidence.append("当天用药信息仍需确认")
+
+    opportunity_status = "stable"
+    opportunity_evidence = []
+    if profile.get("living_status") == "alone":
+        opportunity_status = "partial_barrier"
+        opportunity_evidence.append("患者独居，外部支持有限")
+
+    motivation_status = "stable"
+    motivation_evidence = []
+    if _contains_any(user_message, ["没力气", "不想", "麻烦", "懒得", "算了"]):
+        motivation_status = "barrier"
+        motivation_evidence.append("患者表达了低动力或负担感")
+
+    primary_goal = "维持当前稳定状态"
+    secondary_goals = []
+    intervention_function = ["education"]
+    bct_strategies = ["feedback"]
+    priority = "low"
+
+    if scenario == "background_fill":
+        primary_goal = "补齐高价值长期背景信息，提升后续个性化能力"
+        secondary_goals = ["确认长期用药", "确认照护与偏好"]
+        intervention_function = ["enablement"]
+        bct_strategies = ["action_planning"]
+        priority = "medium"
+    elif scenario == "doctor_confirmation":
+        primary_goal = "把医生状态清楚、安全地回传给患者"
+        secondary_goals = ["澄清当前要做什么", "降低等待焦虑"]
+        intervention_function = ["education", "enablement"]
+        bct_strategies = ["feedback"]
+        priority = "high"
+    elif scenario == "emergency":
+        primary_goal = "先稳定患者并推进医生复核或线下就医"
+        secondary_goals = ["降低误操作风险", "保持沟通畅通"]
+        intervention_function = ["enablement", "persuasion"]
+        bct_strategies = ["action_planning", "prompt_cue"]
+        priority = "critical"
+    elif adherence_context.get("monitoring_status") in {"missing_data", "unclear"} or memory_gaps:
+        primary_goal = "补齐当日关键信息并降低放弃监测的概率"
+        secondary_goals = ["确认同日依从事实", "推动一个小动作"]
+        intervention_function = ["enablement", "persuasion"]
+        bct_strategies = ["self_monitoring", "feedback", "graded_task"]
+        priority = "medium" if risk_context.get("patient_status") == "stable" else "high"
+
+    return {
+        "plan_id": f"ip_{_clean_text(_ensure_dict(snapshot.get('meta')).get('patient_id'))}_{scenario}",
+        "scenario": scenario,
+        "com_b_assessment": {
+            "capability": {
+                "status": capability_status,
+                "evidence": capability_evidence,
+            },
+            "opportunity": {
+                "status": opportunity_status,
+                "evidence": opportunity_evidence,
+            },
+            "motivation": {
+                "status": motivation_status,
+                "evidence": motivation_evidence,
+            },
+            "behavior": {
+                "target_behavior": primary_goal,
+            },
+        },
+        "intervention_function": intervention_function,
+        "bct_strategies": bct_strategies,
+        "primary_goal": primary_goal,
+        "secondary_goals": secondary_goals,
+        "doctor_handoff_needed": bool(risk_context.get("doctor_required")) or scenario == "emergency",
+        "priority": priority,
+    }
+
+
+def _route_dialogue_skill(snapshot: dict, intervention_plan: dict) -> tuple[str, str]:
+    risk_context = _ensure_dict(snapshot.get("risk_context"))
+    memory_gaps = _ensure_list(snapshot.get("memory_gaps"))
+    doctor_state = _clean_text(risk_context.get("doctor_state"))
+    entry_intent = _clean_text(_ensure_dict(snapshot.get("meta")).get("entry_intent"))
+    adherence_context = _ensure_dict(snapshot.get("adherence_context"))
+
+    if doctor_state in {"reviewing", "confirmed", "modified_plan", "escalate_to_er"}:
+        return "doctor-confirmation-return", "当前已经进入医生审核或医生回传阶段"
+    if entry_intent == "emergency_triage" or risk_context.get("patient_status") == "critical":
+        return "emergency-calming-dialogue", "当前存在紧急风险，需要先做安抚和立即行动引导"
+    if entry_intent == "background_fill":
+        return "missing-background-collector", "当前主目标是补齐长期背景信息，方便后续个性化随访"
+    if any(gap in memory_gaps for gap in ["长期用药信息不完整", "患者偏好与障碍信息不完整", "照护与就医上下文不完整"]):
+        if adherence_context.get("monitoring_status") not in {"missing_data", "partial"}:
+            return "missing-background-collector", "当前更适合先补齐长期背景信息"
+    return "adherence-followup-dialogue", "当前以常规遵从追问和小动作推进最合适"
+
+
+def build_skill_plan(snapshot: dict, intervention_plan: dict) -> dict:
+    skill_type, reason = _route_dialogue_skill(snapshot, intervention_plan)
+    style = _clean_text(_ensure_dict(snapshot.get("profile")).get("communication_style")) or "warm_encouraging"
+
+    allowed_outputs = ["chat_text", "followup_question"]
+    renderer_hint = "不生成正式报告"
+    must_cover = []
+    must_avoid = ["编造病史", "给出超出授权的药物调整建议"]
+
+    if skill_type == "missing-background-collector":
+        must_cover = ["长期背景缺口", "高价值耐久信息", "低负担提问"]
+        renderer_hint = "不生成报告，只收集长期背景"
+    elif skill_type == "doctor-confirmation-return":
+        allowed_outputs = ["chat_text", "lightweight_card"]
+        must_cover = ["医生当前状态", "患者现在该做什么", "红旗提醒"]
+        renderer_hint = "生成轻量回传卡片，不生成长报告"
+    elif skill_type == "emergency-calming-dialogue":
+        must_cover = ["当前风险", "立即动作", "等待医生或就医"]
+        renderer_hint = "必要时再进入紧急指引页"
+    else:
+        allowed_outputs = ["chat_text", "followup_question", "lightweight_card"]
+        must_cover = ["当轮关键缺口", "一个可执行小动作", "个性化安抚或鼓励"]
+        renderer_hint = "不生成完整报告，只生成本轮对话输出"
+
+    return {
+        "skill_plan_id": f"sp_{_clean_text(_ensure_dict(snapshot.get('meta')).get('patient_id'))}_{skill_type}",
+        "skill_type": skill_type,
+        "reason": reason,
+        "tone": {
+            "style": style if style in {"warm_encouraging", "direct_practical", "authority_based", "gentle_patient"} else "warm_encouraging",
+            "density": "simple_focused" if _ensure_dict(snapshot.get("profile")).get("age", 0) >= 70 else "moderate",
+            "avoid": must_avoid,
+        },
+        "conversation_goal": _clean_text(intervention_plan.get("primary_goal")),
+        "must_cover": must_cover,
+        "must_avoid": must_avoid,
+        "allowed_outputs": allowed_outputs,
+        "renderer_hint": renderer_hint,
+    }
+
+
+def build_case_state(payload: dict, snapshot: dict) -> dict:
+    existing = _ensure_dict(payload.get("case_state"))
+    doctor_feedback = _ensure_dict(payload.get("doctor_feedback"))
+    doctor_review_existing = _ensure_dict(existing.get("doctor_review"))
+    doctor_status = (
+        _clean_text(doctor_feedback.get("status"))
+        or _clean_text(doctor_review_existing.get("status"))
+        or _clean_text(_ensure_dict(snapshot.get("risk_context")).get("doctor_state"))
+    )
+    doctor_note = _clean_text(doctor_feedback.get("doctor_note")) or _clean_text(doctor_review_existing.get("doctor_note"))
+    current_time = _clean_text(_ensure_dict(snapshot.get("meta")).get("current_time"))
+
+    if doctor_status in {"", "none"}:
+        if _clean_text(_ensure_dict(snapshot.get("risk_context")).get("patient_status")) == "critical":
+            doctor_status = "notified"
+        else:
+            doctor_status = "pending"
+
+    if doctor_status in {"pending", "notified", "reviewing"}:
+        state = "awaiting_doctor_review" if _clean_text(_ensure_dict(snapshot.get("risk_context")).get("patient_status")) == "critical" else "followup_active"
+        title = "医生审核中" if doctor_status in {"reviewing", "notified"} else "随访进行中"
+        message = "我们已经记录您的情况，请先按当前提示处理。" if state == "awaiting_doctor_review" else "当前处于常规随访阶段。"
+        next_action = "wait_for_doctor_feedback" if state == "awaiting_doctor_review" else "follow_current_plan"
+    elif doctor_status == "confirmed":
+        state = "doctor_confirmed"
+        title = "医生已确认"
+        message = "医生已确认当前建议，请按最新提示继续处理。"
+        next_action = "follow_current_plan"
+    elif doctor_status in {"modified_plan", "escalate_to_er"}:
+        state = "doctor_modified_plan"
+        title = "请立即就医" if doctor_status == "escalate_to_er" else "医生已更新建议"
+        message = "医生已经更新了建议，请以最新提示为准。"
+        next_action = "seek_in_person_care" if doctor_status == "escalate_to_er" else "follow_updated_plan"
+    else:
+        state = "followup_active"
+        title = "随访进行中"
+        message = "当前处于常规随访阶段。"
+        next_action = "follow_current_plan"
+
+    case_type = "emergency" if _clean_text(_ensure_dict(snapshot.get("risk_context")).get("patient_status")) == "critical" else "adherence"
+    return {
+        "case_id": _clean_text(existing.get("case_id")) or f"case_{_clean_text(_ensure_dict(snapshot.get('meta')).get('patient_id'))}",
+        "case_type": case_type,
+        "state": state,
+        "created_at": _clean_text(existing.get("created_at")) or current_time,
+        "doctor_review": {
+            "status": doctor_status,
+            "assigned_doctor_id": _clean_text(doctor_feedback.get("assigned_doctor_id")) or _clean_text(doctor_review_existing.get("assigned_doctor_id")) or "unassigned",
+            "doctor_note": doctor_note,
+        },
+        "patient_visible_status": {
+            "title": title,
+            "message": message,
+        },
+        "next_action": next_action,
+    }
+
+
+def build_runtime_bundle(payload: dict) -> dict:
+    long_term_memory = _extract_long_term_memory(payload)
+    short_term_memory = _extract_short_term_memory(payload)
+    snapshot = build_patient_snapshot(payload)
+    intervention_plan = build_intervention_plan(snapshot)
+    skill_plan = build_skill_plan(snapshot, intervention_plan)
+    case_state = build_case_state(payload, snapshot)
+    return {
+        "long_term_memory": long_term_memory,
+        "short_term_memory": short_term_memory,
+        "patient_snapshot": snapshot,
+        "intervention_plan": intervention_plan,
+        "skill_plan": skill_plan,
+        "case_state": case_state,
+    }
+
+
+# ---------------------------------------------------------------------------
 # Scenarios (conversation + payload)
 # ---------------------------------------------------------------------------
 
@@ -643,6 +1161,10 @@ def main():
     loc = payload.get("location", {}).get("current", {})
     if loc and not loc.get("record_at"):
         loc["record_at"] = now_iso
+    runtime_bundle = build_runtime_bundle(payload)
+    routed_skill = _clean_text(_ensure_dict(runtime_bundle.get("skill_plan")).get("skill_type"))
+    route_reason = _clean_text(_ensure_dict(runtime_bundle.get("skill_plan")).get("reason"))
+    case_state = _ensure_dict(runtime_bundle.get("case_state"))
 
     print(f"\n📋 {scenario_data['label']}")
     print(f"   {scenario_data['desc']}")
@@ -651,6 +1173,9 @@ def main():
     print(f"\n{'━' * 60}")
     print("  💬 对话过程")
     print(f"{'━' * 60}")
+    print(f"\n  Route Skill: {routed_skill}")
+    print(f"  Reason:      {route_reason}")
+    print(f"  Case State:  {_clean_text(case_state.get('state'))}")
     for role, text in scenario_data.get("conversation", []):
         print(f"\n  {role}:")
         print(f"  {text}")
@@ -678,6 +1203,7 @@ def main():
         "scenario": scenario_key,
         "timestamp": now_iso,
         "payload": payload,
+        "runtime_bundle": runtime_bundle,
         "doctor_result": doctor["llm_result"],
         "patient_result": patient["llm_result"],
     }

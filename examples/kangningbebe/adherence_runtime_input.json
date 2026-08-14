@@ -1,0 +1,108 @@
+{
+  "meta": {
+    "user_id": "KNBB-001",
+    "session_id": "sess_adherence_001",
+    "intent": "medical_dialog",
+    "lang": "zh",
+    "current_time": "2026-08-03T09:30:00+08:00"
+  },
+  "long_term_memory": {
+    "patient_profile": {
+      "patient_id": "p_knbb_001",
+      "preferred_name": "王阿姨",
+      "age": 76,
+      "gender": "female",
+      "living_status": "alone",
+      "caregiver_support": "limited"
+    },
+    "medical_background": {
+      "diagnoses": ["高血压", "2型糖尿病"],
+      "long_term_medications": [],
+      "allergies": [],
+      "past_surgeries": [],
+      "important_risks": ["跌倒风险"]
+    },
+    "behavior_profile": {
+      "communication_style": "warm_encouraging",
+      "information_density": "simple_focused",
+      "motivation_style": "positive_reinforcement",
+      "known_barriers": ["怕麻烦别人"],
+      "known_preferences": [],
+      "disliked_interventions": ["长篇教育内容"]
+    },
+    "care_context": {},
+    "memory_completeness": {
+      "profile_complete": true,
+      "medication_complete": false,
+      "preference_complete": false,
+      "care_context_complete": false
+    },
+    "recent_health_dynamics": "近一周活动量下降，最近两天多次说有点累，不太想出门。"
+  },
+  "short_term_memory": {
+    "session_context": {
+      "session_id": "sess_adherence_001",
+      "current_stage": "followup",
+      "started_at": "2026-08-03T09:25:00+08:00"
+    },
+    "today_facts": {
+      "took_medication_today": true,
+      "medication_notes": "早饭后服用了降压药",
+      "current_symptoms": ["有些疲劳"],
+      "latest_self_report": "今天没什么力气，不太想出门。"
+    },
+    "recent_events": [
+      {
+        "type": "self_report",
+        "time": "2026-08-03T09:26:00+08:00",
+        "content": "今天早上吃药了"
+      }
+    ],
+    "dialogue_state": {
+      "last_questions": ["今天早上有没有按时吃药？"],
+      "last_user_answers": ["吃了"],
+      "open_questions": ["午饭后是否复测血糖"]
+    }
+  },
+  "signals": {
+    "start_ts": "2026-08-03T08:00:00+08:00",
+    "end_ts": "2026-08-03T09:20:00+08:00",
+    "summary_text": "近24小时步数偏低，患者表示有些累，不太想出门，未见明确危急信号。",
+    "anomalies": ["步数偏低", "活动量下降"]
+  },
+  "latest_health": {
+    "blood_pressure": "152/92",
+    "heart_rate": 76,
+    "blood_oxygen": 96,
+    "blood_glucose": "",
+    "steps": 1200
+  },
+  "case_state": {},
+  "doctor_feedback": {},
+  "latest_user_message": "今天没什么力气，不太想出门。",
+  "memory": {
+    "patient_long_term_profile": "王阿姨，76岁，独居。诊断：高血压、2型糖尿病。",
+    "recent_health_dynamics": "近一周活动量下降，最近两天多次说有点累，不太想出门。"
+  },
+  "adherence_analysis": {
+    "statuses": ["今日早晨已服药", "午后血糖未确认"],
+    "preferences": [],
+    "interventions": [],
+    "suggestions": []
+  },
+  "outlier_analysis": {
+    "symptoms": ["有些疲劳"],
+    "triage": null,
+    "patient_suggestions": [],
+    "doctor_suggestions": []
+  },
+  "location": {
+    "current": {
+      "lat": 39.9042,
+      "lon": 116.4074,
+      "record_at": "2026-08-03T09:20:00+08:00"
+    },
+    "records": []
+  },
+  "recent_dialog_summary": "最近两轮都提到活动量减少，但背景偏好和照护支持信息仍不完整。"
+}
