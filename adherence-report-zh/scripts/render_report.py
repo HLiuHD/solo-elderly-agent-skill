@@ -14,7 +14,7 @@ import os
 import re
 import sys
 from html import escape
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import quote
 
@@ -849,10 +849,10 @@ def _status_bucket(value: object) -> str:
 
 def _status_category_text(bucket: str) -> tuple[str, str]:
     mapping = {
-        "good": ("继续保持", "本次做得不错，值得继续坚持。"),
-        "mixed": ("这次还可以再稳一点", "已经有基础了，再把细节补齐会更好。"),
-        "needs_attention": ("这次先补上关键一步", "先把最容易漏掉的那一步补回来。"),
-        "neutral": ("这次继续观察", "先保持记录，方便下次更准确比较。"),
+        "good": ("继续保持", "您已经做得很好了，按现在的节奏继续就好。"),
+        "mixed": ("这次再稳一点", "已经有基础了，慢慢补齐一点点就很好。"),
+        "needs_attention": ("先补关键一步", "先把最关键的一小步补回来就好。"),
+        "neutral": ("继续看看", "先保持记录，我们下次更容易看出变化。"),
     }
     return mapping.get(bucket, mapping["neutral"])
 
@@ -861,13 +861,13 @@ def _recent_bucket_from_clue(text: str) -> str:
     clue = _localize_zh_text(str(text or "")).lower()
     if not clue:
         return "neutral"
-    good_tokens = ("规律", "连续", "稳定", "良好", "每日步行", "按时", "严格执行", "恢复")
-    alert_tokens = ("反复", "高油", "高盐", "卧床", "极低", "下降", "漏", "缺口", "未")
+    good_tokens = ("规律", "连续", "稳定", "良好", "每日步行", "按时", "严格执行", "恢复", "improved", "better", "stable", "on time", "consistent")
+    alert_tokens = ("反复", "高油", "高盐", "卧床", "极低", "下降", "漏", "缺口", "未", "dropped", "decreased", "low", "missed", "gap", "poor")
     if any(token in clue for token in good_tokens) and not any(token in clue for token in ("反复", "波动")):
         return "good"
     if any(token in clue for token in alert_tokens):
         return "needs_attention"
-    if any(token in clue for token in ("波动", "有时", "偶尔", "反复")):
+    if any(token in clue for token in ("波动", "有时", "偶尔", "反复", "sometimes", "fluctuat")):
         return "mixed"
     return "neutral"
 
@@ -875,21 +875,21 @@ def _recent_bucket_from_clue(text: str) -> str:
 def _build_longitudinal_comparison_note(current_bucket: str, recent_bucket: str) -> tuple[str, str]:
     if current_bucket == "good":
         if recent_bucket in {"mixed", "needs_attention"}:
-            return ("结合近期记录线索看，这次更稳了，做得很好，继续坚持。", "good")
-        return ("这次延续得不错，做得很好，继续坚持。", "good")
+            return ("和前一阵比，这次更稳了，继续按现在的节奏来就好。", "good")
+        return ("这次做得很好，继续保持就好。", "good")
     if current_bucket == "mixed":
         if recent_bucket == "good":
-            return ("结合近期记录线索看，这次有一点波动，不过您已经有基础，慢慢补回来就好。", "mixed")
+            return ("这次有一点波动，没关系，我们慢慢稳回来。", "mixed")
         if recent_bucket == "needs_attention":
-            return ("结合近期记录线索看，这次已经在往回拉，先把这一小步做稳就很好。", "mixed")
-        return ("这一步还在调整中，能做到一部分也值得肯定。", "mixed")
+            return ("已经比前面稳一点了，先把这一小步顾好。", "mixed")
+        return ("这一步正在慢慢找回节奏。", "mixed")
     if current_bucket == "needs_attention":
         if recent_bucket == "good":
-            return ("结合近期记录线索看，这次有点松，不过不用一下子补很多，先把关键一步补回来就很好。", "alert")
+            return ("这次有点松，没关系，先把这一小步补回来。", "alert")
         if recent_bucket == "mixed":
-            return ("这一步最近都比较容易被打断，但只要先补回最关键的一步，就是进步。", "alert")
-        return ("这一步最近一直最难，坚持一点点就是在往前走。", "alert")
-    return ("这次先继续观察，慢慢把节奏做稳就好。", "neutral")
+            return ("这一步最近容易断掉，先顾好最关键的一步。", "alert")
+        return ("这一步先别着急，一点点补回来就好。", "alert")
+    return ("先继续看看，我们慢慢把节奏稳住。", "neutral")
 
 
 def _longitudinal_tone_classes(tone: str) -> str:
@@ -1043,25 +1043,61 @@ def _summarize_recent_clue(line: str, category: str) -> str:
     text = re.sub(r"\*\*", "", str(line or "")).strip(" -：:")
     if not text:
         return ""
+    dates = re.findall(r"\d{4}-\d{1,2}-\d{1,2}", text)
+    text_lower = text.lower()
+    bp_values = [value for value in re.findall(r"(\d{2,3}/\d{2,3})\s*(?:mmhg)?", text, flags=re.IGNORECASE)]
+
+    def _first_last_date_compare(earlier: str, later: str) -> str:
+        if len(dates) >= 2:
+            return f"{dates[0]}{earlier}，{dates[-1]}{later}"
+        return ""
 
     if category == "exercise":
+        if "dropped from" in text_lower and any(token in text_lower for token in ("step", "walk", "activity")):
+            return "最近活动量比前一段时间少了一些。"
+        if any(token in text_lower for token in ("walk", "walking", "run", "running", "activity", "steps")) and any(token in text_lower for token in ("improved", "increase", "increased", "more")):
+            return "最近活动量比前一段时间更好了。"
+        if dates and any(token in text for token in ("无运动", "卧床", "很少活动")) and any(token in text for token in ("步行", "散步", "跑步", "步数", "2000", "活动")):
+            return _first_last_date_compare("活动偏少", "已经慢慢走回来了。")
         if any(token in text for token in ("步行", "散步", "跑步", "运动", "活动")):
-            return "近期记忆线索里多次出现步行或日常活动的记录。"
+            return "最近几次都记到了步行和日常活动。"
         if "卧床" in text:
-            return "近期记忆线索提示活动量一度很低。"
+            return "前一阵活动量一度比较低。"
     if category == "appetite":
+        if any(token in text_lower for token in ("appetite decreased", "not wanting to eat", "eat much", "poor appetite")):
+            return "最近胃口比前一段时间差一些。"
+        if "diet" in text_lower and any(token in text_lower for token in ("regular", "improved", "better")):
+            return "最近饮食比前一段时间更规律一些。"
+        if dates and any(token in text for token in ("拉面", "汉堡", "高油", "高盐", "不规律")) and any(token in text for token in ("清淡", "全麦", "蔬菜", "控盐", "规律")):
+            return _first_last_date_compare("吃得有些乱", "吃得更规律一些。")
         if any(token in text for token in ("清淡", "全麦", "蔬菜", "控盐")) and any(token in text for token in ("拉面", "汉堡", "高油", "高盐")):
-            return "近期记忆线索提示饮食有做得好的时候，也有反复。"
+            return "最近饮食有做得好的时候，也有反复。"
         if any(token in text for token in ("清淡", "全麦", "蔬菜", "控盐")):
-            return "近期记忆线索里多次提到清淡和控盐的饮食安排。"
+            return "最近几次都提到清淡和控盐。"
         if any(token in text for token in ("拉面", "汉堡", "高油", "高盐", "反复")):
-            return "近期记忆线索提示饮食还会偶尔偏油偏咸。"
+            return "最近还是会偶尔吃得偏油偏咸。"
     if category == "medication":
+        if any(token in text_lower for token in ("missed medication", "missed dose", "forgot medicine")):
+            return "前一段时间有过漏服。"
+        if any(token in text_lower for token in ("took medication on time", "adherent", "medication improved", "taking meds regularly")):
+            return "最近用药更规律了。"
+        if dates and any(token in text for token in ("住院期强化", "强化治疗", "静脉胰岛素", "依诺肝素", "呋塞米")) and any(token in text for token in ("居家维持", "已过渡为", "口服降压药", "华法林", "餐前注射胰岛素")):
+            return f"{dates[0]}还在住院强化用药，到了{dates[-1]}已经转到居家维持。"
+        if dates and ("漏服" in text or "忘记" in text) and any(token in text for token in ("按时", "规律", "坚持")):
+            return _first_last_date_compare("有过漏服", "已经能按时吃药。")
         if any(token in text for token in ("用药", "胰岛素", "华法林", "降压药", "口服")):
-            return "近期记忆线索里持续出现了家庭用药管理的信息。"
+            return "最近一直有在认真管用药这件事。"
     if category == "monitoring":
+        if "血压" in text and dates and bp_values:
+            if len(bp_values) >= 2:
+                return f"{dates[0]}量到{bp_values[0]}，后面几次也大致稳在{bp_values[-1]}左右。"
+            return f"{dates[0]}有过监测，后来也一直在继续跟。"
+        if any(token in text_lower for token in ("blood pressure stable", "stable around", "monitoring", "recorded")):
+            return "最近一直有在连续监测和记录。"
+        if dates and any(token in text for token in ("未测", "漏测", "缺口")) and any(token in text for token in ("记录", "监测", "测量", "已测")):
+            return _first_last_date_compare("监测断过几次", "又慢慢补回来了。")
         if any(token in text for token in ("血压", "监测", "测量", "记录")):
-            return "近期记忆线索里有连续监测或记录的提示。"
+            return "最近一直有监测和记录。"
     return ""
 
 
@@ -1145,6 +1181,41 @@ def _extract_medication_tags_from_archive(archive_text: str) -> list[str]:
             seen.add(cleaned)
             tags.append(cleaned)
     return tags[:6]
+
+
+def _patient_friendly_medication_tags(med_tags: list[str], theme_kind: str) -> list[str]:
+    if not med_tags:
+        return []
+    alias_rules = [
+        (("胰岛素",), "胰岛素"),
+        (("华法林", "利伐沙班", "阿哌沙班", "依诺肝素", "抗凝"), "抗凝药"),
+        (("氨氯地平", "缬沙坦", "厄贝沙坦", "替米沙坦", "氯沙坦", "培哚普利", "赖诺普利", "硝苯地平"), "降压药"),
+        (("美托洛尔", "比索洛尔", "卡维地洛"), "心率/心脏药"),
+        (("呋塞米", "螺内酯", "托拉塞米"), "利尿药"),
+        (("阿托伐他汀", "瑞舒伐他汀", "辛伐他汀"), "调脂药"),
+        (("多奈哌齐",), "记忆支持药"),
+        (("雷贝拉唑", "奥美拉唑", "泮托拉唑"), "护胃药"),
+        (("亚胺培南", "万古霉素", "奥马环素", "伏立康唑", "阿莫西林", "左氧氟沙星"), "抗感染药"),
+        (("化疗", "ADC"), "治疗用药"),
+    ]
+    friendly: list[str] = []
+    seen: set[str] = set()
+    for raw in med_tags:
+        label = raw.strip()
+        for keywords, alias in alias_rules:
+            if any(keyword in label for keyword in keywords):
+                label = alias
+                break
+        label = re.sub(r"\s+", "", label)
+        if len(label) > 14:
+            label = label[:12] + "…"
+        if label in seen:
+            continue
+        seen.add(label)
+        friendly.append(label)
+    if theme_kind == "infection_recovery" and "抗感染药" not in seen:
+        friendly.insert(0, "抗感染药")
+    return friendly[:4]
 
 
 def _pick_recent_treatment_line(memory: dict, theme_kind: str) -> str:
@@ -1336,6 +1407,7 @@ def _build_treatment_theme(payload: dict, so: dict) -> dict:
     order_section = _extract_archive_section(archive_text, "住院医嘱", "当前治疗", "治疗经过")
     long_term_section = _extract_archive_section(archive_text, "平素/长期用药", "长期用药", "平素用药")
     med_tags = _extract_medication_tags_from_archive(archive_text)
+    friendly_med_tags = _patient_friendly_medication_tags(med_tags, theme_kind="general_recovery")
 
     archive_all = " ".join(part for part in (archive_text, admission_section, order_section, long_term_section) if part)
     archive_all_lower = archive_all.lower()
@@ -1396,10 +1468,10 @@ def _build_treatment_theme(payload: dict, so: dict) -> dict:
         "infection_recovery": {
             "eyebrow": "治疗主题",
             "badge": "住院后恢复",
-            "title": "感染住院后的恢复管理",
-            "summary": "这时不只看症状，也要把住院阶段的强化治疗、出院后的长期用药和恢复节奏串起来看。",
+            "title": "住院后的恢复这段时间",
+            "summary": "现在更重要的，不只是看症状有没有反复，还要把回家后的吃药、吃饭和监测节奏慢慢接回日常。",
             "stage_label": "当前阶段",
-            "stage_value": "从住院强化支持逐步转向居家维持",
+            "stage_value": "先把回家后的用药、吃饭和监测慢慢稳住",
             "gradient": "linear-gradient(135deg, #2563eb 0%, #4f46e5 55%, #bfdbfe 100%)",
             "accent": "#dbeafe",
             "icon": "🛡️",
@@ -1408,10 +1480,10 @@ def _build_treatment_theme(payload: dict, so: dict) -> dict:
         "chronic_medication": {
             "eyebrow": "治疗主题",
             "badge": "长期管理",
-            "title": "居家维持用药阶段",
-            "summary": "把慢病、长期用药和每天最容易执行的步骤放在一个模块里，病人会更容易理解自己现在要做什么。",
+            "title": "长期用药这段时间",
+            "summary": "这段时间更重要的是把吃药、吃饭和监测放回每天固定节奏里，不用一下子做很多。",
             "stage_label": "当前阶段",
-            "stage_value": "以长期用药、饮食和监测的稳定执行为主",
+            "stage_value": "先把长期用药、饮食和监测稳在日常里",
             "gradient": "linear-gradient(135deg, #0f766e 0%, #16a34a 55%, #bbf7d0 100%)",
             "accent": "#dcfce7",
             "icon": "📅",
@@ -1420,10 +1492,10 @@ def _build_treatment_theme(payload: dict, so: dict) -> dict:
         "general_recovery": {
             "eyebrow": "治疗主题",
             "badge": "当前重点",
-            "title": "当前治疗与恢复重点",
-            "summary": "把正在经历的治疗背景放在前面，后面的建议就不会显得像通用模板。",
+            "title": "这段时间先顾好什么",
+            "summary": "先把您正在经历的治疗和恢复阶段说清楚，后面的提醒才会更贴近现在的生活。",
             "stage_label": "当前阶段",
-            "stage_value": "围绕当前治疗和恢复安排日常计划",
+            "stage_value": "围绕现在这段恢复节奏来安排每天的事",
             "gradient": "linear-gradient(135deg, #475569 0%, #64748b 55%, #cbd5e1 100%)",
             "accent": "#e2e8f0",
             "icon": "✨",
@@ -1431,44 +1503,67 @@ def _build_treatment_theme(payload: dict, so: dict) -> dict:
         },
     }
     meta = theme_meta[theme_kind]
+    friendly_med_tags = _patient_friendly_medication_tags(med_tags, theme_kind)
 
     medication_status = _localize_zh_text(str((current_items.get("medication") or {}).get("status_label") or "")).strip()
     appetite_status = _localize_zh_text(str((current_items.get("appetite") or {}).get("status_label") or "")).strip()
     monitoring_status = _localize_zh_text(str((current_items.get("monitoring") or {}).get("status_label") or "")).strip()
     recent_line = _pick_recent_treatment_line(memory, theme_kind)
+    medication_bucket = _status_bucket((current_items.get("medication") or {}).get("status") or medication_status)
+    appetite_bucket = _status_bucket((current_items.get("appetite") or {}).get("status") or appetite_status)
+    monitoring_bucket = _status_bucket((current_items.get("monitoring") or {}).get("status") or monitoring_status)
 
     focus_points: list[str] = []
-    if med_tags:
-        focus_points.append(f"当前会反复涉及的用药包括：{'、'.join(med_tags[:4])}。")
+    if friendly_med_tags:
+        focus_points.append(f"现在反复会用到的，主要是这些：{'、'.join(friendly_med_tags[:4])}。")
     if medication_status:
-        focus_points.append(f"本次回访里的用药执行状态为“{medication_status}”，适合把服药节奏继续稳住。")
+        if medication_bucket == "good":
+            focus_points.append("这次回访里，吃药这一步已经做到了，接下来继续按现在的节奏就好。")
+        elif medication_bucket == "mixed":
+            focus_points.append("吃药这一步已经有基础了，后面继续把固定时间慢慢守住就好。")
+        else:
+            focus_points.append("这段时间先把吃药这一步顾住，后面的节奏就会更容易稳下来。")
     if appetite_status:
-        focus_points.append(f"营养相关记录目前是“{appetite_status}”，治疗恢复期更需要把蛋白和主食节奏守住。")
+        if appetite_bucket == "good":
+            focus_points.append("恢复这段时间，吃饭能跟上会更有力气，现在这一步已经在慢慢稳住。")
+        elif appetite_bucket == "mixed":
+            focus_points.append("这段时间不用追求一下子吃很多，先把主食和蛋白质一点点补回来。")
+        else:
+            focus_points.append("这段恢复期更怕吃得太少，先把主食和蛋白质慢慢接回来就好。")
     if monitoring_status:
-        focus_points.append(f"监测状态目前是“{monitoring_status}”，越在治疗恢复阶段，越需要把家庭记录补齐。")
+        if monitoring_bucket == "good":
+            focus_points.append("家里能继续量、继续记，后面更容易看出身体是不是在稳住。")
+        elif monitoring_bucket == "mixed":
+            focus_points.append("监测偶尔断掉也没关系，能继续记回来就已经是在往前走。")
+        else:
+            focus_points.append("监测这一步先别求全，先把最容易做到的一项慢慢补回来。")
     if theme_kind == "infection_recovery":
-        focus_points.insert(0, "住院阶段的重点更多在抗感染、循环/呼吸支持和代谢管理；回家后更看重稳定执行。")
+        focus_points.insert(0, "住院那段时间更重要的是先把感染和身体状态稳住；回家后，更重要的是把日常节奏接回来。")
     elif theme_kind in {"oncology_adc", "oncology_chemo"}:
-        focus_points.insert(0, "这类治疗主题更适合突出输注后几天的食欲、体力、睡眠和感染风险，而不是只列通用建议。")
+        focus_points.insert(0, "这段治疗更需要一起看体力、胃口、睡眠和不舒服的变化，而不只是看单条建议。")
     elif theme_kind == "surgery_recovery":
-        focus_points.insert(0, "术后主题更适合突出疼痛、活动递进和蛋白补充之间的关系。")
+        focus_points.insert(0, "术后这段时间，重点通常是把疼痛、活动和营养慢慢配合起来。")
     elif theme_kind == "chronic_medication":
-        focus_points.insert(0, "慢病长期管理更需要把药物、吃饭和监测放在同一个日常节奏里。")
+        focus_points.insert(0, "长期管理更重要的，是把吃药、吃饭和监测放进同一个每天都能做到的节奏里。")
     focus_points = focus_points[:3]
 
     objective_bits: list[str] = []
-    if long_term_section:
-        objective_bits.append(f"长期用药：{long_term_section[:120]}")
-    if order_section:
-        objective_bits.append(f"住院/治疗记录：{order_section[:120]}")
-    if admission_section:
-        objective_bits.append(f"本次事件背景：{admission_section[:120]}")
+    if friendly_med_tags:
+        objective_bits.append(f"日常会反复用到的药物，主要围绕：{'、'.join(friendly_med_tags[:4])}。")
+    if theme_kind == "infection_recovery" and order_section:
+        objective_bits.append("住院那段时间，治疗重点主要放在控制感染、稳住呼吸和循环状态。")
+    elif theme_kind == "chronic_medication" and long_term_section:
+        objective_bits.append("这份提醒会同时参考您长期要继续的用药，以及每天要守住的饮食和监测节奏。")
+    elif theme_kind == "surgery_recovery" and admission_section:
+        objective_bits.append("这份提醒会一起参考术后恢复、活动安排和日常用药。")
+    elif admission_section:
+        objective_bits.append("这份提醒会参考您这次治疗/恢复的背景，再决定今天更适合先顾好什么。")
     evidence = objective_bits[:2]
     source = "objective"
     if recent_line:
         recent_evidence = recent_line
         if theme_kind == "infection_recovery":
-            recent_evidence = "近期线索提示住院强化治疗后，后续已逐步过渡到居家维持用药与日常管理。"
+            recent_evidence = "前一阵到现在，已经在从住院支持慢慢过渡到回家后的日常维持。"
         evidence.append(f"近期线索：{recent_evidence}（来自 memory.recent，仅作变化线索）")
         source = "objective_plus_recent"
 
@@ -1482,7 +1577,7 @@ def _build_treatment_theme(payload: dict, so: dict) -> dict:
         }
         cycle_badge = fallback_badges.get(theme_kind, "")
 
-    education = _build_treatment_education(theme_kind, current_items, meta["title"], med_tags)
+    education = _build_treatment_education(theme_kind, current_items, meta["title"], friendly_med_tags or med_tags)
 
     return {
         "kind": theme_kind,
@@ -1497,7 +1592,7 @@ def _build_treatment_theme(payload: dict, so: dict) -> dict:
         "icon": meta["icon"],
         "art": meta["art"],
         "cycle_badge": cycle_badge,
-        "medication_tags": med_tags,
+        "medication_tags": friendly_med_tags,
         "focus_points": focus_points,
         "evidence": evidence,
         "source": source,
@@ -2017,26 +2112,36 @@ def _build_fallback_nutrition_advice(payload: dict, so: dict) -> str:
 
 
 def _extract_recent_clues(memory: dict) -> dict[str, str]:
-    text = str(((memory.get("recent") or {}).get("adherence")) or "").strip()
+    text = _memory_recent_text(memory).strip()
     if not text:
         return {}
 
     category_keywords = {
-        "medication": ("用药", "服药", "药", "胰岛素", "华法林", "降压药"),
-        "appetite": ("饮食", "食欲", "进食", "营养", "主食", "清淡", "控盐", "拉面", "汉堡"),
-        "exercise": ("运动", "步行", "跑步", "活动", "步数", "卧床", "散步"),
-        "monitoring": ("血压", "血氧", "心率", "监测", "测量", "记录"),
+        "medication": ("用药", "服药", "药", "胰岛素", "华法林", "降压药", "medication", "medicine", "dose", "metformin", "amlodipine", "atorvastatin"),
+        "appetite": ("饮食", "食欲", "进食", "营养", "主食", "清淡", "控盐", "拉面", "汉堡", "appetite", "eat", "eating", "nutrition", "protein", "diet"),
+        "exercise": ("运动", "步行", "跑步", "活动", "步数", "卧床", "散步", "steps", "walk", "walking", "run", "running", "activity"),
+        "monitoring": ("血压", "血氧", "心率", "监测", "测量", "记录", "blood pressure", "blood oxygen", "heart rate", "monitor", "record"),
     }
 
     clues: dict[str, str] = {}
-    for raw_line in text.splitlines():
-        line = raw_line.strip()
-        if not line.startswith("-"):
-            continue
+    raw_lines = [raw_line.strip() for raw_line in text.splitlines() if raw_line.strip()]
+    sentence_lines = [
+        part.strip()
+        for part in re.split(r"[。；;.!?]\s*", text)
+        if part.strip()
+    ]
+    candidate_lines: list[str] = []
+    for line in raw_lines + sentence_lines:
+        normalized = line.strip(" -•\t")
+        if normalized and normalized not in candidate_lines:
+            candidate_lines.append(normalized)
+
+    for line in candidate_lines:
+        line_lower = line.lower()
         for category, keywords in category_keywords.items():
             if category in clues:
                 continue
-            if any(keyword in line for keyword in keywords):
+            if any(keyword in line or keyword.lower() in line_lower for keyword in keywords):
                 summary = _summarize_recent_clue(line, category)
                 if summary:
                     clues[category] = summary
@@ -2205,6 +2310,8 @@ def _augment_structured_output(so: dict, payload: dict) -> dict:
                 summary_parts.append(f"这次回访里，{current_fact}")
             else:
                 summary_parts.append(f"这次回访里，{category_labels[category]}记录为{_localize_zh_text(str(item.get('status_label') or '待观察'))}。")
+            if recent_fact:
+                summary_parts.append(f"近期线索也提示：{_localize_zh_text(str(recent_fact))}")
             summary_parts.append(closing)
             evidence_bits = []
             if item.get("date"):
@@ -2212,7 +2319,7 @@ def _augment_structured_output(so: dict, payload: dict) -> dict:
             if current_fact:
                 evidence_bits.append(f"本次事实：{current_fact}")
             if recent_fact:
-                evidence_bits.append("近期线索：来自 memory.recent 的候选行为变化")
+                evidence_bits.append(f"近期线索：{_localize_zh_text(str(recent_fact))}")
             highlights.append(
                 {
                     "category": category,
@@ -2222,6 +2329,24 @@ def _augment_structured_output(so: dict, payload: dict) -> dict:
                     "source": "objective_plus_recent" if recent_fact else "objective",
                 }
             )
+        if not highlights and recent_clues:
+            for category in ("medication", "appetite", "exercise", "monitoring"):
+                recent_fact = _localize_zh_text(str(recent_clues.get(category) or "")).strip()
+                if not recent_fact:
+                    continue
+                recent_bucket = _recent_bucket_from_clue(recent_fact)
+                title, closing = _status_category_text(recent_bucket if recent_bucket != "neutral" else "mixed")
+                highlights.append(
+                    {
+                        "category": category,
+                        "title": f"{category_labels[category]}：{title}",
+                        "summary": f"近期记录线索里，{recent_fact} {closing}",
+                        "evidence": f"近期线索：{recent_fact}",
+                        "source": "objective_plus_recent",
+                        "comparison_note": "这次先继续观察，结合后续回访把节奏慢慢做稳就好。",
+                        "comparison_tone": "neutral",
+                    }
+                )
         if highlights:
             so["longitudinal_highlights"] = highlights[:4]
     if isinstance(so.get("longitudinal_highlights"), list):
@@ -2236,8 +2361,18 @@ def _augment_structured_output(so: dict, payload: dict) -> dict:
             recent_bucket = _recent_bucket_from_clue(recent_fact)
             comparison_note, comparison_tone = _build_longitudinal_comparison_note(current_bucket, recent_bucket)
             next_item = dict(item)
-            next_item.setdefault("comparison_note", comparison_note)
-            next_item.setdefault("comparison_tone", comparison_tone)
+            next_item["comparison_note"] = comparison_note
+            next_item["comparison_tone"] = comparison_tone
+            if recent_fact:
+                summary_text = _localize_zh_text(str(next_item.get("summary") or "")).strip()
+                if "近期线索也提示" not in summary_text and recent_fact not in summary_text:
+                    next_item["summary"] = (summary_text + f" 近期线索也提示：{_localize_zh_text(str(recent_fact))}").strip()
+                evidence_text = _localize_zh_text(str(next_item.get("evidence") or "")).strip()
+                if recent_fact not in evidence_text:
+                    next_item["evidence"] = "；".join(
+                        bit for bit in [evidence_text, f"近期线索：{_localize_zh_text(str(recent_fact))}"] if bit
+                    )
+                next_item["source"] = "objective_plus_recent"
             enriched_highlights.append(next_item)
         if enriched_highlights:
             so["longitudinal_highlights"] = enriched_highlights
@@ -2840,6 +2975,8 @@ def _build_profile_copy(profile: dict) -> dict:
     copies = {
         "simplified": {
             "hero_tagline": "今天先记住最重要的 2 到 3 件事。",
+            "hero_support_line": "先把最重要的几步稳住，不用一下看太多。",
+            "home_style_note": "这一版会先直接告诉您今天先做什么，少一点解释，读起来更轻松。",
             "home_subtitle": "先看最重要的状态和今天最该做的事。",
             "plan_subtitle": "按顺序把今天最重要的几件事做好就可以。",
             "nutrition_subtitle": "只看今天最值得优先照顾的饮食重点。",
@@ -2862,9 +2999,12 @@ def _build_profile_copy(profile: dict) -> dict:
             "nutrition_tips_desc": "都是能直接用得上的小提醒。",
             "cuisine_desc": "如果愿意，也可以选几种平时更容易接受的口味。",
             "meal_desc": "给您一些更省心的早、中、晚餐参考。",
+            "education_desc": "先用更少的话把当前药物、治疗阶段和常见反应讲清楚。",
         },
         "standard": {
             "hero_tagline": "先看状态，再做今天最关键的几步。",
+            "hero_support_line": "今天先把关键几步稳稳做好，做一件就少一件负担。",
+            "home_style_note": "这一版会先告诉您现在该做什么，再补一句为什么，信息量比较平衡。",
             "home_subtitle": "先看今天的状态、执行情况和下一步重点。",
             "plan_subtitle": "先按顺序把今天最值得做的几件事完成。",
             "nutrition_subtitle": "查看适合今天的饮食重点和餐食建议。",
@@ -2887,9 +3027,12 @@ def _build_profile_copy(profile: dict) -> dict:
             "nutrition_tips_desc": "都是些更容易用得上的小提醒。",
             "cuisine_desc": "选一些您平时更喜欢的口味，后面的膳食建议会更贴近您。",
             "meal_desc": "给您一些这周更容易参考的早、中、晚餐搭配。",
+            "education_desc": "把当前药物、治疗阶段和常见反应讲清楚，前面的建议会更容易理解。",
         },
         "detailed": {
             "hero_tagline": "先看状态、变化和依据，再调整今天的计划。",
+            "hero_support_line": "今天先把状态、变化和依据看清楚，再按优先级一步步调整。",
+            "home_style_note": "这一版会把行动、原因和最近变化一起说清楚，方便您更完整地判断。",
             "home_subtitle": "先看今天的状态、执行情况、关键变化和最新生命体征。",
             "plan_subtitle": "把今天要做什么和为什么这样做放在一起看。",
             "nutrition_subtitle": "查看饮食重点、餐食建议和背后的原因。",
@@ -2912,6 +3055,7 @@ def _build_profile_copy(profile: dict) -> dict:
             "nutrition_tips_desc": "这些小提醒会尽量补上使用场景和原因。",
             "cuisine_desc": "选一些您平时更喜欢的口味，后面的膳食建议会尽量参考您的偏好。",
             "meal_desc": "给您一些这周更容易参考的早、中、晚餐搭配，并保留更多解释。",
+            "education_desc": "把当前药物、治疗阶段、常见反应和背后的原因讲清楚，方便理解前面的建议是怎么来的。",
         },
     }
     return copies.get(mode, copies["standard"])
@@ -4183,12 +4327,60 @@ def _fallback_trend_points_from_summary(payload: dict) -> dict:
     }
 
 
+def _trend_point_timestamp(point: dict) -> datetime | None:
+    if not isinstance(point, dict):
+        return None
+    return _parse_iso_datetime(point.get("t"))
+
+
+def _to_comparable_datetime(value: datetime | None) -> datetime | None:
+    if value is None:
+        return None
+    if value.tzinfo is None:
+        return value
+    return value.astimezone(timezone.utc).replace(tzinfo=None)
+
+
+def _metric_points_usable(metric_key: str, points: list[dict], window_key: str, current_time: datetime) -> bool:
+    if not isinstance(points, list):
+        return False
+    if metric_key == "blood_pressure":
+        usable = [
+            point for point in points
+            if isinstance(point, dict) and point.get("sbp") not in (None, "") and point.get("dbp") not in (None, "")
+        ]
+    else:
+        usable = [
+            point for point in points
+            if isinstance(point, dict) and point.get("value") not in (None, "")
+        ]
+    if len(usable) < 3:
+        return False
+
+    latest_dt = max((_trend_point_timestamp(point) for point in usable), default=None)
+    if latest_dt is None:
+        return True
+    comparable_current = _to_comparable_datetime(current_time)
+    comparable_latest = _to_comparable_datetime(latest_dt)
+    if comparable_current is None or comparable_latest is None:
+        return True
+    threshold_days = {
+        "week": 10,
+        "month": 21,
+        "quarter": 45,
+    }.get(window_key, 21)
+    return (comparable_current - comparable_latest).days <= threshold_days
+
+
 def _build_trend_data(payload: dict) -> dict:
     signal_trends = payload.get("signal_trends") or {}
     if not isinstance(signal_trends, dict):
         signal_trends = {}
+    fallback_trends = _fallback_trend_points_from_summary(payload)
     if not signal_trends:
-        signal_trends = _fallback_trend_points_from_summary(payload)
+        signal_trends = fallback_trends
+
+    current_time = _parse_iso_datetime((payload.get("meta") or {}).get("current_time")) or datetime.now()
 
     window_labels = {
         "week": "最近一周",
@@ -4210,10 +4402,16 @@ def _build_trend_data(payload: dict) -> dict:
         metrics = window.get("metrics") or {}
         if not isinstance(metrics, dict):
             continue
+        fallback_metrics = ((fallback_trends.get(window_key) or {}).get("metrics") or {})
+        fallback_used = False
 
         metric_cards = []
         for metric_key in ("blood_pressure", "heart_rate", "blood_oxygen", "steps_today", "steps", "blood_glucose"):
             points = metrics.get(metric_key) or []
+            fallback_points = fallback_metrics.get(metric_key) or []
+            if fallback_points and not _metric_points_usable(metric_key, points, window_key, current_time):
+                points = fallback_points
+                fallback_used = True
             if not isinstance(points, list):
                 continue
             clean_points = [point for point in points if isinstance(point, dict)]
@@ -4282,7 +4480,11 @@ def _build_trend_data(payload: dict) -> dict:
             trend_data[window_key] = {
                 "axis_start": labels[0] if labels else "",
                 "axis_end": labels[-1] if labels else "",
-                "insight": f"{window_labels[window_key]} · {aggregate_label}",
+                "insight": (
+                    f"{window_labels[window_key]} · {aggregate_label} · 设备趋势不足时结合近期线索整理"
+                    if fallback_used else
+                    f"{window_labels[window_key]} · {aggregate_label}"
+                ),
                 "metrics": metric_cards,
             }
     return trend_data
@@ -4530,6 +4732,8 @@ def _build_fallback_insight_item(so: dict, payload: dict) -> dict | None:
     title, status_copy = _status_category_text(bucket)
     current_fact = _localize_zh_text(str(item.get("text") or "")).strip()
     recent_fact = _localize_zh_text(str(recent_clues.get(category) or "")).strip()
+    recent_bucket = _recent_bucket_from_clue(recent_fact)
+    comparison_note, comparison_tone = _build_longitudinal_comparison_note(bucket, recent_bucket)
 
     summary_parts = []
     if bucket == "good":
@@ -4554,7 +4758,7 @@ def _build_fallback_insight_item(so: dict, payload: dict) -> dict | None:
     if current_fact:
         evidence_bits.append(f"本次事实：{current_fact}")
     if recent_fact:
-        evidence_bits.append("近期线索：来自 memory.recent 的候选行为变化")
+        evidence_bits.append(f"近期线索：{recent_fact}")
 
     source = "objective_plus_recent" if recent_fact else "objective"
     return {
@@ -4563,6 +4767,8 @@ def _build_fallback_insight_item(so: dict, payload: dict) -> dict | None:
         "summary": " ".join(part for part in summary_parts if part),
         "evidence": "；".join(evidence_bits),
         "source": source,
+        "comparison_note": comparison_note,
+        "comparison_tone": comparison_tone,
     }
 
 
@@ -4581,34 +4787,40 @@ def _render_journey_insight_spotlight(so: dict, payload: dict) -> str:
     title = _localize_zh_text(str(item.get("title") or "我发现了您的一个规律")).strip()
     summary = _localize_zh_text(str(item.get("summary") or "")).strip()
     evidence = _localize_zh_text(str(item.get("evidence") or "")).strip()
+    comparison_note = _localize_zh_text(str(item.get("comparison_note") or "")).strip()
+    comparison_tone = str(item.get("comparison_tone") or "neutral")
     if not summary:
         return ""
 
     source = str(item.get("source") or "")
     badge = "本次回访 + 近期线索" if source == "objective_plus_recent" else "本次回访事实"
     support_note = _build_supportive_note(so, payload)
+    comparison_html = (
+        f'<div class="mb-3 inline-flex items-center rounded-full border px-3 py-1.5 text-xs font-semibold {_longitudinal_tone_classes(comparison_tone)}">{escape(comparison_note)}</div>'
+        if comparison_note else ""
+    )
+    evidence_html = f'<div class="insight-evidence">{escape(evidence)}</div>' if evidence else ""
+    memory_html = (
+        f'<div class="insight-memory-pill">我记得并在帮您留意：{escape(support_note)}</div>'
+        if support_note else ""
+    )
 
     return (
         '<section class="journey-card insight-spotlight">'
-        '<div class="insight-spotlight-main">'
-        '<div class="insight-spotlight-copy">'
-        '<div class="insight-eyebrow">专属洞察</div>'
-        '<div class="journey-section-title">我发现了一个值得留意的变化</div>'
-        f'<div class="insight-title-row"><span class="insight-emoji">{icon_map.get(category, "✨")}</span><span class="insight-headline">{escape(title)}</span></div>'
-        f'<div class="insight-summary">{escape(summary)}</div>'
-        f'<div class="insight-badge">{escape(badge)}</div>'
-        + (
-            f'<div class="insight-evidence">{escape(evidence)}</div>'
-            if evidence else ""
-        )
-        + (
-            f'<div class="insight-memory-pill">我记得并在帮您留意：{escape(support_note)}</div>'
-            if support_note else ""
-        )
+        + '<div class="insight-spotlight-main">'
+        + '<div class="insight-spotlight-copy">'
+        + '<div class="insight-eyebrow">专属洞察</div>'
+        + '<div class="journey-section-title">我发现了一个值得留意的变化</div>'
+        + f'<div class="insight-title-row"><span class="insight-emoji">{icon_map.get(category, "✨")}</span><span class="insight-headline">{escape(title)}</span></div>'
+        + comparison_html
+        + f'<div class="insight-summary">{escape(summary)}</div>'
+        + f'<div class="insight-badge">{escape(badge)}</div>'
+        + evidence_html
+        + memory_html
         + '</div>'
-        f'<div class="insight-visual"><img class="insight-visual-img" src="{_INSIGHT_VISUAL_ASSET}" alt="" loading="lazy" decoding="async"></div>'
-        '</div>'
-        '</section>'
+        + f'<div class="insight-visual"><img class="insight-visual-img" src="{_INSIGHT_VISUAL_ASSET}" alt="" loading="lazy" decoding="async"></div>'
+        + '</div>'
+        + '</section>'
     )
 
 
@@ -4720,7 +4932,7 @@ def _render_treatment_theme_detail(theme: dict) -> str:
     if stage_value:
         body_parts.append(
             '<div class="mt-3 text-xs text-indigo-700 bg-indigo-50 border border-indigo-100 rounded-xl px-3 py-2 leading-relaxed">'
-            f'当前阶段：{escape(stage_value)}</div>'
+            f'现在更适合先这样安排：{escape(stage_value)}</div>'
         )
     if cycle_badge:
         body_parts.append(
@@ -4744,7 +4956,7 @@ def _render_treatment_theme_detail(theme: dict) -> str:
         )
         body_parts.append(
             '<div class="mt-3 rounded-xl bg-slate-50 border border-slate-200 px-3 py-3">'
-            '<div class="text-[11px] uppercase tracking-wide text-slate-400 font-bold">客观依据</div>'
+            '<div class="text-[11px] uppercase tracking-wide text-slate-400 font-bold">这份提醒主要参考了</div>'
             f'{evidence_html}'
             '</div>'
         )
@@ -4754,7 +4966,7 @@ def _render_treatment_theme_detail(theme: dict) -> str:
         '<div class="sub-card-header">'
         '<span class="sub-card-icon">💉</span>'
         '<div class="flex-1 min-w-0">'
-        '<div class="sub-card-label">当前治疗主题</div>'
+        '<div class="sub-card-label">这段时间更适合这样顾</div>'
         f'<div class="sub-card-value">{escape(title or "当前治疗重点")}</div>'
         '</div>'
         '</div>'
@@ -4839,6 +5051,167 @@ def _render_treatment_education_card(theme: dict) -> str:
     )
 
 
+def _build_home_status_series(previous_score: int, current_score: int, point_count: int) -> list[int]:
+    count = max(3, min(int(point_count or 0), 7))
+    if count <= 1:
+        return [current_score]
+    if current_score > previous_score:
+        offsets = [-1.4, -0.6, 0.7, 1.8, 1.1, 0.2, 0.0]
+    elif current_score < previous_score:
+        offsets = [1.2, 0.5, -0.5, -1.4, -1.0, -0.2, 0.0]
+    else:
+        offsets = [0.0, 0.9, 0.2, -0.7, 0.6, -0.1, 0.0]
+    if count != len(offsets):
+        step = (len(offsets) - 1) / (count - 1)
+        offsets = [offsets[min(len(offsets) - 1, round(idx * step))] for idx in range(count)]
+
+    series = []
+    for idx in range(count):
+        ratio = idx / (count - 1)
+        base = previous_score + (current_score - previous_score) * ratio
+        series.append(max(52, min(96, int(round(base + offsets[idx])))))
+    series[0] = max(52, min(96, int(previous_score)))
+    series[-1] = max(52, min(96, int(current_score)))
+    return series
+
+
+def _render_home_overall_status(payload: dict, so: dict) -> str:
+    scores = so.get("recent_adherence_scores") or []
+    overview = _build_recent_overall_summary(scores) if isinstance(scores, list) and scores else {}
+
+    current_score = max(0, min(100, int(overview.get("score") or _estimate_status_score(so))))
+    previous_score = max(0, min(100, int(overview.get("previous_score") or max(current_score - 4, 0))))
+    target_score = max(0, min(100, int(overview.get("target_score") or _next_target_score(current_score))))
+    delta = current_score - previous_score
+    delta_label, delta_color = _score_delta_meta(delta)
+    tone_label, _tone_bg, tone_color = _score_tone(current_score)
+    summary = _localize_zh_text(
+        str(
+            overview.get("summary")
+            or "把最近用药、营养、活动和监测情况放在一起看，能更直观看到恢复节奏有没有慢慢稳住。"
+        )
+    ).strip()
+    coaching = _localize_zh_text(
+        str(
+            overview.get("coaching")
+            or "不用一下子做到最好，先把今天最容易做到的一小步做稳就很好。"
+        )
+    ).strip()
+
+    labels: list[str] = []
+    trend_data = _build_trend_data(payload)
+    for window_key in ("week", "month", "quarter"):
+        window = trend_data.get(window_key) or {}
+        metrics = (window.get("metrics") or []) if isinstance(window, dict) else []
+        if not isinstance(metrics, list):
+            continue
+        for metric in metrics:
+            points = metric.get("points") or []
+            if isinstance(points, list) and len(points) >= 3:
+                labels = [str(point.get("label") or "") for point in points[-7:] if isinstance(point, dict)]
+                break
+        if labels:
+            break
+    if not labels:
+        current_time = _parse_iso_datetime((payload.get("meta") or {}).get("current_time")) or datetime.now()
+        labels = [
+            (current_time - timedelta(days=offset)).strftime("%m/%d")
+            for offset in range(6, -1, -1)
+        ]
+
+    series = _build_home_status_series(previous_score, current_score, len(labels))
+    if len(series) != len(labels):
+        labels = labels[-len(series):]
+
+    chart_width = 180
+    chart_height = 88
+    x_pad = 8
+    y_pad = 10
+    value_min = min(series)
+    value_max = max(series)
+    value_span = max(8, value_max - value_min)
+    low = value_min - max(2, value_span * 0.18)
+    high = value_max + max(2, value_span * 0.18)
+    usable_width = chart_width - (x_pad * 2)
+    usable_height = chart_height - (y_pad * 2)
+
+    plot_points: list[tuple[float, float]] = []
+    for idx, value in enumerate(series):
+        x = x_pad + (usable_width * idx / max(len(series) - 1, 1))
+        ratio = 0.5 if high == low else (value - low) / (high - low)
+        y = chart_height - y_pad - (usable_height * ratio)
+        plot_points.append((x, y))
+
+    line_path = " ".join(
+        f'{"M" if idx == 0 else "L"} {x:.1f} {y:.1f}'
+        for idx, (x, y) in enumerate(plot_points)
+    )
+    area_path = (
+        f'M {plot_points[0][0]:.1f} {chart_height - y_pad:.1f} '
+        + " ".join(f'L {x:.1f} {y:.1f}' for x, y in plot_points)
+        + f' L {plot_points[-1][0]:.1f} {chart_height - y_pad:.1f} Z'
+    )
+    dots_html = "".join(
+        f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{"4.4" if idx == len(plot_points) - 1 else "2.8"}" '
+        f'fill="{"#8b5cf6" if idx == len(plot_points) - 1 else "#ffffff"}" '
+        f'stroke="#8b5cf6" stroke-width="{"2.2" if idx == len(plot_points) - 1 else "1.5"}"></circle>'
+        for idx, (x, y) in enumerate(plot_points)
+    )
+
+    axis_labels = [
+        _format_axis_label(labels[0] if labels else ""),
+        _format_axis_label(labels[len(labels) // 2] if labels else ""),
+        _format_axis_label(labels[-1] if labels else ""),
+    ]
+    meta_chips = "".join(
+        [
+            f'<span class="home-status-meta-chip">之前 {escape(str(previous_score))} 分</span>',
+            f'<span class="home-status-meta-chip">现在 {escape(str(current_score))} 分</span>',
+            f'<span class="home-status-meta-chip">下一步 {escape(str(target_score))} 分</span>',
+        ]
+    )
+
+    return (
+        '<section class="journey-card home-status-card">'
+        '<div class="home-status-head">'
+        '<div>'
+        '<div class="journey-section-title">我的整体状态</div>'
+        '<div class="journey-section-copy">把最近用药、营养、活动和监测情况放在一起看，更容易知道这段时间是不是在慢慢变稳。</div>'
+        '</div>'
+        f'<div class="home-status-badge" style="color:{tone_color};border-color:{tone_color}22;background:{tone_color}10">{escape(tone_label)}</div>'
+        '</div>'
+        '<div class="home-status-body">'
+        '<div class="home-status-score-block">'
+        f'<div class="home-status-value">{escape(str(current_score))}<span>分</span></div>'
+        f'<div class="home-status-delta" style="color:{delta_color};background:{delta_color}14">{escape(_localize_zh_text(delta_label))}</div>'
+        f'<div class="home-status-summary">{escape(summary)}</div>'
+        f'<div class="home-status-summary home-status-summary-soft">{escape(coaching)}</div>'
+        f'<div class="home-status-meta">{meta_chips}</div>'
+        '</div>'
+        '<div class="home-status-chart-shell">'
+        f'<svg class="home-status-svg" viewBox="0 0 {chart_width} {chart_height}" preserveAspectRatio="none" aria-hidden="true">'
+        '<defs>'
+        '<linearGradient id="homeStatusStroke" x1="0%" y1="0%" x2="100%" y2="0%">'
+        '<stop offset="0%" stop-color="#c4b5fd"></stop>'
+        '<stop offset="55%" stop-color="#8b5cf6"></stop>'
+        '<stop offset="100%" stop-color="#6366f1"></stop>'
+        '</linearGradient>'
+        '<linearGradient id="homeStatusFill" x1="0%" y1="0%" x2="0%" y2="100%">'
+        '<stop offset="0%" stop-color="rgba(139,92,246,.24)"></stop>'
+        '<stop offset="100%" stop-color="rgba(139,92,246,0)"></stop>'
+        '</linearGradient>'
+        '</defs>'
+        f'<path d="{area_path}" fill="url(#homeStatusFill)"></path>'
+        f'<path d="{line_path}" fill="none" stroke="url(#homeStatusStroke)" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"></path>'
+        f'{dots_html}'
+        '</svg>'
+        f'<div class="home-status-axis"><span>{escape(axis_labels[0])}</span><span>{escape(axis_labels[1])}</span><span>{escape(axis_labels[2])}</span></div>'
+        '</div>'
+        '</div>'
+        '</section>'
+    )
+
+
 def _render_journey_home(so: dict, payload: dict, memory: dict, current_time_raw: str, profile_copy: dict | None = None) -> str:
     name = _extract_patient_name(payload)
     greeting = _time_greeting(current_time_raw)
@@ -4849,6 +5222,8 @@ def _render_journey_home(so: dict, payload: dict, memory: dict, current_time_raw
     summary = _build_supportive_note(so, payload)
     profile_copy = profile_copy or {}
     hero_tagline = _localize_zh_text(str(profile_copy.get("hero_tagline") or "今天先看状态，再做最关键的几步。")).strip()
+    hero_support_line = _localize_zh_text(str(profile_copy.get("hero_support_line") or "今天先把对恢复最有帮助的几件事做好，我们一步一步来。")).strip()
+    home_style_note = _localize_zh_text(str(profile_copy.get("home_style_note") or "这一页会先说今天该怎么做，再决定要不要展开更多解释。")).strip()
     conditions = so.get("conditions") or []
     condition_html = ""
     if conditions:
@@ -4868,9 +5243,11 @@ def _render_journey_home(so: dict, payload: dict, memory: dict, current_time_raw
         '<div>'
         f'<div class="journey-hello">{escape(greeting)}，{escape(name)}</div>'
         f'<div class="journey-hero-text" data-copy-key="hero_tagline">{escape(hero_tagline)}</div>'
+        f'<div class="journey-hero-text" data-copy-key="hero_support_line">{escape(hero_support_line)}</div>'
+        f'<div class="journey-hero-text" style="font-size:.82rem;line-height:1.65;color:#6d28d9;background:rgba(255,255,255,.76);border:1px solid rgba(196,181,253,.5);padding:8px 12px;border-radius:16px;margin-top:10px" data-copy-key="home_style_note">{escape(home_style_note)}</div>'
         '</div>'
         '</div>'
-        f'<div class="journey-hero-text">{escape(summary)}</div>'
+        f'<div class="journey-hero-text" style="font-size:.9rem;opacity:.9">{escape(summary)}</div>'
         f'{condition_html}'
         '</div>'
         f'<div class="journey-hero-visual"><img class="journey-hero-illustration" src="{_HERO_COMPANION_ASSET}" alt="" loading="lazy" decoding="async"></div>'
@@ -4878,9 +5255,10 @@ def _render_journey_home(so: dict, payload: dict, memory: dict, current_time_raw
     )
     treatment_theme_html = _render_treatment_theme_banner(so.get("treatment_theme") or {})
     insight_html = _render_journey_insight_spotlight(so, payload)
+    home_status_html = _render_home_overall_status(payload, so)
     recent_scores_html = _render_recent_adherence_scores(so)
     longitudinal_recap_html = _render_home_longitudinal_recap(so, payload)
-    return hero + treatment_theme_html + insight_html + recent_scores_html + longitudinal_recap_html + status_html + vitals_html
+    return hero + treatment_theme_html + insight_html + home_status_html + recent_scores_html + longitudinal_recap_html + vitals_html
 
 
 def _render_journey_tasks(so: dict, payload: dict, profile_copy: dict | None = None) -> str:

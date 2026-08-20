@@ -2671,6 +2671,111 @@
   .progress-mini-delta.up {{ color: #059669; }}
   .progress-mini-delta.down {{ color: #dc2626; }}
   .progress-mini-delta.flat {{ color: #64748b; }}
+  .home-status-card {{
+    border-radius: 26px;
+    border: 1px solid #e8defe;
+    background:
+      radial-gradient(circle at 92% 14%, rgba(196,181,253,.24) 0%, transparent 20%),
+      linear-gradient(135deg, #ffffff 0%, #faf6ff 55%, #f2efff 100%);
+    box-shadow: 0 20px 34px rgba(124,58,237,.08), 0 10px 18px rgba(15,23,42,.04);
+  }}
+  .home-status-head {{
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }}
+  .home-status-badge {{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(148,163,184,.2);
+    font-size: .72rem;
+    font-weight: 850;
+    white-space: nowrap;
+  }}
+  .home-status-body {{
+    margin-top: 14px;
+    display: grid;
+    grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr);
+    gap: 14px;
+    align-items: end;
+  }}
+  .home-status-score-block {{ min-width: 0; }}
+  .home-status-value {{
+    font-size: 2.55rem;
+    line-height: 1;
+    font-weight: 900;
+    color: #111827;
+    letter-spacing: -.04em;
+  }}
+  .home-status-value span {{
+    margin-left: 4px;
+    font-size: .95rem;
+    font-weight: 700;
+    color: #94a3b8;
+  }}
+  .home-status-delta {{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+    padding: 7px 11px;
+    border-radius: 999px;
+    font-size: .74rem;
+    font-weight: 850;
+  }}
+  .home-status-summary {{
+    margin-top: 10px;
+    font-size: .8rem;
+    line-height: 1.62;
+    color: #475569;
+  }}
+  .home-status-summary-soft {{
+    margin-top: 5px;
+    color: #6d28d9;
+  }}
+  .home-status-meta {{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }}
+  .home-status-meta-chip {{
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.94);
+    border: 1px solid #e5e7eb;
+    color: #64748b;
+    font-size: .68rem;
+    font-weight: 800;
+  }}
+  .home-status-chart-shell {{
+    min-width: 0;
+    border-radius: 20px;
+    border: 1px solid #ece7ff;
+    background: linear-gradient(180deg, rgba(255,255,255,.98) 0%, rgba(248,245,255,.95) 100%);
+    padding: 12px 12px 10px;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.96);
+  }}
+  .home-status-svg {{
+    width: 100%;
+    height: 96px;
+    display: block;
+  }}
+  .home-status-axis {{
+    margin-top: 6px;
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: .68rem;
+    font-weight: 700;
+    color: #94a3b8;
+  }}
   .meal-day-tab {{
     border: none;
     border-radius: 999px;
@@ -3474,6 +3579,11 @@
   .journey-page[data-page="home"] .progress-mini-card {{
     border-radius: 18px;
   }}
+  .journey-page[data-page="home"] .home-status-card {{
+    background:
+      radial-gradient(circle at 92% 14%, rgba(196,181,253,.24) 0%, transparent 20%),
+      linear-gradient(135deg, #ffffff 0%, #fbf7ff 52%, #f3efff 100%);
+  }}
   .journey-page[data-page="plan"] .journey-screen-head {{
     margin-bottom: 16px;
   }}
@@ -3629,6 +3739,15 @@
     }}
     .journey-page::before {{
       margin-bottom: 10px;
+    }}
+    .home-status-body {{
+      grid-template-columns: 1fr;
+    }}
+    .home-status-chart-shell {{
+      padding: 10px 10px 8px;
+    }}
+    .home-status-svg {{
+      height: 86px;
     }}
     .journey-page[data-page="plan"] .resource-card {{
       grid-template-columns: 72px minmax(0,1fr);
@@ -3974,6 +4093,8 @@ function setCommunicationStyle(mode) {{
   persistStylePreferenceState();
   applyCommunicationStyle(nextMode);
   renderStylePreferencePanel(nextMode);
+  const selectedMeta = getStyleMeta(nextMode);
+  showMiniToast("已切换为" + String(selectedMeta.label || "当前风格"));
   updateExportBadge();
 }}
 
